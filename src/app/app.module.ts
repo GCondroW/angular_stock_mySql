@@ -8,6 +8,8 @@ import { NavigationComponent } from './navigation/navigation.component';
 import { UploadComponent } from './misc/upload/upload.component';
 import { HttpClientModule } from '@angular/common/http';
 import { GlobalService } from './service/global/global.service';
+import { ImportComponent } from './import/import.component';
+import { DaftarComponent } from './daftar/daftar.component';
 
 @NgModule({
   declarations: [
@@ -15,6 +17,8 @@ import { GlobalService } from './service/global/global.service';
     HomeComponent,
     NavigationComponent,
     UploadComponent,
+    ImportComponent,
+    DaftarComponent,
   ],
   imports: [
     BrowserModule,

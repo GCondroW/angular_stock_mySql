@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
-import { GlobalErrorHandlerService } from '../../global-error-handler.service';
-import { read, utils } from "xlsx";
-import { HttpClient } from '@angular/common/http';
+import { Component, Input } from '@angular/core';
+//import { HttpClient } from '@angular/common/http';
+//import { Router } from '@angular/router';
+//import { GlobalService } from '../../service/global/global.service';
+//import { GlobalVar } from '../../globalVar';
 
 @Component({
   selector: 'app-upload',
@@ -12,30 +13,19 @@ export class UploadComponent{
 	constructor(){
 		
 	}
-	globalErrorHandlerService: GlobalErrorHandlerService = inject(GlobalErrorHandlerService);
-	http: HttpClient = inject(HttpClient);
-	uploadHandler=async(e:any)=>{
-		let fileName=e.target.files[0].name;
-		console.log(e.target);
-		if(fileName.split(".")[1]!=="xlsx")throw this.globalErrorHandlerService.handleError(new Error("not_xlsx"));
-		let file=e.target.files[0]
-		let data=await file.arrayBuffer();
-		let workBook=read(data);
-		console.log(workBook);
-		const temp: {[index: string]:any} = {};
-		
-		workBook.SheetNames.map((sheetName:any)=>{
-			console.log('workBook',workBook)
-			temp[sheetName]=utils.sheet_to_json(workBook.Sheets[sheetName]);
-			
-		});
-		let excelData={[fileName]:temp};
-		
+	
+	toggleValue=false;
+	toggleUploadField=()=>this.toggleValue=!this.toggleValue;
+
+	@Input() uploadHandler:any;
+	
+	/*uploadHandler=async(e:any)=>{
 		const result: {[index: string]:any} = {};
-		
-		await this.http.post<any>('http://127.0.0.1:3000/excelDb', excelData).subscribe(x=>{
-			//this.fetchedData=x;
-			//console.log(this.fetchedData);
-		})
-	}
+		//let url=GlobalVar.dbServerUrl;
+		let dbName=this.globalService.getCurrentPage();
+		console.log(dbName);
+		await this.globalService.postData(dbName,excelData).subscribe(x=>{
+			this.router.navigate(['/'+dbName])
+		});
+	}*/
 }

@@ -1,15 +1,7 @@
 <div class="container">
-	<button (click)="toggleUploadField()" class="upload-btn">Upload</button>
-	<app-upload *ngIf="toggleValue===true"></app-upload>
 	<ul class="horizontal-list">
-		<li *ngFor="let tableName of tableNames;">
-			{{tableName}}
-			<ul class="horizontal-list">
-				
-				<li *ngFor="let sheetName of sheetNames[tableName];">
-					{{sheetName}}
-				</li>
-			</ul>
+		<li *ngFor="let page of pages;" class="horizontal-list" [ngClass]="{'active':isActive(page)}">
+			<a class="horizontal-list" routerLink={{page}} [ngClass]="{'active':isActive(page)}" >{{page}}</a>
 		</li>
 	</ul>
 </div>

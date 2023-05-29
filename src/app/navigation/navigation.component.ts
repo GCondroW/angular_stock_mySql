@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { GlobalVar } from '../globalVar';
+import { Component, Input, inject } from '@angular/core';
+import { GlobalService } from '../service/global/global.service';
 
 @Component({
   selector: 'app-navigation',
@@ -7,11 +7,25 @@ import { GlobalVar } from '../globalVar';
   styleUrls: ['./navigation.component.css']
 })
 export class NavigationComponent {
+	globalService : GlobalService = inject(GlobalService);
 	constructor(){
 		console.log(this);
 	}
-	@Input() sheetNames:any;
-	@Input() tableNames:any;
-	toggleValue=false;
-	toggleUploadField=()=>this.toggleValue=!this.toggleValue;
+	@Input() pages:any;
+	getCurrentUrl=this.globalService.getCurrentUrl;
+	isActive=(pageName:String)=>{
+		let currentPage=this.getCurrentUrl().split('/')[1];		
+		if(pageName===currentPage)return true
+		return false
+	};
+	calculateStyle=(pageName:String)=>{
+		let temp:any={};
+		let currentPage=this.getCurrentUrl().split('/')[1];
+		temp["horizontal-list"]=true;
+		if(pageName===currentPage){
+			temp["active"]=true;
+		};
+		console.log(temp);
+		return temp;
+	}
 }

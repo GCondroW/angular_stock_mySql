@@ -9,21 +9,21 @@ import { GlobalVar } from './globalVar';
 })
 
 export class AppComponent {
-	globalService = inject(GlobalService);
+	globalService : GlobalService = inject(GlobalService);
 	excelDb = GlobalVar.excelDb;
 	tableNames:any=[];
 	sheetNames:any=[];
-	posts:any="";
+	pages:any="";
 	constructor(){
-		this.globalService.getData().subscribe(
+		this.pages=GlobalVar.pagesObj;
+		/*this.globalService.getData(this.globalService.getCurrentPage()).subscribe(
 			(response) => {
 				this.excelDb.data = response;
 				this.excelDb.tableNames = Object.keys(response);
 				this.excelDb.sheetNames = this.globalService.getSheetNames(response);
-				this.posts=JSON.stringify(GlobalVar);
 				console.log(GlobalVar);
 			},
-			(error) => { console.log(error); });
+			(error) => { console.log(error); });*/
 	};
 	ngOnInit() {
 	
