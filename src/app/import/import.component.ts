@@ -1,47 +1,59 @@
 import { Component, inject } from '@angular/core';
 import { UploadComponent } from '../misc/upload/upload.component';
+import { DataTableComponent } from '../misc/data-table/data-table.component';
 import { GlobalService } from '../service/global/global.service';
-import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-import',
   templateUrl: './import.component.html',
-  styleUrls: ['./import.component.css']
+  styleUrls: ['./import.component.css',]
 })
 
 export class ImportComponent {
-	globalService: GlobalService = inject(GlobalService);
-	router: Router = inject(Router);
+	private globalService: GlobalService = inject(GlobalService);
+	
+	public currentPage:string;
+	public jsonData:any;
+	
 	constructor(){
+		this.currentPage=this.globalService.getCurrentPage();
 		this.refresh();
+	};
 
-	}
-	currentPage=this.globalService.getCurrentPage();
-	jsonData:any;
 	refresh=()=>{
-		this.globalService.getData(this.currentPage).subscribe(x=>{
-			this.jsonData=JSON.stringify(x,null,3);
+		this.get(this.currentPage);
+	};
+	updateTable=(data:any)=>{
+		let dataIsEmpty=!!(Object.keys(data).length<1);
+		if(dataIsEmpty)return this.jsonData=null;
+		return this.jsonData=JSON.stringify(data,null,3);
+	};
+	get=(page:string)=>{
+		this.globalService.getData(page).subscribe(x=>{
+			this.updateTable(x);
 		});
 	};
-	post=(data:any)=>{
-		let page=this.currentPage;
+	post=(page:string,data:any)=>{
 		console.log("page",page);
 		console.log("data",data);
 		this.globalService.excelHandler(data).then(x=>{
 			console.log(x);
 			this.globalService.postData(page,x).subscribe(x=>{
-				this.jsonData=JSON.stringify(x,null,3);
-				this.router.navigate(['/'+page]);
+				this.updateTable(x);
 			})
 		})
 	};
-	delete=(page:string)=>{
+	deleteAll=(page:string)=>{
 		let temp=confirm("delete ALL : "+page+" ?");
 		console.log();
 		if(temp===true)return this.globalService.wipeData(page).subscribe(x=>{
-			this.refresh();
-			this.router.navigate(['/'+page]);
+			this.updateTable(x);
 		})
 		return
-	}
+	};
+	put=()=>{
+	
+	};
+
 }

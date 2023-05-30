@@ -10,6 +10,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { GlobalService } from './service/global/global.service';
 import { ImportComponent } from './import/import.component';
 import { DaftarComponent } from './daftar/daftar.component';
+import { DataTableComponent } from './misc/data-table/data-table.component';
 
 @NgModule({
   declarations: [
@@ -19,11 +20,12 @@ import { DaftarComponent } from './daftar/daftar.component';
     UploadComponent,
     ImportComponent,
     DaftarComponent,
+    DataTableComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-	HttpClientModule
+	HttpClientModule,
   ],
   providers: [GlobalService],
   bootstrap: [AppComponent]

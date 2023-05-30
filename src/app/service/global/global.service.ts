@@ -24,35 +24,27 @@ export class GlobalService {
 	};
 	
 	getCurrentPage=()=>{
-		console.log(this.getCurrentUrl());
-		console.log('getCurrentUrl',(this.getCurrentUrl().split('/')[1]));
 		return this.getCurrentUrl().split('/')[1];
 	};
 	
 	getData=(dbName:string)=>{
 		let url=this.url+dbName;
-		console.log(dbName);
-		console.log(url);
 		return this.http.get(url)
 	};
 	
 	postData=(dbName:string,data:any={})=>{
 		let url=this.url+dbName;
-		console.log(url,data);
 		return this.http.post(url,data)
 	};
 	
 	wipeData=(dbName:string)=>{
 		let url=this.url+dbName;
-		console.log(dbName);
-		console.log(url);
 		return this.http.post(url,{});
 	};
 	
 	getSheetNames=(excelData:{[key:string]:any})=>{
 		let temp:{[key:string]:any}={}
 		Object.keys(excelData).map(pointer=>{
-			console.log(pointer);
 			temp[pointer]=Object.keys(excelData[pointer]);
 		})
 		return temp;

@@ -1,8 +1,4 @@
-import { Component, Input } from '@angular/core';
-//import { HttpClient } from '@angular/common/http';
-//import { Router } from '@angular/router';
-//import { GlobalService } from '../../service/global/global.service';
-//import { GlobalVar } from '../../globalVar';
+import { Component, Input, inject } from '@angular/core';
 
 @Component({
   selector: 'app-upload',
@@ -11,21 +7,11 @@ import { Component, Input } from '@angular/core';
 })
 export class UploadComponent{
 	constructor(){
-		
 	}
-	
 	toggleValue=false;
 	toggleUploadField=()=>this.toggleValue=!this.toggleValue;
-
-	@Input() uploadHandler:any;
+	@Input() currentPage!:string;
+	@Input() uploadHandler:any;//callback function
 	
-	/*uploadHandler=async(e:any)=>{
-		const result: {[index: string]:any} = {};
-		//let url=GlobalVar.dbServerUrl;
-		let dbName=this.globalService.getCurrentPage();
-		console.log(dbName);
-		await this.globalService.postData(dbName,excelData).subscribe(x=>{
-			this.router.navigate(['/'+dbName])
-		});
-	}*/
+	
 }

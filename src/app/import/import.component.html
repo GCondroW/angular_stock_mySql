@@ -1,7 +1,11 @@
 <div>
-	<app-upload [uploadHandler]="post"></app-upload>
-	<button (click)="delete(currentPage)">delete</button>
+	<app-upload 
+		[currentPage]="currentPage"
+		[uploadHandler]="post"
+	></app-upload>
+	<button (click)="deleteAll(currentPage)">delete</button>
 </div>
 <div>
+	<app-data-table [data]="jsonData"></app-data-table>
 	<pre>{{jsonData}}</pre>
 </div>
