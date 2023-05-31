@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { DataTableComponent } from '../misc/data-table/data-table.component';
 import { GlobalService } from '../service/global/global.service';
+//import { BehaviorSubject } from 'rxjs';
 
 
 @Component({
@@ -15,6 +16,8 @@ export class ImportComponent {
 	
 	public currentPage:string;
 	public jsonData:any;
+	public isLoaded:boolean=false;
+	//public datafinalObject = new BehaviorSubject(null);
 	
 	constructor(){
 		this.currentPage=this.globalService.getCurrentPage();
@@ -27,12 +30,12 @@ export class ImportComponent {
 	updateTable=(data:any)=>{
 		let dataIsEmpty=!!(Object.keys(data).length<1);
 		if(dataIsEmpty)return this.jsonData=null;
-		return this.jsonData=JSON.stringify(data,null,3);
+		//return this.jsonData=JSON.stringify(data,null,3);
+		this.isLoaded=true;
+		return this.jsonData=data;
 	};
 	get=(page:string)=>{
-		this.globalService.getData(page).subscribe(x=>{
-			this.updateTable(x);
-		});
+		return this.globalService.getData(page).subscribe(x=>this.updateTable(x));
 	};
 	post=(page:string,data:any)=>{
 		console.log("page",page);

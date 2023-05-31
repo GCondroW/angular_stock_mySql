@@ -6,6 +6,9 @@
 	<button (click)="deleteAll(currentPage)">delete</button>
 </div>
 <div>
-	<app-data-table [data]="jsonData"></app-data-table>
-	<pre>{{jsonData}}</pre>
+	<app-data-table *ngIf="isLoaded else noCourses" [data]="jsonData"></app-data-table>
+	<ng-template #noCourses>
+		<h1>No courses available.</h1>
+	</ng-template>
+	
 </div>

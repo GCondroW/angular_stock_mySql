@@ -12,6 +12,8 @@ import { ImportComponent } from './import/import.component';
 import { DaftarComponent } from './daftar/daftar.component';
 import { DataTableComponent } from './misc/data-table/data-table.component';
 
+import { AgGridModule } from 'ag-grid-angular';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -26,6 +28,7 @@ import { DataTableComponent } from './misc/data-table/data-table.component';
     BrowserModule,
     AppRoutingModule,
 	HttpClientModule,
+	AgGridModule
   ],
   providers: [GlobalService],
   bootstrap: [AppComponent]

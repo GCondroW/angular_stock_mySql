@@ -1,1 +1,11 @@
-<p>data-table works!</p>
+<div class="table-container">
+	<ag-grid-angular
+		style="width: 100%; height: 100%"
+		class="ag-theme-alpine"
+		[columnDefs]="collumnDefs"
+		[rowData]="processedData"
+		[defaultColDef]="defaultColDef"
+		[pagination]="true"
+		[paginationPageSize]=100		
+	></ag-grid-angular>
+</div>
