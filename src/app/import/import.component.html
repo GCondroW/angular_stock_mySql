@@ -1,11 +1,11 @@
-<div>
+<div class="max-container">
 	<app-upload 
 		[currentPage]="currentPage"
 		[uploadHandler]="post"
 	></app-upload>
 	<button (click)="deleteAll(currentPage)">delete</button>
 </div>
-<div>
+<div class="max-container">
 	<app-data-table *ngIf="isLoaded else noCourses" [data]="jsonData"></app-data-table>
 	<ng-template #noCourses>
 		<h1>No courses available.</h1>
