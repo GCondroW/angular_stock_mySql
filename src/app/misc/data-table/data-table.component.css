@@ -1,11 +1,9 @@
-div.table-container{
-	position:absolute;
-	margin-top:5px;
-}
-
 .ag-theme-alpine {
 	--ag-grid-size: 3px;
 	--ag-list-item-height: 20px;
 	--ag-font-size: 10px;
     --ag-font-family: Arial;
+}
+div.table-container{
+	margin-top:5px;
 }

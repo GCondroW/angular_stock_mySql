@@ -11,22 +11,22 @@ html {
 	position: absolute;
 	top: 0;
 	left: 0;
-	padding: 0;
+	padding: 0 10px;
 	margin: 0;
-	overflow: auto;
 	height: 100%;
-	width: 100%;
+	width:100%;
+	position:absolute;
+	overflow:hidden;
 }
 
 body {
 	padding:0;
-	margin: 10px;
-	min-height: 100vh;
-	overflow: auto;
+	margin:0;
+	height:100%;
+	width:100%;
+	overflow: hidden;
 }
 
 div.max-container{
-	height: 100%;
-	width: 100%;
 	box-sizing:border-box;
 }

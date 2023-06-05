@@ -32,10 +32,15 @@ export class DataTableComponent implements OnInit {
 				this.adjustContainerSize();
 			},
 			onRowClicked: event => console.log('A row was clicked'),
-			onColumnResized: event => console.log('A column was resized'),
+			onColumnResized: event => {
+				console.log('A column was resized');
+				this.adjustContainerSize();
+			},
 			getRowHeight: (params) => 25
 		};
-			
+		window.addEventListener('resize',()=>this.adjustContainerSize(), true);
+		//console.log("container.offsetTop",document.getElementById("gridTable").offsetTop);
+		
 	};
 	
 	constructor(){
@@ -85,13 +90,30 @@ export class DataTableComponent implements OnInit {
 	};
 	
 	private adjustContainerSize=()=>{
-		
-		console.log(document);
-		console.log(window);
-		console.log()
+		let container=document.getElementById("gridTable")!;
+		let containerRect=container.getBoundingClientRect();
+		let containerRectTop=containerRect.top;
+		////////////////////////////////////////////
+		let innerTable=document.querySelectorAll('[Class=ag-center-cols-container]')[0];
+		let innerTableRect=innerTable.getBoundingClientRect();
+		let innerTableRectRight=innerTableRect.right;
+		/////////////////////////////////////////////
+		let scrollBar=document.querySelectorAll('[Class=ag-body-vertical-scroll-viewport]')[0];
+		let scrollBarRect=scrollBar.getBoundingClientRect();
+		let scrollBarRectWidth=scrollBarRect.width;
+		//////////////////////////////////////////////
+		let innerTableWidth=innerTable.getBoundingClientRect().width;
+		let windowWidth=window.innerWidth;
+		let width="100%";
+		let height="100%";
+		if(innerTableWidth>=windowWidth)width="auto";
+		else{
+			width=(innerTableRectRight+scrollBarRectWidth)+"px";
+		}
+		height=(window.innerHeight-containerRectTop+window.scrollY)+"px";
 		this.containerStyle={
-			width:"100%",
-			height:"100%"
+			width:width,
+			height:height,
 		};
 	};
 	
