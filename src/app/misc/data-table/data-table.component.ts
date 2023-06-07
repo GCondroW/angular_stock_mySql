@@ -10,11 +10,6 @@ import { CellClickedEvent, ColDef, GridReadyEvent, GridOptions } from 'ag-grid-c
 export class DataTableComponent implements OnInit {
 	ngOnInit(){
 		console.log(this);
-		this.docName=Object.keys(this.data)[0];
-		this.sheetName=Object.keys(this.data[this.docName])[0];
-		this.tableColumn=this.getTableColumn(this.data);
-		this.processedData=this.data[this.docName][this.sheetName];
-		//this.collumnDefs=this.tableData.getColumnDefs();
 
 		this.gridOptions= {
 			columnDefs: this.tableData.getColumnDefs(),
@@ -25,13 +20,15 @@ export class DataTableComponent implements OnInit {
 				console.log('The grid is now ready'),
 				this.api = params.api;
 				this.columnApi = params.columnApi;
-				this.api.rowModel.setRowData(this.processedData);
-				console.log(this.api);
+				this.api.rowModel.setRowData(this.data);
 				this.api.redrawRows();
 				this.columnApi.autoSizeAllColumns();
 				this.adjustContainerSize();
 			},
-			onRowClicked: event => console.log('A row was clicked'),
+			onRowClicked: event => {
+				console.log(event);
+				this.selectedRowIndex=(event.rowIndex);
+			},
 			onColumnResized: event => {
 				console.log('A column was resized');
 				this.adjustContainerSize();
@@ -49,11 +46,8 @@ export class DataTableComponent implements OnInit {
 	}
 	
 	@Input() data:any;
+	@Input() deleteHandler:any;
 	
-	private docName:any;
-	private sheetName:any;
-	private tableColumn:any;
-	private processedData:any;
 	private api:any;
 	private columnApi:any;
 	private collumnDefs:ColDef[]=[];
@@ -61,9 +55,12 @@ export class DataTableComponent implements OnInit {
 		resizable:true,
 		sortable: true,
 		filter: false,
-		editable:true,
+		editable:false,
 	};
+
 	
+	deleteData : any=null;
+	public selectedRowIndex:number | null=null;	
 	public gridOptions!:GridOptions;
 	public containerStyle:any={};
 	
@@ -73,7 +70,7 @@ export class DataTableComponent implements OnInit {
 	
 	private tableData:any={
 		getColumnDefs:()=>{
-			let tableColumn=this.tableColumn;
+			let tableColumn=Object.keys(this.data[0]);
 			let temp:ColDef[];
 			temp=[];
 			tableColumn.map((item:string)=>{
@@ -83,11 +80,10 @@ export class DataTableComponent implements OnInit {
 		}
 	};
 	
-	private getTableColumn=(data:any)=>{
-		let docName=this.docName;
-		let sheetName=this.sheetName;
-		return Object.keys(data[docName][sheetName][0]);
-	};
+	delete=(rowIndex:number | null)=>{
+		if(rowIndex===null)return alert(JSON.stringify("null"));
+		return this.deleteHandler(rowIndex);
+	}
 	
 	private adjustContainerSize=()=>{
 		let container=document.getElementById("gridTable")!;
@@ -110,6 +106,7 @@ export class DataTableComponent implements OnInit {
 		else{
 			width=(innerTableRectRight+scrollBarRectWidth)+"px";
 		}
+		let heightOffset:number=-5;
 		height=(window.innerHeight-containerRectTop+window.scrollY)+"px";
 		this.containerStyle={
 			width:width,

@@ -1,3 +1,5 @@
 <button (click)="toggleUploadField()" class="upload-btn">Upload</button>
-<input *ngIf="toggleValue===true" (input)="uploadHandler(currentPage,$event)" type="file">
-
+<span *ngIf="toggleValue===true">
+	=>
+	<input (input)="uploadHandler(currentPage,$event)" type="file">
+</span>

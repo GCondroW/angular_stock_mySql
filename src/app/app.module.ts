@@ -13,6 +13,7 @@ import { DaftarComponent } from './daftar/daftar.component';
 import { DataTableComponent } from './misc/data-table/data-table.component';
 
 import { AgGridModule } from 'ag-grid-angular';
+import { ImportNavComponent } from './src/misc/import-nav/import-nav.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { AgGridModule } from 'ag-grid-angular';
     ImportComponent,
     DaftarComponent,
     DataTableComponent,
+    ImportNavComponent,
   ],
   imports: [
     BrowserModule,

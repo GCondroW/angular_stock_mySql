@@ -2,8 +2,6 @@ import { Component, inject } from '@angular/core';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { DataTableComponent } from '../misc/data-table/data-table.component';
 import { GlobalService } from '../service/global/global.service';
-//import { BehaviorSubject } from 'rxjs';
-
 
 @Component({
   selector: 'app-import',
@@ -23,19 +21,41 @@ export class ImportComponent {
 		this.currentPage=this.globalService.getCurrentPage();
 		this.refresh();
 	};
-
+	
+	private docName:any;
+	private sheetName:any;
+	private tableColumn:any;
+	private processedData:any;
+	
+	dataPreProcessing=(excelData:any)=>{
+		let docName=Object.keys(excelData)[0];
+		let sheetName=Object.keys(excelData[docName])[0];
+		let tableColumn=Object.keys(excelData[docName][sheetName][0]);
+		let processedData=excelData[docName][sheetName];
+		
+		this.docName=docName;
+		this.sheetName=sheetName;
+		this.tableColumn=tableColumn;
+		this.processedData=processedData;
+		return this.processedData;
+	};
 	refresh=()=>{
 		this.get(this.currentPage);
 	};
 	updateTable=(data:any)=>{
+		console.log("data",data);
 		let dataIsEmpty=!!(Object.keys(data).length<1);
-		if(dataIsEmpty)return this.jsonData=null;
-		//return this.jsonData=JSON.stringify(data,null,3);
-		this.isLoaded=true;
-		return this.jsonData=data;
+		if(dataIsEmpty){
+			this.jsonData=null;
+			return this.jsonData;
+		}else{
+			this.isLoaded=true;		
+			this.jsonData=data;	
+			return data;
+		};
 	};
 	get=(page:string)=>{
-		return this.globalService.getData(page).subscribe(x=>this.updateTable(x));
+		return this.globalService.getData(page,undefined).subscribe(x=>this.updateTable(x));
 	};
 	post=(page:string,data:any)=>{
 		console.log("page",page);
@@ -47,9 +67,21 @@ export class ImportComponent {
 			})
 		})
 	};
+	precisionDelete=(id:number)=>{
+		console.log(id);
+		let page=this.currentPage;
+		
+		let temp=confirm("delete : "+id+" ?");
+		if(temp===true)return this.globalService.getData(page,id).subscribe(x=>{
+			this.updateTable(x);
+		})
+		return
+	};
+	precissionGet=(id:number)=>{
+		
+	};
 	deleteAll=(page:string)=>{
 		let temp=confirm("delete ALL : "+page+" ?");
-		console.log();
 		if(temp===true)return this.globalService.wipeData(page).subscribe(x=>{
 			this.updateTable(x);
 		})
