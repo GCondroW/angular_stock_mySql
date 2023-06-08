@@ -1,5 +1,5 @@
 <div style="margin-top:5px" class="table-button-container">
-	<button (click)="delete(selectedRowIndex)">Delete</button>
+	<button (click)="deleteHandler(selectedRowId)">Delete</button>
 </div>
 <div id="gridTable" class="max-container table-container"
 	[style.width]="containerStyle.width"
@@ -11,6 +11,7 @@
 				style="width: 100%; height: 100%;"
 				class="ag-theme-alpine"
 				[gridOptions]="gridOptions"
+				[rowData]="rowData"
 			></ag-grid-angular>
 		</div>
 	<!--<div style="background-color:#ccc; padding: 2rem">right side column</div>-->

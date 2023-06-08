@@ -29,6 +29,7 @@ export class GlobalService {
 	
 	getData=(dbName:string,id:number | undefined)=>{
 		let url=this.url;
+		let result:any;
 		if(id===undefined){
 			url=url+dbName;
 		}else if(id>-1){
@@ -50,12 +51,9 @@ export class GlobalService {
 		return this.http.post(url,{});
 	};
 	
-	getSheetNames=(excelData:{[key:string]:any})=>{
-		let temp:{[key:string]:any}={}
-		Object.keys(excelData).map(pointer=>{
-			temp[pointer]=Object.keys(excelData[pointer]);
-		})
-		return temp;
+	deleteData=(dbName:string,id:number)=>{
+		let url=this.url+dbName+"/"+id;
+		return this.http.delete(url);
 	};
 	
 	old_excelHandler=async(e:any)=>{

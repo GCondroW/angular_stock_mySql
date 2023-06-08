@@ -6,7 +6,12 @@
 	<button (click)="deleteAll(currentPage)">deleteAll</button>
 </div>
 <div class="placeholder">
-	<app-data-table *ngIf="isLoaded else noCourses" [deleteHandler]="precisionDelete" [data]="jsonData"></app-data-table>
+	<app-data-table *ngIf="isLoaded else noCourses" 
+		[selectedRowId]="selectedRowId"
+		[deleteHandler]="precisionDelete" 
+		[gridOptions]="gridOptions"
+		[rowData]="rowData"
+	></app-data-table>
 	<ng-template #noCourses>
 		<h1>No courses available.</h1>
 	</ng-template>
