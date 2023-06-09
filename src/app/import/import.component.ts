@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { DataTableComponent } from '../misc/data-table/data-table.component';
 import { GlobalService } from '../service/global/global.service';
-import {  ColDef, GridOptions } from 'ag-grid-community';
+import { ColDef, GridOptions } from 'ag-grid-community';
 
 @Component({
   selector: 'app-import',
@@ -16,7 +16,6 @@ export class ImportComponent {
 		this.currentPage=this.globalService.getCurrentPage();
 		this.refresh();
 	};
-	
 	public currentPage:string;//current page / database used => import
 	public isLoaded:boolean=false;//loading placeholder
 	public selectedRowId:number | null=null;//self explanatory, for 'precision usage'
@@ -69,8 +68,8 @@ export class ImportComponent {
 		this.get(this.currentPage);
 	};
 	updateTable=(data:any)=>{
+		let dataIsEmpty=!!(Object.keys(data).length<1||data===null);
 		let dataIsObject=!(data.length);
-		let dataIsEmpty=!!(Object.keys(data).length<1);
 		if(dataIsObject)data=[data];
 		if(dataIsEmpty){
 			this.rowData=[];

@@ -5,6 +5,9 @@ import { Router } from '@angular/router';
 import { read, utils } from "xlsx";
 import { GlobalErrorHandlerService } from '../../global-error-handler.service';
 
+import { LowSync } from 'lowdb'
+import { JSONFileSync } from 'lowdb/node'
+
 @Injectable({
   providedIn: 'root',
 })
@@ -47,8 +50,18 @@ export class GlobalService {
 	};
 	
 	wipeData=(dbName:string)=>{
-		let url=this.url+dbName;
-		return this.http.post(url,{});
+		let url=this.url+dbName+"?id=-1";
+		/*this.http.get("assets/db.json").subscribe(x=>{
+			let temp:any;
+			temp=x;
+			console.log(temp[dbName]);
+			let text:string=JSON.stringify(x);
+			var a = document.createElement('a');
+			a.setAttribute('href', 'data:text/plain;charset=utf-u,'+encodeURIComponent(text));
+			a.setAttribute('download', 'src/assets/db.json');
+			a.click()
+		})*/
+		return this.http.delete(url)
 	};
 	
 	deleteData=(dbName:string,id:number)=>{

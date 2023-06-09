@@ -15,12 +15,9 @@ export class DataTableComponent implements OnInit {
 			console.log('The grid is now ready'),
 			this.api = params.api;
 			this.columnApi = params.columnApi;
-			//this.api.rowModel.setRowData(this.data);
-			//this.api.redrawRows();
 			this.columnApi.autoSizeAllColumns();
 			this.adjustContainerSize();
 		};
-		//console.log("container.offsetTop",document.getElementById("gridTable").offsetTop);
 	};
 	
 	constructor(){
@@ -35,13 +32,8 @@ export class DataTableComponent implements OnInit {
 	
 	private api:any;
 	private columnApi:any;
-	private collumnDefs:ColDef[]=[];
 
-	
-	deleteData : any=null;
-	//public gridOptions!:GridOptions;
 	public containerStyle:any={};
-	
 	
 	private adjustContainerSize=()=>{
 		let container=document.getElementById("gridTable")!;
