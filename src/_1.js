@@ -30,25 +30,23 @@ doThisWhenDeleting=(req,res,next)=>{
 	return next();
 }
 
-doThisWhenWiping=(dbName,res)=>{
+doThisWhenWiping=async(dbName,res)=>{
 	const fs = require('fs');
+	const { finished } = require('node:stream');
 	fs.readFile(dbPath,'utf8',(e,data)=>{
 		if(e){
 			console.log(e);
 			return
 		}else{
+			const stream = fs.createWriteStream(dbPath);
 			let temp=JSON.parse(data);
 			temp[dbName]={};
-			//console.log(temp);
-			
-			const stream = fs.createWriteStream(dbPath);
-			temp=JSON.stringify(temp);
-			stream.write(temp);
-			console.log(temp);
-			return res.json(temp[dbName])
+			stream.write(JSON.stringify(temp));
+			stream.on('finish', () => {
+				console.log('All writes are now complete.');
+				return res.json(temp[dbName])
+			});
+			stream.end();
 		}
-	});
-
-	
-	
+	})
 }

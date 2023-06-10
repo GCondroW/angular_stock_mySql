@@ -25,7 +25,7 @@ export class ImportComponent {
 		resizable:true,
 		sortable: true,
 		filter: false,
-		editable:false,
+		editable:true,
 	};
 	private getColumnDefs=(data:any)=>{
 		let tableColumn=Object.keys(data[0]);
@@ -39,7 +39,12 @@ export class ImportComponent {
 		pagination: true,
 		rowSelection: 'single',
 		defaultColDef: this.defaultColDef,
-		onRowClicked: (event:any) => {this.selectedRowId=(event.data.id);},
+		onRowClicked: (event:any) => {
+			console.log("row clicked",event),
+			this.selectedRowId=(event.data.id);
+		},
+		onCellEditingStarted:(event:any)=>console.log("cell editing...","id = ",event.data.id),
+		onCellEditingStopped:(event:any)=>console.log("cell edited","id = ",event.data.id,"new data = ",event.data),
 		onColumnResized: (event:any) => {},
 	};
 	public rowData:Array<any>=[];
@@ -109,10 +114,15 @@ export class ImportComponent {
 	};
 	deleteAll=(page:string)=>{
 		let temp=confirm("delete ALL : "+page+" ?");
+		/*
 		if(temp===true)return this.globalService.wipeData(page).subscribe(x=>{
-			console.log(x);
+			this.updateTable(x);
+		})*/
+		
+		if(temp===true)return this.globalService.wipeData(page).subscribe(x=>{
 			this.updateTable(x);
 		})
+		
 		return
 	};
 	put=()=>{
