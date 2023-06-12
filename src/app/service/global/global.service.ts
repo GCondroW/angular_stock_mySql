@@ -38,8 +38,6 @@ export class GlobalService {
 		}else if(id>-1){
 			url=url+dbName+"/"+id;
 		}
-		console.log(url);
-		console.log(this.http.get(url));
 		return this.http.get(url);
 	};
 
@@ -49,9 +47,13 @@ export class GlobalService {
 		return this.http.post(url,data)
 	};
 	
+	putData=(dbName:string,id:number,data:any={})=>{
+		let url=this.url+dbName+"/"+id;
+		return this.http.put(url,data);
+	};
+	
 	wipeData=(dbName:string)=>{
 		let url=this.url+dbName+"?id=-1";
-
 		return this.http.delete(url)
 	};
 	
@@ -82,23 +84,32 @@ export class GlobalService {
 	excelHandler=async(e:any)=>{
 		let fileName=e.target.files[0].name;
 		if(fileName.split(".")[1]!=="xlsx")throw this.globalErrorHandlerService.handleError(new Error("not_xlsx"));
+		
 		let file=e.target.files[0]
 		let data=await file.arrayBuffer();
 		let workBook=read(data);
 		let sheetName=workBook.SheetNames[0];
 		
-		
-		
 		let temp: {[index: string]:any} = {};
 		
 		workBook.SheetNames.map((sheetName:any)=>{
 			temp[sheetName]=utils.sheet_to_json(workBook.Sheets[sheetName]);
-			
 		});
 		let excelData={[fileName]:temp};
 		
-		
 		temp=utils.sheet_to_json(workBook.Sheets[sheetName]);
+		
+		
+		let consoleDump=GlobalVar.consoleDump;
+		consoleDump([
+			["fileName",fileName],
+			["file",file],
+			["data",data],
+			["workBook",workBook],
+			["sheetName",sheetName],
+			["temp",temp],
+			["excelData",excelData],
+		])
 		return temp;
 	};
 }

@@ -2,7 +2,8 @@ import { Component, inject } from '@angular/core';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { DataTableComponent } from '../misc/data-table/data-table.component';
 import { GlobalService } from '../service/global/global.service';
-import { ColDef, GridOptions } from 'ag-grid-community';
+import { GlobalVar } from '../globalVar'
+import { ColDef } from 'ag-grid-community';
 
 @Component({
   selector: 'app-import',
@@ -12,15 +13,24 @@ import { ColDef, GridOptions } from 'ag-grid-community';
 
 export class ImportComponent {
 	private globalService: GlobalService = inject(GlobalService);
+	private globalVar = GlobalVar;
 	constructor(){
 		this.currentPage=this.globalService.getCurrentPage();
+		this.message=this.globalVar.import.message;
 		this.refresh();
 	};
+	public message:any;
 	public currentPage:string;//current page / database used => import
 	public isLoaded:boolean=false;//loading placeholder
-	public selectedRowId:number | null=null;//self explanatory, for 'precision usage'
+	public dataIsNotEmpty:boolean=false;//empty data placeholder
+	public selectedDataId:number | null=null;//self explanatory, for 'precision usage'
+	private selectedRowId:number | null=null;//self explanatory, for 'precision usage'
+	private updateDataOld:any;
+	private updateDataNew:any;
 	
 	/// ag-grid handler ///
+	public gridApi:any;
+	public gridColumnApi:any;
 	private defaultColDef: ColDef = {
 		resizable:true,
 		sortable: true,
@@ -33,18 +43,31 @@ export class ImportComponent {
 		temp=[];
 		tableColumn.map((item:string)=>temp.push({field:item}));
 		return temp;
-	}
+	};
 	public gridOptions:any= {
-		columnDefs: Array<any>,
+		columnDefs: [],
 		pagination: true,
 		rowSelection: 'single',
 		defaultColDef: this.defaultColDef,
 		onRowClicked: (event:any) => {
 			console.log("row clicked",event),
-			this.selectedRowId=(event.data.id);
+			this.selectedDataId=(event.data.id);
+			this.selectedRowId=event.api.getFocusedCell().rowIndex;
 		},
-		onCellEditingStarted:(event:any)=>console.log("cell editing...","id = ",event.data.id),
-		onCellEditingStopped:(event:any)=>console.log("cell edited","id = ",event.data.id,"new data = ",event.data),
+		onCellEditingStarted:(event:any)=>{
+			console.log("cell editing...","id = ",event.data.id);
+			let data=JSON.parse(JSON.stringify(event.data));//create new persistence instance of 'data' instead of Object reference
+			this.updateDataOld=data;
+			console.log("updateDataOld",this.updateDataOld)
+		},
+		onCellEditingStopped:(event:any)=>{
+			let data=event.data;
+			let id=data.id;
+			this.updateDataNew=data;
+			this.update(this.currentPage,id,data);
+			console.log("cell edited","id = ",id,"new data = ",data)
+			
+		},
 		onColumnResized: (event:any) => {},
 	};
 	public rowData:Array<any>=[];
@@ -56,30 +79,33 @@ export class ImportComponent {
 	private tableColumn:any;
 	private processedData:any;
 	private dataPreProcessing=(excelData:any)=>{
-		let docName=Object.keys(excelData)[0];
-		let sheetName=Object.keys(excelData[docName])[0];
-		let tableColumn=Object.keys(excelData[docName][sheetName][0]);
-		let processedData=excelData[docName][sheetName];
-		
-		this.docName=docName;
-		this.sheetName=sheetName;
-		this.tableColumn=tableColumn;
-		this.processedData=processedData;
-		return this.processedData;
+	let docName=Object.keys(excelData)[0];
+	let sheetName=Object.keys(excelData[docName])[0];
+	let tableColumn=Object.keys(excelData[docName][sheetName][0]);
+	let processedData=excelData[docName][sheetName];
+	
+	this.docName=docName;
+	this.sheetName=sheetName;
+	this.tableColumn=tableColumn;
+	this.processedData=processedData;
+	return this.processedData;
 	};
 	/// excel handler ///
 	
+	/// MAIN ///
 	refresh=()=>{
 		this.get(this.currentPage);
 	};
 	updateTable=(data:any)=>{
+		this.dataIsNotEmpty=false;
 		let dataIsEmpty=!!(Object.keys(data).length<1||data===null);
 		let dataIsObject=!(data.length);
 		if(dataIsObject)data=[data];
 		if(dataIsEmpty){
-			this.rowData=[];
+			this.isLoaded=true;	
 			return
 		}else{
+			this.dataIsNotEmpty=true;
 			this.isLoaded=true;		
 			this.rowData=data;	
 			this.gridOptions.columnDefs=this.getColumnDefs(data);	
@@ -87,19 +113,22 @@ export class ImportComponent {
 		};
 	};
 	get=(page:string)=>{
+		this.isLoaded=false;	
 		return this.globalService.getData(page,undefined).subscribe(x=>this.updateTable(x));
 	};
 	post=(page:string,data:any)=>{
+		this.isLoaded=false;	
 		console.log("page",page);
 		console.log("data",data);
 		this.globalService.excelHandler(data).then(x=>{
 			console.log(x);
-			this.globalService.postData(page,x).subscribe(x=>{
+			/*this.globalService.postData(page,x).subscribe(x=>{
 				this.updateTable(x);
-			})
+			})*/
 		})
 	};
 	precisionDelete=(id:number)=>{
+		this.isLoaded=false;	
 		console.log(id);
 		let page=this.currentPage;
 		
@@ -113,6 +142,7 @@ export class ImportComponent {
 		
 	};
 	deleteAll=(page:string)=>{
+		this.isLoaded=false;	
 		let temp=confirm("delete ALL : "+page+" ?");
 		/*
 		if(temp===true)return this.globalService.wipeData(page).subscribe(x=>{
@@ -125,8 +155,19 @@ export class ImportComponent {
 		
 		return
 	};
-	put=()=>{
-	
+	update=(page:string,id:number,data:any={})=>{
+		let oldData = this.updateDataOld;
+		let newData = this.updateDataNew;
+		let rowNode=this.gridOptions.api.getRowNode(this.selectedRowId);
+		let temp=confirm("update : "+JSON.stringify(oldData)+" => "+JSON.stringify(newData));
+		if(temp===true){
+			this.globalService.putData(page,id,data).subscribe(x=>{
+				let data:any=x;
+				rowNode.setData(data);
+				return
+			});
+		}else {
+			rowNode.setData(oldData);
+		}
 	};
-
 }

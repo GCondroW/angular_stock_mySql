@@ -1,6 +1,6 @@
 import { Component, Input, inject, OnInit  } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import { CellClickedEvent, ColDef, GridReadyEvent, GridOptions } from 'ag-grid-community';
+import { GridOptions } from 'ag-grid-community';
 
 @Component({
   selector: 'app-data-table',
@@ -13,9 +13,9 @@ export class DataTableComponent implements OnInit {
 		window.addEventListener('resize',()=>this.adjustContainerSize(), true);
 		this.gridOptions.onGridReady=(params:any) => {
 			console.log('The grid is now ready'),
-			this.api = params.api;
-			this.columnApi = params.columnApi;
-			this.columnApi.autoSizeAllColumns();
+			this.gridApi = params.api;
+			this.gridColumnApi = params.columnApi;
+			this.gridColumnApi.autoSizeAllColumns();
 			this.adjustContainerSize();
 		};
 	};
@@ -28,10 +28,9 @@ export class DataTableComponent implements OnInit {
 	@Input() rowData:Array<any>=[];
 	@Input() gridOptions:GridOptions<any>={};
 	@Input() deleteHandler:any;
-	@Input() selectedRowId:number | null=null;
-	
-	private api:any;
-	private columnApi:any;
+	@Input() selectedDataId:number | null=null;
+	@Input() gridApi:any;
+	@Input() gridColumnApi:any;
 
 	public containerStyle:any={};
 	
@@ -50,7 +49,7 @@ export class DataTableComponent implements OnInit {
 		//////////////////////////////////////////////
 		let innerTableWidth=innerTable.getBoundingClientRect().width;
 		let windowWidth=window.innerWidth;
-		let width="100%";
+		let width="30%";
 		let height="100%";
 		if(innerTableWidth>=windowWidth)width="auto";
 		else{

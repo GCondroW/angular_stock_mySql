@@ -6,13 +6,18 @@
 	<button (click)="deleteAll(currentPage)">deleteAll</button>
 </div>
 <div class="placeholder">
-	<app-data-table *ngIf="isLoaded else noCourses" 
-		[selectedRowId]="selectedRowId"
-		[deleteHandler]="precisionDelete" 
+	<app-data-table *ngIf="isLoaded && dataIsNotEmpty" 
+		[selectedDataId]="selectedDataId"
 		[gridOptions]="gridOptions"
 		[rowData]="rowData"
+		[gridApi]="gridApi"
+		[gridColumnApi]="gridColumnApi"
+		[deleteHandler]="precisionDelete" 
 	></app-data-table>
-	<ng-template #noCourses>
-		<h1>No courses available.</h1>
-	</ng-template>
+	<div *ngIf="!isLoaded">
+		<p>.........</p>
+	</div>
+	<div *ngIf="isLoaded && !dataIsNotEmpty">
+		<p>{{message.dataIsEmpty}}</p>
+	</div>
 </div>
