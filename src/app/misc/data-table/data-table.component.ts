@@ -27,12 +27,19 @@ export class DataTableComponent implements OnInit {
 	
 	@Input() rowData:Array<any>=[];
 	@Input() gridOptions:GridOptions<any>={};
+	@Input() defaultColDef:any;
 	@Input() deleteHandler:any;
 	@Input() selectedDataId:number | null=null;
 	@Input() gridApi:any;
 	@Input() gridColumnApi:any;
+	@Input() activeNav:any;
+	@Input() navStates:any;
 
 	public containerStyle:any={};
+	public isActive=(item:any,comparedItem:any)=>{
+		if(item===comparedItem)return true;
+		return false;
+	};
 	
 	private adjustContainerSize=()=>{
 		let container=document.getElementById("gridTable")!;

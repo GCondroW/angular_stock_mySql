@@ -14,9 +14,11 @@ import { ColDef } from 'ag-grid-community';
 export class ImportComponent {
 	private globalService: GlobalService = inject(GlobalService);
 	private globalVar = GlobalVar;
+	private consoleDump = GlobalVar.consoleDump;
 	constructor(){
 		this.currentPage=this.globalService.getCurrentPage();
 		this.message=this.globalVar.import.message;
+		this.navInit();
 		this.refresh();
 	};
 	public message:any;
@@ -27,15 +29,72 @@ export class ImportComponent {
 	private selectedRowId:number | null=null;//self explanatory, for 'precision usage'
 	private updateDataOld:any;
 	private updateDataNew:any;
+	private tableColumn:Array<any>=this.globalVar.import.tableColumn;
+	
+	public testFunc=()=>{
+		this.consoleDump([
+			["navStates",this.navStates],
+			["activeNav",this.activeNav],
+		])
+	}
+	
+	/// NAV HANDLER ///
+	private navInit=()=>{
+		this.navStates.map(item=>{
+			if(item.default===true) return this.activeNav=item.name;
+			return
+		})
+	}
+	public activeNav:any;
+	public navStates:Array<any>=[
+		{
+			default:true,
+			name:"View",
+			funct:()=>{
+				this.defaultColDef={
+					resizable:true,
+					sortable: true,
+					filter: true,
+					editable:false,
+				};
+				this.activeNav="View";
+			},
+		},
+		{
+			name:"Edit",
+			funct:()=>{
+				this.defaultColDef={
+					resizable:true,
+					sortable: true,
+					filter: true,
+					editable:true,
+				};
+				this.activeNav="Edit";
+			},
+		},
+		{
+			name:"Transaction",
+			funct:()=>{
+				this.defaultColDef={
+					resizable:true,
+					sortable: true,
+					filter: true,
+					editable:true,
+				};
+				this.activeNav="Transaction";
+			},
+		},
+	];
+	/// NAV HANDLER ///
 	
 	/// ag-grid handler ///
 	public gridApi:any;
 	public gridColumnApi:any;
-	private defaultColDef: ColDef = {
+	public defaultColDef: ColDef = {
 		resizable:true,
 		sortable: true,
-		filter: false,
-		editable:true,
+		filter: true,
+		editable:false,
 	};
 	private getColumnDefs=(data:any)=>{
 		let tableColumn=Object.keys(data[0]);
@@ -48,7 +107,6 @@ export class ImportComponent {
 		columnDefs: [],
 		pagination: true,
 		rowSelection: 'single',
-		defaultColDef: this.defaultColDef,
 		onRowClicked: (event:any) => {
 			console.log("row clicked",event),
 			this.selectedDataId=(event.data.id);
@@ -64,6 +122,7 @@ export class ImportComponent {
 			let data=event.data;
 			let id=data.id;
 			this.updateDataNew=data;
+			if(JSON.stringify(this.updateDataOld)===JSON.stringify(data))return
 			this.update(this.currentPage,id,data);
 			console.log("cell edited","id = ",id,"new data = ",data)
 			
@@ -76,19 +135,19 @@ export class ImportComponent {
 	/// excel handler ///
 	private docName:any;
 	private sheetName:any;
-	private tableColumn:any;
+	//private tableColumn:any;
 	private processedData:any;
 	private dataPreProcessing=(excelData:any)=>{
-	let docName=Object.keys(excelData)[0];
-	let sheetName=Object.keys(excelData[docName])[0];
-	let tableColumn=Object.keys(excelData[docName][sheetName][0]);
-	let processedData=excelData[docName][sheetName];
-	
-	this.docName=docName;
-	this.sheetName=sheetName;
-	this.tableColumn=tableColumn;
-	this.processedData=processedData;
-	return this.processedData;
+		let docName=Object.keys(excelData)[0];
+		let sheetName=Object.keys(excelData[docName])[0];
+		//let tableColumn=Object.keys(excelData[docName][sheetName][0]);
+		let processedData=excelData[docName][sheetName];
+		
+		this.docName=docName;
+		this.sheetName=sheetName;
+		//this.tableColumn=tableColumn;
+		this.processedData=processedData;
+		return this.processedData;
 	};
 	/// excel handler ///
 	
@@ -120,11 +179,11 @@ export class ImportComponent {
 		this.isLoaded=false;	
 		console.log("page",page);
 		console.log("data",data);
-		this.globalService.excelHandler(data).then(x=>{
+		this.globalService.excelHandler(data,this.tableColumn).then(x=>{
 			console.log(x);
-			/*this.globalService.postData(page,x).subscribe(x=>{
+			this.globalService.postData(page,x).subscribe(x=>{
 				this.updateTable(x);
-			})*/
+			})
 		})
 	};
 	precisionDelete=(id:number)=>{

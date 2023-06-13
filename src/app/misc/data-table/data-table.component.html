@@ -1,5 +1,12 @@
 <div style="margin-top:5px" class="table-button-container">
 	<button (click)="deleteHandler(selectedDataId)">Delete</button>
+	<span>|</span>
+	<button 
+		class="nav-states-handler-button" 
+		*ngFor="let navState of navStates;" 
+		(click)="navState.funct()"
+		[ngClass]="{'active':isActive(navState.name,activeNav)}"
+	>{{navState.name}}</button>
 </div>
 <div id="gridTable" class="max-container table-container" style="width:50%"
 	[style.width]="containerStyle.width"
@@ -11,6 +18,7 @@
 				style="width: 100%; height: 100%;"
 				class="ag-theme-alpine"
 				[gridOptions]="gridOptions"
+				[defaultColDef]="defaultColDef"
 				[rowData]="rowData"
 			></ag-grid-angular>
 		</div>

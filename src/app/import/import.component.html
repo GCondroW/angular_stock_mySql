@@ -4,6 +4,7 @@
 		[uploadHandler]="post"
 	></app-upload>
 	<button (click)="deleteAll(currentPage)">deleteAll</button>
+	<button (click)="testFunc()">TEST</button>
 </div>
 <div class="placeholder">
 	<app-data-table *ngIf="isLoaded && dataIsNotEmpty" 
@@ -12,7 +13,10 @@
 		[rowData]="rowData"
 		[gridApi]="gridApi"
 		[gridColumnApi]="gridColumnApi"
+		[defaultColDef]="defaultColDef"
 		[deleteHandler]="precisionDelete" 
+		[activeNav]="activeNav"
+		[navStates]="navStates"
 	></app-data-table>
 	<div *ngIf="!isLoaded">
 		<p>.........</p>
