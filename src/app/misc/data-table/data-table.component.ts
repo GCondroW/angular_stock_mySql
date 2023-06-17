@@ -1,6 +1,7 @@
 import { Component, Input, inject, OnInit  } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions } from 'ag-grid-community';
+import { DynamicModalComponent } from '../dynamic-modal/dynamic-modal.component';
 
 @Component({
   selector: 'app-data-table',
@@ -34,12 +35,16 @@ export class DataTableComponent implements OnInit {
 	@Input() gridColumnApi:any;
 	@Input() activeNav:any;
 	@Input() navStates:any;
+	@Input() refresh:any;
+	@Input() downloadExcel:any;
+	@Input() dbName:string="";
 
 	public containerStyle:any={};
 	public isActive=(item:any,comparedItem:any)=>{
 		if(item===comparedItem)return true;
 		return false;
 	};
+	public modalIsActive=false;
 	
 	private adjustContainerSize=()=>{
 		let container=document.getElementById("gridTable")!;

@@ -13,7 +13,9 @@ import { DaftarComponent } from './daftar/daftar.component';
 import { DataTableComponent } from './misc/data-table/data-table.component';
 
 import { AgGridModule } from 'ag-grid-angular';
-import { ImportNavComponent } from './src/misc/import-nav/import-nav.component';
+import { DynamicModalComponent } from './misc/dynamic-modal/dynamic-modal.component';
+
+
 
 @NgModule({
   declarations: [
@@ -24,13 +26,13 @@ import { ImportNavComponent } from './src/misc/import-nav/import-nav.component';
     ImportComponent,
     DaftarComponent,
     DataTableComponent,
-    ImportNavComponent,
+    DynamicModalComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
 	HttpClientModule,
-	AgGridModule
+	AgGridModule,
   ],
   providers: [GlobalService],
   bootstrap: [AppComponent]

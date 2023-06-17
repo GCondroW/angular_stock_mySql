@@ -1,12 +1,39 @@
 <div style="margin-top:5px" class="table-button-container">
-	<button (click)="deleteHandler(selectedDataId)">Delete</button>
-	<span>|</span>
-	<button 
-		class="nav-states-handler-button" 
-		*ngFor="let navState of navStates;" 
-		(click)="navState.funct()"
-		[ngClass]="{'active':isActive(navState.name,activeNav)}"
-	>{{navState.name}}</button>
+	<span style="margin-left:0px;margin-right:2px;">
+		<div class="btn-group btn-group-sm" role="group">
+			<button 
+				type="button"
+				class="btn btn-outline-secondary btn-sm"
+				*ngFor="let navState of navStates;" 
+				(click)="navState.funct()"
+				[ngClass]="{'active':isActive(navState.name,activeNav)}"
+			>{{navState.name}}
+			</button>
+		</div>
+	</span>
+	<span> | </span>
+	
+	<div class="btn-group btn-group-sm" role="group">
+		<button type="button" class="btn btn-outline-secondary btn-sm" (click)="downloadExcel(dbName)">Download</button>
+		<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refresh()">Refresh</button>
+		<button type="button" class="btn btn-outline-secondary btn-sm"(click)="modalIsActive=!modalIsActive">MODAL</button>
+		<span *ngIf="modalIsActive===true">{{modalIsActive}}</span>
+		<app-dynamic-modal *ngIf="modalIsActive===true"></app-dynamic-modal>
+	</div>
+	
+	<span style="margin:0 2px">
+	</span>
+	<span style="margin:0 2px">
+
+	</span>
+
+	
+	
+	<span> | </span>
+	<span style="margin:0 2px">
+		<button (click)="deleteHandler(selectedDataId)">Delete</button>
+	</span>
+
 </div>
 <div id="gridTable" class="max-container table-container" style="width:50%"
 	[style.width]="containerStyle.width"

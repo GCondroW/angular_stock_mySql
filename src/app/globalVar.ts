@@ -8,7 +8,7 @@ export const GlobalVar = {
 		message:{
 			dataIsEmpty:"DATA_IS_EMPTY_MESSAGE",
 		},
-		tableColumn:["id","Seri","Nama Barang","Qty/ C","Ctn","Kode"],
+		tableColumn:["Seri","Nama Barang","Qty/ C","Ctn","Kode"],
 	},
 	dbServerUrl:"http://127.0.0.1:3000/",
 	pagesObj:["import","daftar"],

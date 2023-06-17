@@ -4,7 +4,7 @@ module.exports = (req, res, next) => {
 	//res.header('X-Hello', 'World')
 	let method=req.method;
 	let isDelete=!!(method==="DELETE");
-	if(isDelete)return doThisWhenDeleting(req,res,next);
+//	if(isDelete)return doThisWhenDeleting(req,res,next);
 	return next()
 }
 
@@ -40,8 +40,9 @@ doThisWhenWiping=async(dbName,res)=>{
 		}else{
 			const stream = fs.createWriteStream(dbPath);
 			let temp=JSON.parse(data);
-			temp[dbName]={};
+			temp[dbName]={"":null};
 			stream.write(JSON.stringify(temp));
+			console.log("45",temp);
 			stream.on('finish', () => {
 				console.log('All writes are now complete.');
 				return res.json(temp[dbName])

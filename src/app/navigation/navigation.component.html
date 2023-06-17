@@ -1,4 +1,4 @@
-<div class="container">
+<div>
 	<ul class="horizontal-list">
 		<li *ngFor="let page of pages;" class="horizontal-list" [ngClass]="{'active':isActive(page)}">
 			<a class="horizontal-list" routerLink={{page}} [ngClass]="{'active':isActive(page)}" >{{page}}</a>

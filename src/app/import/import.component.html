@@ -4,9 +4,9 @@
 		[uploadHandler]="post"
 	></app-upload>
 	<button (click)="deleteAll(currentPage)">deleteAll</button>
-	<button (click)="testFunc()">TEST</button>
+	<button (click)="testModal('modalElement')">TEST</button>
 </div>
-<div class="placeholder">
+<div>
 	<app-data-table *ngIf="isLoaded && dataIsNotEmpty" 
 		[selectedDataId]="selectedDataId"
 		[gridOptions]="gridOptions"
@@ -17,11 +17,19 @@
 		[deleteHandler]="precisionDelete" 
 		[activeNav]="activeNav"
 		[navStates]="navStates"
+		[refresh]="refresh"
+		[downloadExcel]="downloadExcel"
+		[dbName]="currentPage"
 	></app-data-table>
-	<div *ngIf="!isLoaded">
-		<p>.........</p>
+	<div *ngIf="!isLoaded" class="spinner-border m-1" role="status">
+		<span class="visually-hidden">Loading...</span>
 	</div>
 	<div *ngIf="isLoaded && !dataIsNotEmpty">
 		<p>{{message.dataIsEmpty}}</p>
 	</div>
 </div>
+<ng-template #content let-modal>
+	<app-dynamic-modal
+		[modal]="modal"
+	></app-dynamic-modal>
+</ng-template>

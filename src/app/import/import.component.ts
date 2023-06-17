@@ -5,6 +5,10 @@ import { GlobalService } from '../service/global/global.service';
 import { GlobalVar } from '../globalVar'
 import { ColDef } from 'ag-grid-community';
 
+import { DynamicModalComponent } from '../misc/dynamic-modal/dynamic-modal.component';
+
+import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 @Component({
   selector: 'app-import',
   templateUrl: './import.component.html',
@@ -15,6 +19,9 @@ export class ImportComponent {
 	private globalService: GlobalService = inject(GlobalService);
 	private globalVar = GlobalVar;
 	private consoleDump = GlobalVar.consoleDump;
+	public downloadExcel = this.globalService.downloadExcel;
+	private modalService:NgbModal=inject(NgbModal);
+	public testModal=this.globalService._modal.createModal;
 	constructor(){
 		this.currentPage=this.globalService.getCurrentPage();
 		this.message=this.globalVar.import.message;
@@ -31,17 +38,52 @@ export class ImportComponent {
 	private updateDataNew:any;
 	private tableColumn:Array<any>=this.globalVar.import.tableColumn;
 	
-	public testFunc=()=>{
+	public testFunct=()=>{
 		this.consoleDump([
 			["navStates",this.navStates],
-			["activeNav",this.activeNav],
-		])
+			["DynamicModalComponent",DynamicModalComponent],
+		]);
+		//this.downloadExcel(this.currentPage);
+		console.log()
 	}
+	
+	/// MODAL HANDLER ///
+	closeResult = '';
+	open(content:any) {
+		this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title' }).result.then(
+			(result) => {
+				this.closeResult = `Closed with: ${result}`;
+			},
+			(reason) => {
+				this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+			},
+		);
+	}
+	public modal:any={
+		isActive:false,
+		element:`
+			<p>a;'a</p>
+		`,
+	}
+	private getDismissReason(reason: any): string {
+		if (reason === ModalDismissReasons.ESC) {
+			return 'by pressing ESC';
+		} else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+			return 'by clicking on a backdrop';
+		} else {
+			return `with: ${reason}`;
+		}
+	}
+	/// MODAL HANDLER ///
+	
 	
 	/// NAV HANDLER ///
 	private navInit=()=>{
 		this.navStates.map(item=>{
-			if(item.default===true) return this.activeNav=item.name;
+			if(item.default===true){
+				this.activeNav=item.name;
+				item.funct();
+			};
 			return
 		})
 	}
@@ -49,7 +91,7 @@ export class ImportComponent {
 	public navStates:Array<any>=[
 		{
 			default:true,
-			name:"View",
+			name:"Daftar",
 			funct:()=>{
 				this.defaultColDef={
 					resizable:true,
@@ -57,7 +99,10 @@ export class ImportComponent {
 					filter: true,
 					editable:false,
 				};
-				this.activeNav="View";
+				this.gridOptions.onRowClicked= () => {
+					console.log("row clicked disabled for "+this.activeNav);
+				},
+				this.activeNav="Daftar";
 			},
 		},
 		{
@@ -69,11 +114,16 @@ export class ImportComponent {
 					filter: true,
 					editable:true,
 				};
+				this.gridOptions.onRowClicked= (event:any) => {
+					console.log("row clicked",event),
+					this.selectedDataId=(event.data.id);
+					this.selectedRowId=event.api.getFocusedCell().rowIndex;
+				},
 				this.activeNav="Edit";
 			},
 		},
 		{
-			name:"Transaction",
+			name:"Transaksi",
 			funct:()=>{
 				this.defaultColDef={
 					resizable:true,
@@ -81,7 +131,8 @@ export class ImportComponent {
 					filter: true,
 					editable:true,
 				};
-				this.activeNav="Transaction";
+				this.gridOptions.onRowClicked=()=>alert("aaa");
+				this.activeNav="Transaksi";
 			},
 		},
 	];
@@ -107,11 +158,7 @@ export class ImportComponent {
 		columnDefs: [],
 		pagination: true,
 		rowSelection: 'single',
-		onRowClicked: (event:any) => {
-			console.log("row clicked",event),
-			this.selectedDataId=(event.data.id);
-			this.selectedRowId=event.api.getFocusedCell().rowIndex;
-		},
+		onRowClicked: ()=>alert("ERR"),
 		onCellEditingStarted:(event:any)=>{
 			console.log("cell editing...","id = ",event.data.id);
 			let data=JSON.parse(JSON.stringify(event.data));//create new persistence instance of 'data' instead of Object reference
@@ -125,7 +172,6 @@ export class ImportComponent {
 			if(JSON.stringify(this.updateDataOld)===JSON.stringify(data))return
 			this.update(this.currentPage,id,data);
 			console.log("cell edited","id = ",id,"new data = ",data)
-			
 		},
 		onColumnResized: (event:any) => {},
 	};
@@ -180,13 +226,48 @@ export class ImportComponent {
 		console.log("page",page);
 		console.log("data",data);
 		this.globalService.excelHandler(data,this.tableColumn).then(x=>{
-			console.log(x);
-			this.globalService.postData(page,x).subscribe(x=>{
-				this.updateTable(x);
+			
+			/// create id collumn ///
+			
+			let arrLength=x.length;
+			let i=0;
+			let transactionDataColumn:string="Ctn";
+			let transactionData:Array<any>=[];
+			let temp:Array<any>=[];
+			let dbName=this.currentPage;
+			
+			x.forEach((item:any)=>{
+				//console.log(item);
+				transactionData[i]={};
+				temp[i]={};
+				Object.keys(item).map((pointer:any)=>{
+					temp[i]["id"]=i+1;
+					if(pointer===transactionDataColumn){
+						transactionData[i]["id"]=i+1;
+						transactionData[i][dbName+"Id"]=i+1;
+						transactionData[i]["value"]=item[pointer];
+						transactionData[i]["method"]="initial";
+						transactionData[i]["dbName"]=dbName;
+					}else{
+						
+						temp[i][pointer]=item[pointer];
+					}
+				})
+				i++;
 			})
+			
+			console.log(transactionData,temp);
+			
+			let api1=this.globalService.postData(page,temp);
+			let api2=this.globalService.postData("transaksi/",transactionData);
+			let api3=this.globalService.getData(page,undefined);
+			api1.subscribe(x=>console.log(x));
+			api2.subscribe(x=>console.log(x));
+			api3.subscribe(x=>this.updateTable(x));
 		})
 	};
 	precisionDelete=(id:number)=>{
+		if(id===null)return
 		this.isLoaded=false;	
 		console.log(id);
 		let page=this.currentPage;
@@ -201,18 +282,33 @@ export class ImportComponent {
 		
 	};
 	deleteAll=(page:string)=>{
-		this.isLoaded=false;	
+		
 		let temp=confirm("delete ALL : "+page+" ?");
+		console.log(temp)
 		/*
 		if(temp===true)return this.globalService.wipeData(page).subscribe(x=>{
 			this.updateTable(x);
 		})*/
 		
-		if(temp===true)return this.globalService.wipeData(page).subscribe(x=>{
-			this.updateTable(x);
-		})
-		
-		return
+		if(temp===true){
+			let api1=this.globalService.wipeData(page);
+			let api2=this.globalService.wipeData("transaksi/");
+			let api3=this.globalService.getData(page,undefined);
+			api1.subscribe(x=>{
+				console.log(x);
+				api2.subscribe(x=>{
+					console.log(x);
+					api3.subscribe(x=>{
+						console.log(x);
+						//this.updateTable(x);
+					});
+				});
+			});
+			
+			
+		}else{
+			return
+		}
 	};
 	update=(page:string,id:number,data:any={})=>{
 		let oldData = this.updateDataOld;
