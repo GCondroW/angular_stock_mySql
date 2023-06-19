@@ -229,7 +229,7 @@ export class ImportComponent {
 			
 			/// create id collumn ///
 			
-			let arrLength=x.length;
+			/*let arrLength=x.length;
 			let i=0;
 			let transactionDataColumn:string="Ctn";
 			let transactionData:Array<any>=[];
@@ -256,14 +256,10 @@ export class ImportComponent {
 				i++;
 			})
 			
-			console.log(transactionData,temp);
+			console.log(transactionData,temp);*/
 			
-			let api1=this.globalService.postData(page,temp);
-			let api2=this.globalService.postData("transaksi/",transactionData);
-			let api3=this.globalService.getData(page,undefined);
-			api1.subscribe(x=>console.log(x));
-			api2.subscribe(x=>console.log(x));
-			api3.subscribe(x=>this.updateTable(x));
+			let api1=this.globalService.postData(page,x);
+			api1.subscribe(x=>this.updateTable(x));
 		})
 	};
 	precisionDelete=(id:number)=>{
@@ -292,17 +288,8 @@ export class ImportComponent {
 		
 		if(temp===true){
 			let api1=this.globalService.wipeData(page);
-			let api2=this.globalService.wipeData("transaksi/");
-			let api3=this.globalService.getData(page,undefined);
 			api1.subscribe(x=>{
-				console.log(x);
-				api2.subscribe(x=>{
-					console.log(x);
-					api3.subscribe(x=>{
-						console.log(x);
-						//this.updateTable(x);
-					});
-				});
+				this.refresh();
 			});
 			
 			

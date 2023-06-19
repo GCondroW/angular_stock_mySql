@@ -79,7 +79,7 @@ export class GlobalService {
 		let url=this.url+dbName;
 		console.log("wipeData",url);
 		let data:any=[];
-		return this.http.post(url,data);
+		return this.http.delete(url);
 	};
 	
 	deleteData=(dbName:string,id:number)=>{
@@ -99,6 +99,7 @@ export class GlobalService {
 		let temp: {[index: string]:any} = {};
 		
 		/// header handler ///
+		/*
 		let headerCount=header.length
 		let dict=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 		let sheetColCount=()=>{// counting the sheet table column
@@ -124,6 +125,7 @@ export class GlobalService {
 			workBook.Sheets[sheetName][colString].w=header[i];
 			i++;
 		}
+		*/
 		/// header handler ///
 		
 		workBook.SheetNames.map((sheetName:any)=>{
@@ -148,7 +150,7 @@ export class GlobalService {
 			["temp",temp],
 			["excelData",excelData],
 			["utils",utils],
-			["sheetColCount",sheetColCount()]
+			//["sheetColCount",sheetColCount()]
 		])
 		
 		
