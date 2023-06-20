@@ -116,7 +116,7 @@ export class ImportComponent {
 				};
 				this.gridOptions.onRowClicked= (event:any) => {
 					console.log("row clicked",event),
-					this.selectedDataId=(event.data.id);
+					this.selectedDataId=(event.data._id);
 					this.selectedRowId=event.api.getFocusedCell().rowIndex;
 				},
 				this.activeNav="Edit";
@@ -160,14 +160,14 @@ export class ImportComponent {
 		rowSelection: 'single',
 		onRowClicked: ()=>alert("ERR"),
 		onCellEditingStarted:(event:any)=>{
-			console.log("cell editing...","id = ",event.data.id);
+			console.log("cell editing...","id = ",event.data._id);
 			let data=JSON.parse(JSON.stringify(event.data));//create new persistence instance of 'data' instead of Object reference
 			this.updateDataOld=data;
 			console.log("updateDataOld",this.updateDataOld)
 		},
 		onCellEditingStopped:(event:any)=>{
 			let data=event.data;
-			let id=data.id;
+			let id=data._id;
 			this.updateDataNew=data;
 			if(JSON.stringify(this.updateDataOld)===JSON.stringify(data))return
 			this.update(this.currentPage,id,data);
