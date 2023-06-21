@@ -58,7 +58,7 @@ export class GlobalService {
 		let result:any;
 		if(id===undefined){
 			url=url+dbName;
-		}else if(id>-1){
+		}else{
 			url=url+dbName+"/"+id;
 		}
 		return this.http.get(url);

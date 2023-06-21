@@ -29,11 +29,13 @@ export class ImportComponent {
 		this.refresh();
 	};
 	public message:any;
+	public errMessage:any;
 	public currentPage:string;//current page / database used => import
 	public isLoaded:boolean=false;//loading placeholder
 	public dataIsNotEmpty:boolean=false;//empty data placeholder
-	public selectedDataId:number | null=null;//self explanatory, for 'precision usage'
+	public selectedDataId:number=-1;//self explanatory, for 'precision usage'
 	private selectedRowId:number | null=null;//self explanatory, for 'precision usage'
+	private selectedColId:string="";//self explanatory, for 'precision usage'
 	private updateDataOld:any;
 	private updateDataNew:any;
 	private tableColumn:Array<any>=this.globalVar.import.tableColumn;
@@ -44,7 +46,7 @@ export class ImportComponent {
 			["DynamicModalComponent",DynamicModalComponent],
 		]);
 		//this.downloadExcel(this.currentPage);
-		console.log()
+		console.log(this)
 	}
 	
 	/// MODAL HANDLER ///
@@ -115,9 +117,8 @@ export class ImportComponent {
 					editable:true,
 				};
 				this.gridOptions.onRowClicked= (event:any) => {
-					console.log("row clicked",event),
-					this.selectedDataId=(event.data._id);
-					this.selectedRowId=event.api.getFocusedCell().rowIndex;
+					console.log("row clicked",event);
+
 				},
 				this.activeNav="Edit";
 			},
@@ -129,9 +130,38 @@ export class ImportComponent {
 					resizable:true,
 					sortable: true,
 					filter: true,
-					editable:true,
+					editable:false,
 				};
-				this.gridOptions.onRowClicked=()=>alert("aaa");
+				this.gridOptions.onRowClicked=(event:any)=>{
+					let dataId=event.data._id;
+					this.selectedDataId=(dataId);
+					this.selectedRowId=event.api.getFocusedCell().rowIndex;
+					this.selectedColId=event.api.getFocusedCell().column.colId;
+					this.precisionGet(this.currentPage,dataId).subscribe(x=>{
+						let rowNode=this.gridOptions.api.getRowNode(this.selectedRowId);
+						//this.updateTable(x)
+						if(!!this.errorHandler(x))return
+						let data:any=x;
+						rowNode.updateData(this.tableDataHandler([data])[0]);
+						console.log(data);
+						
+						
+						
+						this.modalService.open(, { ariaLabelledBy: 'modal-basic-title' }).result.then(
+							(result) => {
+								this.closeResult = `Closed with: ${result}`;
+							},
+							(reason) => {
+								this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+							},
+						);
+						
+						return data;
+					});
+					
+					
+					
+				};
 				this.activeNav="Transaksi";
 			},
 		},
@@ -151,7 +181,15 @@ export class ImportComponent {
 		let tableColumn=Object.keys(data[0]);
 		let temp:ColDef[];
 		temp=[];
-		tableColumn.map((item:string)=>temp.push({field:item}));
+		tableColumn.map((item:string)=>{
+			let pushVar:any={};
+			if(item==="_id")pushVar["hide"]=true;//hiding _id column
+			if(item==="Ctn")pushVar["editable"]=false;
+			pushVar["field"]=item;
+			
+			temp.push(pushVar)
+			
+		});
 		return temp;
 	};
 	public gridOptions:any= {
@@ -160,18 +198,33 @@ export class ImportComponent {
 		rowSelection: 'single',
 		onRowClicked: ()=>alert("ERR"),
 		onCellEditingStarted:(event:any)=>{
-			console.log("cell editing...","id = ",event.data._id);
+			let dataId=event.data._id;
+			console.log("cell editing...","id = ",dataId);
 			let data=JSON.parse(JSON.stringify(event.data));//create new persistence instance of 'data' instead of Object reference
 			this.updateDataOld=data;
 			console.log("updateDataOld",this.updateDataOld)
+			this.selectedDataId=(dataId);
+			this.selectedRowId=event.api.getFocusedCell().rowIndex;
+			this.selectedColId=event.api.getFocusedCell().column.colId;
+			
+
 		},
 		onCellEditingStopped:(event:any)=>{
-			let data=event.data;
-			let id=data._id;
+			let data={
+				_id:event.data._id,
+				[this.selectedColId]:event.data[this.selectedColId],
+			};
+			let id=this.selectedDataId;
 			this.updateDataNew=data;
 			if(JSON.stringify(this.updateDataOld)===JSON.stringify(data))return
 			this.update(this.currentPage,id,data);
 			console.log("cell edited","id = ",id,"new data = ",data)
+		},
+		onRowDataUpdated:(event:any)=>{
+			console.log("event fired : onRowDataUpdated");
+			this.selectedDataId=-1;
+			this.selectedRowId=null;
+			this.selectedColId="";
 		},
 		onColumnResized: (event:any) => {},
 	};
@@ -211,7 +264,10 @@ export class ImportComponent {
 			return
 		}else{
 			this.dataIsNotEmpty=true;
-			this.isLoaded=true;		
+			this.isLoaded=true;	
+			
+			data=this.tableDataHandler(data);
+			
 			this.rowData=data;	
 			this.gridOptions.columnDefs=this.getColumnDefs(data);	
 			return data;
@@ -226,38 +282,6 @@ export class ImportComponent {
 		console.log("page",page);
 		console.log("data",data);
 		this.globalService.excelHandler(data,this.tableColumn).then(x=>{
-			
-			/// create id collumn ///
-			
-			/*let arrLength=x.length;
-			let i=0;
-			let transactionDataColumn:string="Ctn";
-			let transactionData:Array<any>=[];
-			let temp:Array<any>=[];
-			let dbName=this.currentPage;
-			
-			x.forEach((item:any)=>{
-				//console.log(item);
-				transactionData[i]={};
-				temp[i]={};
-				Object.keys(item).map((pointer:any)=>{
-					temp[i]["id"]=i+1;
-					if(pointer===transactionDataColumn){
-						transactionData[i]["id"]=i+1;
-						transactionData[i][dbName+"Id"]=i+1;
-						transactionData[i]["value"]=item[pointer];
-						transactionData[i]["method"]="initial";
-						transactionData[i]["dbName"]=dbName;
-					}else{
-						
-						temp[i][pointer]=item[pointer];
-					}
-				})
-				i++;
-			})
-			
-			console.log(transactionData,temp);*/
-			
 			let api1=this.globalService.postData(page,x);
 			api1.subscribe(x=>this.updateTable(x));
 		})
@@ -274,11 +298,11 @@ export class ImportComponent {
 		})
 		return
 	};
-	precissionGet=(id:number)=>{
-		
+	precisionGet=(page:string,id:number)=>{
+		return this.globalService.getData(page,id);
 	};
 	deleteAll=(page:string)=>{
-		
+		this.isLoaded=false;	
 		let temp=confirm("delete ALL : "+page+" ?");
 		console.log(temp)
 		/*
@@ -287,8 +311,11 @@ export class ImportComponent {
 		})*/
 		
 		if(temp===true){
+		
 			let api1=this.globalService.wipeData(page);
 			api1.subscribe(x=>{
+				if(!!this.errorHandler(x))return
+				return
 				this.refresh();
 			});
 			
@@ -304,12 +331,46 @@ export class ImportComponent {
 		let temp=confirm("update : "+JSON.stringify(oldData)+" => "+JSON.stringify(newData));
 		if(temp===true){
 			this.globalService.putData(page,id,data).subscribe(x=>{
+				if(!!this.errorHandler(x))return
 				let data:any=x;
-				rowNode.setData(data);
+				console.log(data)
+				rowNode.updateData(this.tableDataHandler([data])[0]);
 				return
 			});
 		}else {
 			rowNode.setData(oldData);
 		}
 	};
+	errorHandler=(data:any)=>{
+		this.isLoaded=true;
+		console.log("errorHandler : "+!!data.errMessage,data);
+		let errStatus=true;
+		if(!!data.errMessage) return this.errMessage=data.errMessage;
+		return !errStatus
+	};
+	tableDataHandler=(data:any)=>{
+		console.log(data);
+		//data=data._doc;
+		let a=JSON.parse(JSON.stringify(data));
+		let temp:any=[];
+		let sumArray=(arr:Array<any>,colName:any)=>{
+			let temp1:any=0;
+			arr.forEach(item=>{
+				temp1+=item[colName]
+			})
+			return temp1
+		};
+		let i=0;
+		a.map((dataItem:any)=>{
+			temp[i]={};
+			Object.keys(dataItem).map(dataItemPointer=>{
+				if(dataItemPointer==="transaction")temp[i]["Ctn"]=sumArray(dataItem[dataItemPointer],"value");
+					else temp[i][dataItemPointer]=dataItem[dataItemPointer];
+			})
+			i++;
+		});
+		console.log(temp)
+		return temp;
+	};
 }
+

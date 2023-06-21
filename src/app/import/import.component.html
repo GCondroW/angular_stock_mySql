@@ -4,10 +4,10 @@
 		[uploadHandler]="post"
 	></app-upload>
 	<button (click)="deleteAll(currentPage)">deleteAll</button>
-	<button (click)="testModal('modalElement')">TEST</button>
+	<button (click)="testFunct()">TEST</button>
 </div>
 <div>
-	<app-data-table *ngIf="isLoaded && dataIsNotEmpty" 
+	<app-data-table *ngIf="isLoaded && dataIsNotEmpty &&!errMessage" 
 		[selectedDataId]="selectedDataId"
 		[gridOptions]="gridOptions"
 		[rowData]="rowData"
@@ -24,8 +24,13 @@
 	<div *ngIf="!isLoaded" class="spinner-border m-1" role="status">
 		<span class="visually-hidden">Loading...</span>
 	</div>
-	<div *ngIf="isLoaded && !dataIsNotEmpty">
+	<div *ngIf="isLoaded && !dataIsNotEmpty &&!errMessage">
 		<p>{{message.dataIsEmpty}}</p>
+	</div>
+	<div *ngIf="isLoaded && errMessage">
+		<h1>{{errMessage.message}}</h1>
+		<h2>{{errMessage.status}}</h2>
+		<pre>{{errMessage.stack}}</pre>
 	</div>
 </div>
 <ng-template #content let-modal>
