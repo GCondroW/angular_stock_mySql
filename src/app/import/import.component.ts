@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild, ElementRef } from '@angular/core';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { DataTableComponent } from '../misc/data-table/data-table.component';
 import { GlobalService } from '../service/global/global.service';
@@ -20,14 +20,18 @@ export class ImportComponent {
 	private globalVar = GlobalVar;
 	private consoleDump = GlobalVar.consoleDump;
 	public downloadExcel = this.globalService.downloadExcel;
-	private modalService:NgbModal=inject(NgbModal);
 	public testModal=this.globalService._modal.createModal;
+	
 	constructor(){
 		this.currentPage=this.globalService.getCurrentPage();
 		this.message=this.globalVar.import.message;
 		this.navInit();
 		this.refresh();
 	};
+	ngOnInit(){
+		
+	};
+
 	public message:any;
 	public errMessage:any;
 	public currentPage:string;//current page / database used => import
@@ -50,23 +54,14 @@ export class ImportComponent {
 	}
 	
 	/// MODAL HANDLER ///
-	closeResult = '';
-	open(content:any) {
-		this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title' }).result.then(
-			(result) => {
-				this.closeResult = `Closed with: ${result}`;
-			},
-			(reason) => {
-				this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
-			},
-		);
+	
+	private modalService:NgbModal=inject(NgbModal);
+	public closeModal=()=>{
+		this.modalService.dismissAll();
 	}
-	public modal:any={
-		isActive:false,
-		element:`
-			<p>a;'a</p>
-		`,
-	}
+	@ViewChild("ABC") aaa!:DynamicModalComponent;
+
+	closeResult:string="";
 	private getDismissReason(reason: any): string {
 		if (reason === ModalDismissReasons.ESC) {
 			return 'by pressing ESC';
@@ -76,6 +71,7 @@ export class ImportComponent {
 			return `with: ${reason}`;
 		}
 	}
+	
 	/// MODAL HANDLER ///
 	
 	
@@ -143,11 +139,11 @@ export class ImportComponent {
 						if(!!this.errorHandler(x))return
 						let data:any=x;
 						rowNode.updateData(this.tableDataHandler([data])[0]);
-						console.log(data);
+						
+						console.log(this.aaa);
 						
 						
-						
-						this.modalService.open(, { ariaLabelledBy: 'modal-basic-title' }).result.then(
+						this.modalService.open(this.aaa, { ariaLabelledBy: 'modal-basic-title' }).result.then(
 							(result) => {
 								this.closeResult = `Closed with: ${result}`;
 							},

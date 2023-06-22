@@ -1,10 +1,10 @@
-<div>
+<div #a>
 	<app-upload 
 		[currentPage]="currentPage"
 		[uploadHandler]="post"
 	></app-upload>
 	<button (click)="deleteAll(currentPage)">deleteAll</button>
-	<button (click)="testFunct()">TEST</button>
+	<!--<button (click)="alert('testButtonClicked')">TEST</button>-->
 </div>
 <div>
 	<app-data-table *ngIf="isLoaded && dataIsNotEmpty &&!errMessage" 
@@ -32,9 +32,22 @@
 		<h2>{{errMessage.status}}</h2>
 		<pre>{{errMessage.stack}}</pre>
 	</div>
+	
+
 </div>
-<ng-template #content let-modal>
-	<app-dynamic-modal
+<ng-template #ABC let-modal>
+	<app-dynamic-modal 
+		[modalBody]="modalBody"
+		[modalFooter]="modalFooter"
 		[modal]="modal"
+		[selectedDataId]="selectedDataId"
 	></app-dynamic-modal>
+</ng-template>
+
+<ng-template #modalBody>
+	
+
+</ng-template>
+<ng-template #modalFooter>
+	<button type="button" class="btn btn-outline-dark" (click)="closeModal()">Save</button>
 </ng-template>

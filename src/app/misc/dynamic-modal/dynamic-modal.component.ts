@@ -1,4 +1,4 @@
-import { Component,Input } from '@angular/core';
+import { Component,Input,OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-dynamic-modal',
@@ -7,7 +7,16 @@ import { Component,Input } from '@angular/core';
 })
 export class DynamicModalComponent {
 		constructor(){
-			
-		}
+			console.log("modal.init");
+		};
+		ngOnInit(){
+			console.log("selectedDataId",this.selectedDataId);
+			console.log("this",this);
+		};
+		@Input() modalTitle:string="defaultTitleName";
+		@Input() modalHeader:any;
+		@Input() modalBody:any;
+		@Input() modalFooter:any;
 		@Input() modal:any;
+		@Input() selectedDataId:any;
 }
