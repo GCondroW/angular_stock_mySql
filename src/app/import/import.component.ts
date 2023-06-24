@@ -7,7 +7,7 @@ import { ColDef } from 'ag-grid-community';
 
 import { DynamicModalComponent } from '../misc/dynamic-modal/dynamic-modal.component';
 
-import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ModalDismissReasons, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-import',
@@ -22,6 +22,8 @@ export class ImportComponent {
 	public downloadExcel = this.globalService.downloadExcel;
 	public testModal=this.globalService._modal.createModal;
 	
+	
+	
 	constructor(){
 		this.currentPage=this.globalService.getCurrentPage();
 		this.message=this.globalVar.import.message;
@@ -32,6 +34,7 @@ export class ImportComponent {
 		
 	};
 
+	public Object=Object;//enable the use of "Object" method inside angular component ex: looping an object
 	public message:any;
 	public errMessage:any;
 	public currentPage:string;//current page / database used => import
@@ -54,13 +57,8 @@ export class ImportComponent {
 	}
 	
 	/// MODAL HANDLER ///
-	
 	private modalService:NgbModal=inject(NgbModal);
-	public closeModal=()=>{
-		this.modalService.dismissAll();
-	}
 	@ViewChild("ABC") aaa!:DynamicModalComponent;
-
 	closeResult:string="";
 	private getDismissReason(reason: any): string {
 		if (reason === ModalDismissReasons.ESC) {
@@ -71,7 +69,37 @@ export class ImportComponent {
 			return `with: ${reason}`;
 		}
 	}
-	
+	public modalData:any;
+	public modalRef:any;
+	public openNewTransactionModal=(content)=>{
+		
+	};
+	public openModal=(modalData:any)=>{
+		let sumAll=(data:any,colName:any)=>{
+			try{
+				let temp=0;
+				data.map((item:any)=>{
+					temp+=item.value;
+				})
+				return temp;
+			}catch(e){
+				return -1;
+			}
+		};
+		
+		this.modalData={
+			Seri:modalData.Seri,
+			Jenis:modalData.Jenis,
+			Qty:modalData.Qty,
+			Kode:modalData.Kode,
+			Ctn:sumAll(modalData.transaction,"value"),
+			transaction:modalData.transaction,
+		};
+		this.modalRef=this.modalService.open(this.aaa);
+	};
+	public closeModal=()=>{
+		this.modalRef.close();
+	}
 	/// MODAL HANDLER ///
 	
 	
@@ -139,22 +167,20 @@ export class ImportComponent {
 						if(!!this.errorHandler(x))return
 						let data:any=x;
 						rowNode.updateData(this.tableDataHandler([data])[0]);
+						this.openModal(data);
 						
-						console.log(this.aaa);
 						
-						
-						this.modalService.open(this.aaa, { ariaLabelledBy: 'modal-basic-title' }).result.then(
+						/*this.modalRef=this.modalService.open(this.aaa, { ariaLabelledBy: 'modal-basic-title' }).result.then(
 							(result) => {
 								this.closeResult = `Closed with: ${result}`;
 							},
 							(reason) => {
 								this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
 							},
-						);
+						);*/
 						
-						return data;
+						// return data;
 					});
-					
 					
 					
 				};
@@ -277,7 +303,7 @@ export class ImportComponent {
 		this.isLoaded=false;	
 		console.log("page",page);
 		console.log("data",data);
-		this.globalService.excelHandler(data,this.tableColumn).then(x=>{
+		this.globalService.excelHandler(data).then(x=>{
 			let api1=this.globalService.postData(page,x);
 			api1.subscribe(x=>this.updateTable(x));
 		})
