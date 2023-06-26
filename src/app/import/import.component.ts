@@ -9,6 +9,8 @@ import { DynamicModalComponent } from '../misc/dynamic-modal/dynamic-modal.compo
 
 import { ModalDismissReasons, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
+import { FormBuilder,FormControl, FormGroup } from '@angular/forms';
+
 @Component({
   selector: 'app-import',
   templateUrl: './import.component.html',
@@ -16,13 +18,17 @@ import { ModalDismissReasons, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 })
 
 export class ImportComponent {
-	private globalService: GlobalService = inject(GlobalService);
+	private globalService : GlobalService = inject(GlobalService);
 	private globalVar = GlobalVar;
+	private fb : FormBuilder = inject(FormBuilder);
 	private consoleDump = GlobalVar.consoleDump;
+	
 	public downloadExcel = this.globalService.downloadExcel;
 	public testModal=this.globalService._modal.createModal;
 	
-	
+	formTest : any;
+
+	//public formTest:any=0;
 	
 	constructor(){
 		this.currentPage=this.globalService.getCurrentPage();
@@ -31,7 +37,7 @@ export class ImportComponent {
 		this.refresh();
 	};
 	ngOnInit(){
-		
+
 	};
 
 	public Object=Object;//enable the use of "Object" method inside angular component ex: looping an object
@@ -58,7 +64,8 @@ export class ImportComponent {
 	
 	/// MODAL HANDLER ///
 	private modalService:NgbModal=inject(NgbModal);
-	@ViewChild("ABC") aaa!:DynamicModalComponent;
+	@ViewChild("mainModal") mainModal!:DynamicModalComponent;
+	@ViewChild("newTransactionModal") newTransactionModal!:DynamicModalComponent;
 	closeResult:string="";
 	private getDismissReason(reason: any): string {
 		if (reason === ModalDismissReasons.ESC) {
@@ -71,10 +78,56 @@ export class ImportComponent {
 	}
 	public modalData:any;
 	public modalRef:any;
-	public openNewTransactionModal=(content)=>{
+	public newTransactionModalRef:any;
+	public modalTransactionCount=new this.globalVar.counter(0,1).up();
+	public openNewTransactionModal=(modalData:any)=>{
+		this.formTest=this.fb.group({
+			init:[0],
+			update:[0],
+			final:[0],
+		});
 		
+		let formInit=this.formTest.get("init");
+		let formUpdate=this.formTest.get("update");
+		let formFinal=this.formTest.get("final");
+		
+		formInit.setValue(modalData.Ctn);
+		console.log('formTest',this.formTest);
+		
+		
+		
+		let temp=formInit.value+formUpdate.value
+		formFinal.setValue(temp,{onlySelf:true});
+		let lastItem:any;
+		this.formTest.valueChanges
+			.subscribe((x:number)=>{
+				if(JSON.stringify(lastItem)===JSON.stringify(x))return
+				/*lastItem=x;
+				let temp=formInit.value+formUpdate.value
+				console.log('x',x);
+				return formFinal.setValue(temp,{onlySelf:true});*/
+			})
+			
+			
+		formUpdate.valueChanges
+			.subscribe((x:number)=>{
+				if(JSON.stringify(lastItem)===JSON.stringify(x))return
+				lastItem=x;
+				return formFinal.setValue(formInit.value+formUpdate.value,{onlySelf:true});
+			})
+			
+		formFinal.valueChanges
+			.subscribe((x:number)=>{
+				if(JSON.stringify(lastItem)===JSON.stringify(x))return
+				lastItem=x;
+				return formUpdate.setValue(formInit.value-formFinal.value,{onlySelf:true});
+			})
+		
+		
+		this.newTransactionModalRef=this.modalService.open(this.newTransactionModal);
+
 	};
-	public openModal=(modalData:any)=>{
+	public openMainModal=(modalData:any)=>{
 		let sumAll=(data:any,colName:any)=>{
 			try{
 				let temp=0;
@@ -95,7 +148,7 @@ export class ImportComponent {
 			Ctn:sumAll(modalData.transaction,"value"),
 			transaction:modalData.transaction,
 		};
-		this.modalRef=this.modalService.open(this.aaa);
+		this.modalRef=this.modalService.open(this.mainModal);
 	};
 	public closeModal=()=>{
 		this.modalRef.close();
@@ -167,7 +220,7 @@ export class ImportComponent {
 						if(!!this.errorHandler(x))return
 						let data:any=x;
 						rowNode.updateData(this.tableDataHandler([data])[0]);
-						this.openModal(data);
+						this.openMainModal(data);
 						
 						
 						/*this.modalRef=this.modalService.open(this.aaa, { ariaLabelledBy: 'modal-basic-title' }).result.then(

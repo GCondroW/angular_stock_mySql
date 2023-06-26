@@ -33,18 +33,14 @@
 		<pre>{{errMessage.stack}}</pre>
 	</div>
 	
-
 </div>
-<ng-template #ABC let-modal>
+<ng-template #mainModal let-modal>
 	<app-dynamic-modal 
 		[modalBody]="modalBody"
 		[modalFooter]="modalFooter"
 		[modal]="modal"
-		[modalRef]="modalRef"
-		[selectedDataId]="selectedDataId"
 	></app-dynamic-modal>
 </ng-template>
-
 <ng-template #modalBody>
 	<div>
 		<div>
@@ -57,16 +53,43 @@
 		<div>
 			<h6>Riwayat Transaksi</h6>
 			<div style="margin-left:20%">
-				<span *ngFor="let item of modalData.transaction">
+				<div *ngFor="let item of modalData.transaction">
 					<hr>
+					<span>{{modalTransactionCount}}</span>
 					<p *ngFor="let pointer of Object.keys(item)"><label>{{pointer}}</label> : {{item[pointer]}}</p>
-				</span>
+				</div>
 			</div>
 		</div>
 	</div>
-	
 </ng-template>
 <ng-template #modalFooter>
+	<button type="button" class="btn btn-outline-dark" (click)="openNewTransactionModal(modalData)">Baru</button>
 	<button type="button" class="btn btn-outline-dark" (click)="closeModal()">Save</button>
-	<button type="button" class="btn btn-outline-dark" (click)="closeModal()">Save</button>
+</ng-template>
+
+<ng-template #newTransactionModal let-newTransactionModal>
+	<app-dynamic-modal 
+		[modalBody]="newTransactionModalBody"
+		[modalFooter]="newTransactionModalFooter"
+		[modal]="newTransactionModal"
+	></app-dynamic-modal>
+</ng-template>
+<ng-template #newTransactionModalBody>
+	<div [formGroup]="formTest">
+		<p>
+			<span>1 : </span>
+			<input type="number" formControlName="init">
+		</p>
+		<p>
+			<span>2 : </span>
+			<input type="number" formControlName="update">
+		</p>
+		<p>
+			<span>3 : </span>
+			<input type="number" formControlName="final">
+		</p>
+	</div>
+</ng-template>
+<ng-template #newTransactionModalFooter>
+	<button type="button" class="btn btn-outline-dark" (click)="newTransactionModalRef.close()">Save</button>
 </ng-template>

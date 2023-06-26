@@ -7,7 +7,7 @@ import { Component,Input,OnInit } from '@angular/core';
 })
 export class DynamicModalComponent {
 		constructor(){
-			console.log("modal.init");
+		
 		};
 		ngOnInit(){
 			console.log("selectedDataId",this.selectedDataId);
