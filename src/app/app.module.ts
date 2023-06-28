@@ -15,6 +15,7 @@ import { DataTableComponent } from './misc/data-table/data-table.component';
 import { AgGridModule } from 'ag-grid-angular';
 import { DynamicModalComponent } from './misc/dynamic-modal/dynamic-modal.component';
 
+import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
@@ -33,7 +34,8 @@ import { ReactiveFormsModule } from '@angular/forms';
     AppRoutingModule,
 	HttpClientModule,
 	AgGridModule,
-	ReactiveFormsModule
+	ReactiveFormsModule,
+	NgbAlertModule
   ],
   providers: [GlobalService],
   bootstrap: [AppComponent]

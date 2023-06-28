@@ -7,6 +7,7 @@ export const GlobalVar = {
 	import:{
 		message:{
 			dataIsEmpty:"DATA_IS_EMPTY_MESSAGE",
+			inputInvalid:"INPUT_INVALID_MESSAGE",
 		},
 		tableColumn:["Seri","Nama Barang","Qty/ C","Ctn","Kode"],
 	},

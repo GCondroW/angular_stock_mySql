@@ -44,6 +44,7 @@
 <ng-template #modalBody>
 	<div>
 		<div>
+			<p hidden="true"><label>_id</label> : <span>{{modalData._id}}</span><p>
 			<p><label>Seri</label> : <span>{{modalData.Seri}}</span><p>
 			<p><label>Jenis</label> : <span>{{modalData.Jenis}}</span><p>
 			<p><label>Qty</label> : <span>{{modalData.Qty}}</span><p>
@@ -75,21 +76,82 @@
 	></app-dynamic-modal>
 </ng-template>
 <ng-template #newTransactionModalBody>
-	<div [formGroup]="formTest">
-		<p>
-			<span>1 : </span>
-			<input type="number" formControlName="init">
-		</p>
-		<p>
-			<span>2 : </span>
-			<input type="number" formControlName="update">
-		</p>
-		<p>
-			<span>3 : </span>
-			<input type="number" formControlName="final">
-		</p>
-	</div>
+	<form [formGroup]="formTest" (ngSubmit)="newTransactionSubmit()">
+		<button id="submitButton" type="submit" hidden></button>
+		
+		<!--
+			<ngb-alert *ngIf="!formTest.valid" [dismissible]="false" type='danger'>{{message.inputInvalid}}</ngb-alert>
+			<p hidden><label>id : </label><input formControlName="_id"></p>
+		-->
+		<div class="form-group row mb-1">
+			<label for="formControlInit" class="col-sm-2 col-form-label col-form-label-sm">Awal</label>
+			<div class="col-sm-4">
+				<input id="formControlInit" class="form-control form-control-sm" type="number" formControlName="init">
+			</div>
+		</div>
+		<div class="form-group row mb-1">
+			<label for="formControlUpdate" class="col-sm-2 col-form-label col-form-label-sm">Selisih</label>
+			<div class="col-sm-4">
+				<div class="input-group">
+					<input 
+						onclick="this.select()" 
+						id="formControlUpdate"  
+						class="form-control form-control-sm" 
+						[class.is-invalid]="!formTest.get('update').valid"
+						type="number" 
+						formControlName="update"
+					>
+					<div class="input-group=append">
+						<button class="btn btn-outline-secondary" (click)="resetTransactionValue()">reset</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="form-group row mb-1">
+			<label for="formControlFinal" class="col-sm-2 col-form-label col-form-label-sm">Akhir</label>
+			<div class="col-sm-4">
+				<div class="input-group">
+					<input 
+						onclick="this.select()" 
+						id="formControlFinal" 
+						class="form-control form-control-sm"
+						[class.is-invalid]="!formTest.get('final').valid"
+						type="number" 
+						formControlName="final"
+					>
+					<div class="input-group=append">
+						<button class="btn btn-outline-secondary" (click)="resetTransactionValue()">reset</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--KETERANGAN-->
+			<div class="form-group row mb-1">
+				<label for="formControlKeterangan" class="col-sm-2 col-form-label col-form-label-sm">Keterangan</label>
+				<div class="col-sm-10">
+					<div class="input-group">
+						<input onclick="this.select()" id="formControlKeterangan" class="form-control" type="text" formControlName="keterangan">
+					</div>
+				</div>
+			</div>
+		<!--/KETERANGAN-->
+		<!--QUERY-->
+			<ng-container *ngIf="(queryUpdateValue)">
+				<div class="form-group row mb-1">
+					<label for="keteranganP" class="col-sm-2 col-form-label col-form-label-sm">Query</label>
+					<div class="col-sm-10">
+						<input style="{border:none;}" type="text" readonly class="form-control-plaintext" id="keteranganP" *ngIf="queryUpdateValue>0" value="Masuk : {{queryUpdateValue}} Ctn">
+						<p id="keteranganP" *ngIf="queryUpdateValue<0" >Keluar : {{(queryUpdateValue)*-1}} Ctn</p>
+					</div> 
+				</div>
+			</ng-container>
+		<!--/QUERY-->
+	</form>
 </ng-template>
 <ng-template #newTransactionModalFooter>
+	<button type="button" class="btn btn-outline-dark" 
+		[disabled]="!formTest.valid"
+		onclick="(()=>document.getElementById('submitButton').click())()"
+	>Submit</button>
 	<button type="button" class="btn btn-outline-dark" (click)="newTransactionModalRef.close()">Save</button>
 </ng-template>

@@ -7,9 +7,10 @@ import { ColDef } from 'ag-grid-community';
 
 import { DynamicModalComponent } from '../misc/dynamic-modal/dynamic-modal.component';
 
-import { ModalDismissReasons, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { FormBuilder,FormControl, FormGroup } from '@angular/forms';
+import { FormBuilder,FormControl, FormGroup, Validators } from '@angular/forms';
+import { ValidateForm } from '../shared/formValidator';
 
 @Component({
   selector: 'app-import',
@@ -25,6 +26,7 @@ export class ImportComponent {
 	
 	public downloadExcel = this.globalService.downloadExcel;
 	public testModal=this.globalService._modal.createModal;
+	
 	
 	formTest : any;
 
@@ -54,12 +56,7 @@ export class ImportComponent {
 	private tableColumn:Array<any>=this.globalVar.import.tableColumn;
 	
 	public testFunct=()=>{
-		this.consoleDump([
-			["navStates",this.navStates],
-			["DynamicModalComponent",DynamicModalComponent],
-		]);
-		//this.downloadExcel(this.currentPage);
-		console.log(this)
+		console.log('Valid?', this.formTest.valid)
 	}
 	
 	/// MODAL HANDLER ///
@@ -78,55 +75,6 @@ export class ImportComponent {
 	}
 	public modalData:any;
 	public modalRef:any;
-	public newTransactionModalRef:any;
-	public modalTransactionCount=new this.globalVar.counter(0,1).up();
-	public openNewTransactionModal=(modalData:any)=>{
-		this.formTest=this.fb.group({
-			init:[0],
-			update:[0],
-			final:[0],
-		});
-		
-		let formInit=this.formTest.get("init");
-		let formUpdate=this.formTest.get("update");
-		let formFinal=this.formTest.get("final");
-		
-		formInit.setValue(modalData.Ctn);
-		console.log('formTest',this.formTest);
-		
-		
-		
-		let temp=formInit.value+formUpdate.value
-		formFinal.setValue(temp,{onlySelf:true});
-		let lastItem:any;
-		this.formTest.valueChanges
-			.subscribe((x:number)=>{
-				if(JSON.stringify(lastItem)===JSON.stringify(x))return
-				/*lastItem=x;
-				let temp=formInit.value+formUpdate.value
-				console.log('x',x);
-				return formFinal.setValue(temp,{onlySelf:true});*/
-			})
-			
-			
-		formUpdate.valueChanges
-			.subscribe((x:number)=>{
-				if(JSON.stringify(lastItem)===JSON.stringify(x))return
-				lastItem=x;
-				return formFinal.setValue(formInit.value+formUpdate.value,{onlySelf:true});
-			})
-			
-		formFinal.valueChanges
-			.subscribe((x:number)=>{
-				if(JSON.stringify(lastItem)===JSON.stringify(x))return
-				lastItem=x;
-				return formUpdate.setValue(formInit.value-formFinal.value,{onlySelf:true});
-			})
-		
-		
-		this.newTransactionModalRef=this.modalService.open(this.newTransactionModal);
-
-	};
 	public openMainModal=(modalData:any)=>{
 		let sumAll=(data:any,colName:any)=>{
 			try{
@@ -141,6 +89,7 @@ export class ImportComponent {
 		};
 		
 		this.modalData={
+			_id:modalData._id,
 			Seri:modalData.Seri,
 			Jenis:modalData.Jenis,
 			Qty:modalData.Qty,
@@ -153,7 +102,75 @@ export class ImportComponent {
 	public closeModal=()=>{
 		this.modalRef.close();
 	}
+	
+	public newTransactionModalRef:any;
+	public modalTransactionCount=new this.globalVar.counter(0,1).up();
+	public resetTransactionValue=()=>{
+		this.formTest.get("update").setValue(0);
+	};
+	public queryUpdateValue:number=0;
+	public openNewTransactionModal=(modalData:any)=>{
+		this.formTest=this.fb.group({
+			_id:[modalData._id],
+			init:[modalData.Ctn],
+			update:[0,[Validators.required,ValidateForm]],
+			final:[0,[Validators.required,ValidateForm]],
+			keterangan:["-"],
+		});
+		
+		let formInit=this.formTest.get("init");
+		let formUpdate=this.formTest.get("update");
+		let formFinal=this.formTest.get("final");
+		
+		//formInit.setValue(modalData.Ctn);
+		console.log('formTest',this.formTest);
+		
+		
+		
+		let temp=formInit.value+formUpdate.value
+		formFinal.setValue(temp,{onlySelf:true});
+		let alreadyOnce:boolean=false;
+		formInit.disable();
+			
+		formUpdate.valueChanges
+			.subscribe((x:number)=>{
+				if(alreadyOnce){alreadyOnce=false}
+				else{
+					alreadyOnce=true
+					this.queryUpdateValue=formUpdate.value;
+					formFinal.setValue(formInit.value+formUpdate.value);
+					console.log('Valid?', this.formTest.valid)
+				};
+			})
+			
+		formFinal.valueChanges
+			.subscribe((x:number)=>{
+				if(alreadyOnce){alreadyOnce=false}
+				else{
+					alreadyOnce=true
+					formUpdate.setValue(formFinal.value-formInit.value);
+					this.queryUpdateValue=formUpdate.value;
+					console.log('Valid?', this.formTest.valid)
+				};
+			})	
+		this.newTransactionModalRef=this.modalService.open(this.newTransactionModal);
+	};
+	public newTransactionSubmit=()=>{
+		console.log("onSubmit : ", this.formTest);
+		let temp={
+			_id:this.formTest.value._id,
+			update:this.formTest.value.update,
+			keterangan:this.formTest.value.keterangan,
+		};
+		console.log("onSubmit : ", temp);
+		
+	};
 	/// MODAL HANDLER ///
+	
+	
+	
+	
+	
 	
 	
 	/// NAV HANDLER ///
@@ -260,10 +277,8 @@ export class ImportComponent {
 			let pushVar:any={};
 			if(item==="_id")pushVar["hide"]=true;//hiding _id column
 			if(item==="Ctn")pushVar["editable"]=false;
-			pushVar["field"]=item;
-			
-			temp.push(pushVar)
-			
+			pushVar["field"]=item;		
+			temp.push(pushVar)		
 		});
 		return temp;
 	};
@@ -281,8 +296,6 @@ export class ImportComponent {
 			this.selectedDataId=(dataId);
 			this.selectedRowId=event.api.getFocusedCell().rowIndex;
 			this.selectedColId=event.api.getFocusedCell().column.colId;
-			
-
 		},
 		onCellEditingStopped:(event:any)=>{
 			let data={
@@ -377,7 +390,7 @@ export class ImportComponent {
 		return this.globalService.getData(page,id);
 	};
 	deleteAll=(page:string)=>{
-		this.isLoaded=false;	
+		
 		let temp=confirm("delete ALL : "+page+" ?");
 		console.log(temp)
 		/*
@@ -386,7 +399,7 @@ export class ImportComponent {
 		})*/
 		
 		if(temp===true){
-		
+			this.isLoaded=false;	
 			let api1=this.globalService.wipeData(page);
 			api1.subscribe(x=>{
 				if(!!this.errorHandler(x))return
