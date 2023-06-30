@@ -157,12 +157,13 @@ export class ImportComponent {
 	};
 	public newTransactionSubmit=()=>{
 		console.log("onSubmit : ", this.formTest);
-		let temp={
-			_id:this.formTest.value._id,
-			update:this.formTest.value.update,
+		let id=this.formTest.value._id;
+		let postData={
+			value:this.formTest.value.update,
 			keterangan:this.formTest.value.keterangan,
 		};
-		console.log("onSubmit : ", temp);
+		console.log("onSubmit : ", postData);
+		this.post(this.currentPage,postData,"transaction",id);
 		
 	};
 	/// MODAL HANDLER ///
@@ -365,12 +366,25 @@ export class ImportComponent {
 		this.isLoaded=false;	
 		return this.globalService.getData(page,undefined).subscribe(x=>this.updateTable(x));
 	};
-	post=(page:string,data:any)=>{
+	
+	post=(dbName:string,data:any,embedName:string|undefined,id:string|undefined)=>{
+		this.consoleDump([
+			["dbName",dbName],
+			["data",data],
+			["embedName",embedName],
+			["id",id],
+		]);
+		this.globalService.postEmbedData(dbName,data,embedName,id).subscribe(x=>{
+			console.log(x)
+		})
+	};
+	
+	postExcel=(dbName:string,data:any)=>{
 		this.isLoaded=false;	
-		console.log("page",page);
+		console.log("dbName",dbName);
 		console.log("data",data);
 		this.globalService.excelHandler(data).then(x=>{
-			let api1=this.globalService.postData(page,x);
+			let api1=this.globalService.postData(dbName,x);
 			api1.subscribe(x=>this.updateTable(x));
 		})
 	};
@@ -390,21 +404,16 @@ export class ImportComponent {
 		return this.globalService.getData(page,id);
 	};
 	deleteAll=(page:string)=>{
-		
 		let temp=confirm("delete ALL : "+page+" ?");
 		console.log(temp)
-		/*
-		if(temp===true)return this.globalService.wipeData(page).subscribe(x=>{
-			this.updateTable(x);
-		})*/
 		
 		if(temp===true){
 			this.isLoaded=false;	
 			let api1=this.globalService.wipeData(page);
 			api1.subscribe(x=>{
 				if(!!this.errorHandler(x))return
-				return
-				this.refresh();
+				return this.refresh();
+				
 			});
 			
 			

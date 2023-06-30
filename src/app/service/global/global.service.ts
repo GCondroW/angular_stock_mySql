@@ -70,6 +70,11 @@ export class GlobalService {
 		return this.http.post(url,data)
 	};
 	
+	postEmbedData=(dbName:string,data:any={},embedName:string|undefined,id:string|undefined)=>{
+		let url=this.url+dbName+"/"+embedName+"/"+id;
+		return this.http.post(url,data)
+	};
+	
 	putData=(dbName:string,id:number,data:any={})=>{
 		let url=this.url+dbName+"/"+id;
 		return this.http.put(url,data);
