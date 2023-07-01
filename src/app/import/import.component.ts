@@ -6,6 +6,7 @@ import { GlobalVar } from '../globalVar'
 import { ColDef } from 'ag-grid-community';
 
 import { DynamicModalComponent } from '../misc/dynamic-modal/dynamic-modal.component';
+import { DynamicTableComponent } from '../misc/dynamic-table/dynamic-table.component';
 
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -105,6 +106,23 @@ export class ImportComponent {
 	
 	public newTransactionModalRef:any;
 	public modalTransactionCount=new this.globalVar.counter(0,1).up();
+	public defaultTransactionTableColumnDefs={
+		value:{
+			headerName:'Nilai',
+		},
+		subject:{
+			headerName:'Oleh',
+		},
+		date:{
+			headerName:'Tanggal',
+			callBack:()=>{
+				return Date.parse(this.modalData.transaction.date)
+			},
+		},
+		_id:{
+			hidden:true,
+		},
+	};
 	public resetTransactionValue=()=>{
 		this.formTest.get("update").setValue(0);
 	};

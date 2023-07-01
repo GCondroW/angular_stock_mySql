@@ -32,7 +32,6 @@
 		<h2>{{errMessage.status}}</h2>
 		<pre>{{errMessage.stack}}</pre>
 	</div>
-	
 </div>
 <ng-template #mainModal let-modal>
 	<app-dynamic-modal 
@@ -53,6 +52,12 @@
 		</div>
 		<div>
 			<h6>Riwayat Transaksi</h6>
+			<div class="row">
+				<app-dynamic-table
+					[data]="modalData.transaction"
+					[defaultColumnDefs]="defaultTransactionTableColumnDefs"
+				></app-dynamic-table>
+			</div>
 			<div style="margin-left:20%">
 				<div *ngFor="let item of modalData.transaction">
 					<hr>

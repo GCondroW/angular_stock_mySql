@@ -11,6 +11,7 @@ import { GlobalService } from './service/global/global.service';
 import { ImportComponent } from './import/import.component';
 import { DaftarComponent } from './daftar/daftar.component';
 import { DataTableComponent } from './misc/data-table/data-table.component';
+import { DynamicTableComponent } from './misc/dynamic-table/dynamic-table.component';
 
 import { AgGridModule } from 'ag-grid-angular';
 import { DynamicModalComponent } from './misc/dynamic-modal/dynamic-modal.component';
@@ -28,6 +29,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     DaftarComponent,
     DataTableComponent,
     DynamicModalComponent,
+    DynamicTableComponent,
   ],
   imports: [
     BrowserModule,
