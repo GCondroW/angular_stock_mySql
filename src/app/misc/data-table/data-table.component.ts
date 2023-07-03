@@ -10,7 +10,6 @@ import { DynamicModalComponent } from '../dynamic-modal/dynamic-modal.component'
 })
 export class DataTableComponent implements OnInit {
 	ngOnInit(){
-		console.log(this);
 		window.addEventListener('resize',()=>this.adjustContainerSize(), true);
 		this.gridOptions.onGridReady=(params:any) => {
 			console.log('The grid is now ready'),
@@ -19,6 +18,7 @@ export class DataTableComponent implements OnInit {
 			this.gridColumnApi.autoSizeAllColumns();
 			this.adjustContainerSize();
 		};
+		console.log(this);
 	};
 	
 	constructor(){

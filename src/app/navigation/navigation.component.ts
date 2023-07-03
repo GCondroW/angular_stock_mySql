@@ -8,9 +8,7 @@ import { GlobalService } from '../service/global/global.service';
 })
 export class NavigationComponent {
 	globalService : GlobalService = inject(GlobalService);
-	constructor(){
-		console.log(this);
-	}
+	constructor(){}
 	@Input() pages:any;
 	getCurrentUrl=this.globalService.getCurrentUrl;
 	isActive=(pageName:String)=>{

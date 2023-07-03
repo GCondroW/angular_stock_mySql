@@ -1,7 +1,8 @@
 .ag-theme-alpine {
-	--ag-grid-size: 3px;
-	--ag-list-item-height: 20px;
+	--ag-grid-size: 5px;
+	--ag-list-item-height: 10px;
 	--ag-font-size: 10px;
+	--ag-row-height:10px;
     --ag-font-family: Arial;
 }
 div.table-container{
@@ -10,5 +11,5 @@ div.table-container{
 }
 
 button.nav-states-handler-button {
-	
+	--ag-font-size: 10px;
 }

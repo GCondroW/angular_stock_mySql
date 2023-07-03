@@ -16,11 +16,12 @@
 	<div class="btn-group btn-group-sm" role="group">
 		<button type="button" class="btn btn-outline-secondary btn-sm" (click)="downloadExcel(dbName)">Download</button>
 		<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refresh()">Refresh</button>
-		<button type="button" class="btn btn-outline-secondary btn-sm"(click)="modalIsActive=!modalIsActive">MODAL</button>
-		<span *ngIf="modalIsActive===true">{{modalIsActive}}</span>
-		<app-dynamic-modal *ngIf="modalIsActive===true"></app-dynamic-modal>
+				<div class="search-container" style="display:inline-flex">
+			<input type="text" placeholder="Search.." name="search">
+			<button type="submit"><i class="fa fa-search"></i></button>
+		</div>
 	</div>
-	
+
 	<span style="margin:0 2px">
 	</span>
 	<span style="margin:0 2px">
@@ -29,6 +30,8 @@
 
 	
 	
+	<span> | </span>
+
 	<span> | </span>
 	<span style="margin:0 2px">
 		<button (click)="deleteHandler(selectedDataId)">Delete</button>

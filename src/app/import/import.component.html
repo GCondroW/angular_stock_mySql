@@ -20,6 +20,7 @@
 		[refresh]="refresh"
 		[downloadExcel]="downloadExcel"
 		[dbName]="currentPage"
+		[domLayout]='autoHeight'
 	></app-data-table>
 	<div *ngIf="!isLoaded" class="spinner-border m-1" role="status">
 		<span class="visually-hidden">Loading...</span>
@@ -38,32 +39,49 @@
 		[modalBody]="modalBody"
 		[modalFooter]="modalFooter"
 		[modal]="modal"
+		[modalTitle]="'Transaksi'"
 	></app-dynamic-modal>
 </ng-template>
 <ng-template #modalBody>
 	<div>
-		<div>
-			<p hidden="true"><label>_id</label> : <span>{{modalData._id}}</span><p>
-			<p><label>Seri</label> : <span>{{modalData.Seri}}</span><p>
-			<p><label>Jenis</label> : <span>{{modalData.Jenis}}</span><p>
-			<p><label>Qty</label> : <span>{{modalData.Qty}}</span><p>
-			<p><label>Kode</label> : <span>{{modalData.Kode}}</span><p>
-			<p><label>Ctn</label> : <span>{{modalData.Ctn}}</span><p>
+		<div class="container">
+			<div class="row">
+				<div class="col-auto">
+					<ul class="list-unstyled">
+						<li>Seri</li>
+						<li>Jenis</li>
+						<li>Qty</li>
+						<li>Kode</li>
+						<li>Ctn</li>
+					</ul>
+				</div>
+				<div class="col-auto">
+					<ul class="list-unstyled">
+						<li>:</li>
+						<li>:</li>
+						<li>:</li>
+						<li>:</li>
+						<li>:</li>
+					</ul>
+				</div>
+				<div class="col">
+					<ul class="list-unstyled">
+						<li>{{modalData.Seri}}</li>
+						<li>{{modalData.Jenis}}</li>
+						<li>{{modalData.Qty}}</li>
+						<li>{{modalData.Kode}}</li>
+						<li>{{modalData.Ctn}}</li>
+					</ul>
+				</div>
+			</div>
 		</div>
-		<div>
+		<div class="container">
 			<h6>Riwayat Transaksi</h6>
 			<div class="row">
 				<app-dynamic-table
 					[data]="modalData.transaction"
 					[defaultColumnDefs]="defaultTransactionTableColumnDefs"
 				></app-dynamic-table>
-			</div>
-			<div style="margin-left:20%">
-				<div *ngFor="let item of modalData.transaction">
-					<hr>
-					<span>{{modalTransactionCount}}</span>
-					<p *ngFor="let pointer of Object.keys(item)"><label>{{pointer}}</label> : {{item[pointer]}}</p>
-				</div>
 			</div>
 		</div>
 	</div>
@@ -78,6 +96,7 @@
 		[modalBody]="newTransactionModalBody"
 		[modalFooter]="newTransactionModalFooter"
 		[modal]="newTransactionModal"
+		[modalTitle]="'Tambah Transaksi'"
 	></app-dynamic-modal>
 </ng-template>
 <ng-template #newTransactionModalBody>

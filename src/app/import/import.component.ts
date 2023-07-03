@@ -40,7 +40,7 @@ export class ImportComponent {
 		this.refresh();
 	};
 	ngOnInit(){
-
+			console.log(this);
 	};
 
 	public Object=Object;//enable the use of "Object" method inside angular component ex: looping an object
@@ -77,25 +77,13 @@ export class ImportComponent {
 	public modalData:any;
 	public modalRef:any;
 	public openMainModal=(modalData:any)=>{
-		let sumAll=(data:any,colName:any)=>{
-			try{
-				let temp=0;
-				data.map((item:any)=>{
-					temp+=item.value;
-				})
-				return temp;
-			}catch(e){
-				return -1;
-			}
-		};
-		
 		this.modalData={
 			_id:modalData._id,
 			Seri:modalData.Seri,
 			Jenis:modalData.Jenis,
 			Qty:modalData.Qty,
 			Kode:modalData.Kode,
-			Ctn:sumAll(modalData.transaction,"value"),
+			Ctn:this.sumAll(modalData.transaction,"value"),
 			transaction:modalData.transaction,
 		};
 		this.modalRef=this.modalService.open(this.mainModal);
@@ -115,8 +103,8 @@ export class ImportComponent {
 		},
 		date:{
 			headerName:'Tanggal',
-			callBack:()=>{
-				return Date.parse(this.modalData.transaction.date)
+			callback:(x:any)=>{
+				return new Date(x).toString();
 			},
 		},
 		_id:{
@@ -139,11 +127,6 @@ export class ImportComponent {
 		let formInit=this.formTest.get("init");
 		let formUpdate=this.formTest.get("update");
 		let formFinal=this.formTest.get("final");
-		
-		//formInit.setValue(modalData.Ctn);
-		console.log('formTest',this.formTest);
-		
-		
 		
 		let temp=formInit.value+formUpdate.value
 		formFinal.setValue(temp,{onlySelf:true});
@@ -174,23 +157,33 @@ export class ImportComponent {
 		this.newTransactionModalRef=this.modalService.open(this.newTransactionModal);
 	};
 	public newTransactionSubmit=()=>{
-		console.log("onSubmit : ", this.formTest);
 		let id=this.formTest.value._id;
 		let postData={
 			value:this.formTest.value.update,
 			keterangan:this.formTest.value.keterangan,
 		};
 		console.log("onSubmit : ", postData);
-		this.post(this.currentPage,postData,"transaction",id);
+		this.post(this.currentPage,postData,"transaction",id).subscribe(x=>{
+			this.newTransactionModalRef.close();
+			console.log(x);
+			console.log(this.modalData=x);
+			Object.assign(this.modalData,{Ctn:this.sumAll(this.modalData['transaction'],'value')});
+		})
+		
 		
 	};
+	private sumAll=(data:any,colName:any)=>{
+		try{
+			let temp=0;
+			data.map((item:any)=>{
+				temp+=item.value;
+			})
+			return temp;
+		}catch(e){
+			return -1;
+		}
+	};
 	/// MODAL HANDLER ///
-	
-	
-	
-	
-	
-	
 	
 	/// NAV HANDLER ///
 	private navInit=()=>{
@@ -252,26 +245,11 @@ export class ImportComponent {
 					this.selectedColId=event.api.getFocusedCell().column.colId;
 					this.precisionGet(this.currentPage,dataId).subscribe(x=>{
 						let rowNode=this.gridOptions.api.getRowNode(this.selectedRowId);
-						//this.updateTable(x)
 						if(!!this.errorHandler(x))return
 						let data:any=x;
 						rowNode.updateData(this.tableDataHandler([data])[0]);
 						this.openMainModal(data);
-						
-						
-						/*this.modalRef=this.modalService.open(this.aaa, { ariaLabelledBy: 'modal-basic-title' }).result.then(
-							(result) => {
-								this.closeResult = `Closed with: ${result}`;
-							},
-							(reason) => {
-								this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
-							},
-						);*/
-						
-						// return data;
-					});
-					
-					
+					});					
 				};
 				this.activeNav="Transaksi";
 			},
@@ -308,10 +286,8 @@ export class ImportComponent {
 		onRowClicked: ()=>alert("ERR"),
 		onCellEditingStarted:(event:any)=>{
 			let dataId=event.data._id;
-			console.log("cell editing...","id = ",dataId);
 			let data=JSON.parse(JSON.stringify(event.data));//create new persistence instance of 'data' instead of Object reference
 			this.updateDataOld=data;
-			console.log("updateDataOld",this.updateDataOld)
 			this.selectedDataId=(dataId);
 			this.selectedRowId=event.api.getFocusedCell().rowIndex;
 			this.selectedColId=event.api.getFocusedCell().column.colId;
@@ -325,10 +301,8 @@ export class ImportComponent {
 			this.updateDataNew=data;
 			if(JSON.stringify(this.updateDataOld)===JSON.stringify(data))return
 			this.update(this.currentPage,id,data);
-			console.log("cell edited","id = ",id,"new data = ",data)
 		},
 		onRowDataUpdated:(event:any)=>{
-			console.log("event fired : onRowDataUpdated");
 			this.selectedDataId=-1;
 			this.selectedRowId=null;
 			this.selectedColId="";
@@ -341,19 +315,22 @@ export class ImportComponent {
 	/// excel handler ///
 	private docName:any;
 	private sheetName:any;
-	//private tableColumn:any;
 	private processedData:any;
 	private dataPreProcessing=(excelData:any)=>{
 		let docName=Object.keys(excelData)[0];
 		let sheetName=Object.keys(excelData[docName])[0];
-		//let tableColumn=Object.keys(excelData[docName][sheetName][0]);
 		let processedData=excelData[docName][sheetName];
-		
 		this.docName=docName;
 		this.sheetName=sheetName;
-		//this.tableColumn=tableColumn;
 		this.processedData=processedData;
 		return this.processedData;
+	};
+	postExcel=(dbName:string,data:any)=>{
+		this.isLoaded=false;	
+		this.globalService.excelHandler(data).then(x=>{
+			let api1=this.globalService.postData(dbName,x);
+			api1.subscribe(x=>this.updateTable(x));
+		})
 	};
 	/// excel handler ///
 	
@@ -384,27 +361,8 @@ export class ImportComponent {
 		this.isLoaded=false;	
 		return this.globalService.getData(page,undefined).subscribe(x=>this.updateTable(x));
 	};
-	
 	post=(dbName:string,data:any,embedName:string|undefined,id:string|undefined)=>{
-		this.consoleDump([
-			["dbName",dbName],
-			["data",data],
-			["embedName",embedName],
-			["id",id],
-		]);
-		this.globalService.postEmbedData(dbName,data,embedName,id).subscribe(x=>{
-			console.log(x)
-		})
-	};
-	
-	postExcel=(dbName:string,data:any)=>{
-		this.isLoaded=false;	
-		console.log("dbName",dbName);
-		console.log("data",data);
-		this.globalService.excelHandler(data).then(x=>{
-			let api1=this.globalService.postData(dbName,x);
-			api1.subscribe(x=>this.updateTable(x));
-		})
+		return this.globalService.postEmbedData(dbName,data,embedName,id);
 	};
 	precisionDelete=(id:number)=>{
 		if(id===null)return
@@ -424,17 +382,13 @@ export class ImportComponent {
 	deleteAll=(page:string)=>{
 		let temp=confirm("delete ALL : "+page+" ?");
 		console.log(temp)
-		
 		if(temp===true){
 			this.isLoaded=false;	
 			let api1=this.globalService.wipeData(page);
 			api1.subscribe(x=>{
 				if(!!this.errorHandler(x))return
 				return this.refresh();
-				
 			});
-			
-			
 		}else{
 			return
 		}
@@ -463,9 +417,7 @@ export class ImportComponent {
 		if(!!data.errMessage) return this.errMessage=data.errMessage;
 		return !errStatus
 	};
-	tableDataHandler=(data:any)=>{
-		console.log(data);
-		//data=data._doc;
+	tableDataHandler=(data:any)=>{		//data=data._doc;
 		let a=JSON.parse(JSON.stringify(data));
 		let temp:any=[];
 		let sumArray=(arr:Array<any>,colName:any)=>{
@@ -484,7 +436,6 @@ export class ImportComponent {
 			})
 			i++;
 		});
-		console.log(temp)
 		return temp;
 	};
 }

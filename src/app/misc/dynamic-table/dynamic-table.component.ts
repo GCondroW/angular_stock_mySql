@@ -1,11 +1,11 @@
-import { Component,Input } from '@angular/core';
+import { Component,Input,SimpleChanges  } from '@angular/core';
 
 @Component({
   selector: 'app-dynamic-table',
   templateUrl: './dynamic-table.component.html',
   styleUrls: ['./dynamic-table.component.css']
 })
-export class DynamicTableComponent {
+export class DynamicTableComponent{
 
 	constructor(){
 
@@ -13,10 +13,14 @@ export class DynamicTableComponent {
 	
 	ngOnInit(){
 		
-		this.data=this.dataPreProcessor();
+		this.data=this.dataPreProcessor(this.data);
 		this.header=Object.keys(this.data[0]);
 		console.log(this)
 	}
+	
+  ngOnChanges(changes: SimpleChanges) {
+	this.dataReProcessor();
+  }
 	
 	public Object=Object;//enable the use of "Object" method inside angular component ex: looping an object	
 	public header:Array<any>=[];
@@ -24,27 +28,32 @@ export class DynamicTableComponent {
 	@Input() data:Array<any>=[];
 	@Input() defaultColumnDefs:any={};
 
-	dataPreProcessor=()=>{
+	dataReProcessor=()=>{
+		return this.data=this.dataPreProcessor(this.data);
+	}
+	
+	dataPreProcessor=(data:any)=>{
 		let header=this.header;
-		let data=this.data;
+		//let data=this.data;
 		let defaultColumnDefs=this.defaultColumnDefs;
 		let temp:Array<any>=[];
 		
-		data.map(dataItem=>{
+		data.map((dataItem:any)=>{
 			let temp2:any={};
 			Object.keys(dataItem).map((pointer:any)=>{
 				if(!defaultColumnDefs[pointer])return temp2[pointer]=dataItem[pointer];
+				if(!!defaultColumnDefs[pointer].callback){
+					//console.log("defaultColumnDefs[pointer].callback()",defaultColumnDefs[pointer].callback());
+					dataItem[pointer]=defaultColumnDefs[pointer].callback(dataItem[pointer]);
+				};
 				if(!!defaultColumnDefs[pointer].headerName){
 					temp2[defaultColumnDefs[pointer].headerName]=dataItem[pointer];
 				};
-				console.log("defaultColumnDefs[pointer]",defaultColumnDefs[pointer]);
-				if(!!defaultColumnDefs[pointer].callback)return dataItem[pointer]=defaultColumnDefs[pointer].callback();
+
 				return
 			})
 			temp.push(temp2);
 		})
-		
-
 		return temp;
 	};
 }
