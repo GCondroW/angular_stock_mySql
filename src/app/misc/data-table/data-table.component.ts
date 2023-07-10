@@ -38,6 +38,8 @@ export class DataTableComponent implements OnInit {
 	@Input() refresh:any;
 	@Input() downloadExcel:any;
 	@Input() dbName:string="";
+	@Input() rowHeight:number=0;
+	@Input() testFunct:any;
 
 	public containerStyle:any={};
 	public isActive=(item:any,comparedItem:any)=>{
@@ -46,7 +48,8 @@ export class DataTableComponent implements OnInit {
 	};
 	public modalIsActive=false;
 	
-	private adjustContainerSize=()=>{
+	public adjustContainerSize=()=>{
+		console.log("dataTable event => this.adjustContainerSize()");
 		let container=document.getElementById("gridTable")!;
 		let containerRect=container.getBoundingClientRect();
 		let containerRectTop=containerRect.top;

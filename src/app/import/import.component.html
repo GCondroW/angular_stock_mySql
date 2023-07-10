@@ -20,7 +20,8 @@
 		[refresh]="refresh"
 		[downloadExcel]="downloadExcel"
 		[dbName]="currentPage"
-		[domLayout]='autoHeight'
+		[rowHeight]="rowHeight"
+		[testFunct]="testFunct"
 	></app-data-table>
 	<div *ngIf="!isLoaded" class="spinner-border m-1" role="status">
 		<span class="visually-hidden">Loading...</span>

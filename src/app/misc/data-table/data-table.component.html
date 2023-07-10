@@ -17,7 +17,7 @@
 		<button type="button" class="btn btn-outline-secondary btn-sm" (click)="downloadExcel(dbName)">Download</button>
 		<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refresh()">Refresh</button>
 				<div class="search-container" style="display:inline-flex">
-			<input type="text" placeholder="Search.." name="search">
+				<input (input)="testFunct($event)" type="text" placeholder="Search.." name="search">
 			<button type="submit"><i class="fa fa-search"></i></button>
 		</div>
 	</div>
@@ -50,6 +50,7 @@
 				[gridOptions]="gridOptions"
 				[defaultColDef]="defaultColDef"
 				[rowData]="rowData"
+				[rowHeight]="rowHeight"
 			></ag-grid-angular>
 		</div>
 	<!--<div style="background-color:#ccc; padding: 2rem">right side column</div>-->

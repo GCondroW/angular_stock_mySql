@@ -50,20 +50,27 @@ export class ImportComponent {
 	public isLoaded:boolean=false;//loading placeholder
 	public dataIsNotEmpty:boolean=false;//empty data placeholder
 	public selectedDataId:number=-1;//self explanatory, for 'precision usage'
+	public rowHeight:number=20;
 	private selectedRowId:number | null=null;//self explanatory, for 'precision usage'
 	private selectedColId:string="";//self explanatory, for 'precision usage'
 	private updateDataOld:any;
 	private updateDataNew:any;
 	private tableColumn:Array<any>=this.globalVar.import.tableColumn;
 	
-	public testFunct=()=>{
-		console.log('Valid?', this.formTest.valid)
+	
+	public testFunct=(x:any)=>{
+		//let eventData=x.target.value;
+		//this.rowHeight=x.target.value;
+		//this.gridOptions.api.resetRowHeights()
+
+
 	}
 	
 	/// MODAL HANDLER ///
 	private modalService:NgbModal=inject(NgbModal);
 	@ViewChild("mainModal") mainModal!:DynamicModalComponent;
 	@ViewChild("newTransactionModal") newTransactionModal!:DynamicModalComponent;
+	@ViewChild(DataTableComponent) child!:DataTableComponent;
 	closeResult:string="";
 	private getDismissReason(reason: any): string {
 		if (reason === ModalDismissReasons.ESC) {
@@ -274,7 +281,8 @@ export class ImportComponent {
 			let pushVar:any={};
 			if(item==="_id")pushVar["hide"]=true;//hiding _id column
 			if(item==="Ctn")pushVar["editable"]=false;
-			pushVar["field"]=item;		
+			pushVar["autoHeight"]=true;		
+			pushVar["field"]=item;	
 			temp.push(pushVar)		
 		});
 		return temp;
@@ -284,7 +292,9 @@ export class ImportComponent {
 		pagination: true,
 		rowSelection: 'single',
 		onRowClicked: ()=>alert("ERR"),
+		paginationAutoPageSize:false,
 		onCellEditingStarted:(event:any)=>{
+			console.log("grid Event => onCellEditingStarted : ");
 			let dataId=event.data._id;
 			let data=JSON.parse(JSON.stringify(event.data));//create new persistence instance of 'data' instead of Object reference
 			this.updateDataOld=data;
@@ -293,6 +303,7 @@ export class ImportComponent {
 			this.selectedColId=event.api.getFocusedCell().column.colId;
 		},
 		onCellEditingStopped:(event:any)=>{
+			console.log("grid Event => onCellEditingStopped : ");
 			let data={
 				_id:event.data._id,
 				[this.selectedColId]:event.data[this.selectedColId],
@@ -302,12 +313,24 @@ export class ImportComponent {
 			if(JSON.stringify(this.updateDataOld)===JSON.stringify(data))return
 			this.update(this.currentPage,id,data);
 		},
+		onPaginationChanged:(params:any)=>{
+			if(!params.newPage)return
+			console.log("onPaginationChanged : ",params);
+			console.log("grid Event => paginationChanged : ");
+			this.gridOptions.columnApi.autoSizeAllColumns();
+			console.log("dataTable(child) =>  : ",this.child.adjustContainerSize());
+		},
 		onRowDataUpdated:(event:any)=>{
+			console.log("grid Event => onRowDataUpdated : ");
 			this.selectedDataId=-1;
 			this.selectedRowId=null;
 			this.selectedColId="";
+			this.gridOptions.api.setHeaderHeight(20);
+			this.gridOptions.columnApi.autoSizeAllColumns();
 		},
-		onColumnResized: (event:any) => {},
+		onColumnResized: (event:any) => {
+			console.log("grid Event => onColumnResized : ");
+		},
 	};
 	public rowData:Array<any>=[];
 	/// ag-grid handler ///
