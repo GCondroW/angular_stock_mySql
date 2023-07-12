@@ -10,6 +10,8 @@ import { DynamicTableComponent } from '../misc/dynamic-table/dynamic-table.compo
 
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
+
 import { FormBuilder,FormControl, FormGroup, Validators } from '@angular/forms';
 import { ValidateForm } from '../shared/formValidator';
 
@@ -44,6 +46,8 @@ export class ImportComponent {
 	};
 
 	public Object=Object;//enable the use of "Object" method inside angular component ex: looping an object
+	public console=console;//enable the use of "console" method inside angular component
+	public JSON=JSON;//enable the use of "JSON" method inside angular component
 	public message:any;
 	public errMessage:any;
 	public currentPage:string;//current page / database used => import
@@ -67,7 +71,7 @@ export class ImportComponent {
 	}
 	
 	/// MODAL HANDLER ///
-	private modalService:NgbModal=inject(NgbModal);
+	public modalService:NgbModal=inject(NgbModal);
 	@ViewChild("mainModal") mainModal!:DynamicModalComponent;
 	@ViewChild("newTransactionModal") newTransactionModal!:DynamicModalComponent;
 	@ViewChild(DataTableComponent) child!:DataTableComponent;
@@ -176,8 +180,6 @@ export class ImportComponent {
 			console.log(this.modalData=x);
 			Object.assign(this.modalData,{Ctn:this.sumAll(this.modalData['transaction'],'value')});
 		})
-		
-		
 	};
 	private sumAll=(data:any,colName:any)=>{
 		try{
@@ -189,6 +191,44 @@ export class ImportComponent {
 		}catch(e){
 			return -1;
 		}
+	};
+	
+	public _modal:any={
+		filterModal:{
+			open:(modalName:string,data:Array<any>)=>{
+				console.log('data',data);
+				let dataColumn=Object.keys(data[0])
+				
+				let temp:any={};
+				dataColumn.map(pointer=>{
+					temp[pointer]=[];
+				});
+				data.map(item=>{
+					dataColumn.map(pointer=>{
+						temp[pointer].push(item[pointer]);
+					});
+				});
+				dataColumn.map(pointer=>{
+					temp[pointer]=[...new Set(temp[pointer])]
+				});
+				this._modal.filterModal.filterData=temp;
+				this._modal.filterModal.initFilter(Object.keys(temp));
+				this.modalService.open(modalName);
+			},
+			filterData:"",
+			initFilter:(col:Array<any>)=>{
+				let temp:any={};
+				col.map(pointer=>{
+					temp[pointer]={
+						filterType: 'text',
+						type:'contains',
+					};
+				});
+				console.log(temp);
+				this.gridOptions.api.setFilterModel(temp);
+			},
+			changeFilter:"",
+		},
 	};
 	/// MODAL HANDLER ///
 	
@@ -262,7 +302,18 @@ export class ImportComponent {
 			},
 		},
 	];
+	public navIsActive=(item:any,comparedItem:any)=>{
+		if(item===comparedItem)return true;
+		return false;
+	};
 	/// NAV HANDLER ///
+	
+	/// OFFCANVAS ///
+	private offcanvasService:NgbOffcanvas=inject(NgbOffcanvas);
+	public openOffcanvas(content:any) {
+		this.offcanvasService.open(content);
+	}
+	/// OFFCANVAS ///
 	
 	/// ag-grid handler ///
 	public gridApi:any;
@@ -270,7 +321,8 @@ export class ImportComponent {
 	public defaultColDef: ColDef = {
 		resizable:true,
 		sortable: true,
-		filter: true,
+		filter: 'agTextColumnFilter',
+		menuTabs: ['filterMenuTab'],
 		editable:false,
 	};
 	private getColumnDefs=(data:any)=>{
@@ -281,10 +333,12 @@ export class ImportComponent {
 			let pushVar:any={};
 			if(item==="_id")pushVar["hide"]=true;//hiding _id column
 			if(item==="Ctn")pushVar["editable"]=false;
+			pushVar["filter"]='agSetColumnFilter';		
 			pushVar["autoHeight"]=true;		
 			pushVar["field"]=item;	
 			temp.push(pushVar)		
 		});
+		console.log(temp);
 		return temp;
 	};
 	public gridOptions:any= {
@@ -293,6 +347,11 @@ export class ImportComponent {
 		rowSelection: 'single',
 		onRowClicked: ()=>alert("ERR"),
 		paginationAutoPageSize:false,
+		onGridReady:(params:any)=>{
+			console.log("grid Event => onGridReady : ");
+			window.addEventListener('resize',()=>this.adjustTableContainerSize(), true);
+			this.adjustTableContainerSize();
+		},
 		onCellEditingStarted:(event:any)=>{
 			console.log("grid Event => onCellEditingStarted : ");
 			let dataId=event.data._id;
@@ -315,10 +374,9 @@ export class ImportComponent {
 		},
 		onPaginationChanged:(params:any)=>{
 			if(!params.newPage)return
-			console.log("onPaginationChanged : ",params);
 			console.log("grid Event => paginationChanged : ");
 			this.gridOptions.columnApi.autoSizeAllColumns();
-			console.log("dataTable(child) =>  : ",this.child.adjustContainerSize());
+			console.log("dataTable(child) =>  : ",this.adjustTableContainerSize());
 		},
 		onRowDataUpdated:(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
@@ -333,6 +391,46 @@ export class ImportComponent {
 		},
 	};
 	public rowData:Array<any>=[];
+	public tableContainerStyle:any={};
+	public adjustTableContainerSize=()=>{
+		console.log("dataTable event => this.adjustContainerSize()");
+		let navContainer=document.getElementById("navContainerId");
+		let navContainerRect=navContainer?.getBoundingClientRect();
+		let navContainerHeight:number=0;
+		
+		if(!!navContainerRect?.height)navContainerHeight=navContainerRect?.height;
+		////////////////////////////////////////////
+		let container=document.getElementById("gridTable")!;
+		let containerRect=container.getBoundingClientRect();
+		let containerRectTop=containerRect.top;
+		////////////////////////////////////////////
+		let innerTable=document.querySelectorAll('[Class=ag-center-cols-container]')[0];
+		let innerTableRect=innerTable.getBoundingClientRect();
+		let innerTableRectRight=innerTableRect.right;
+		/////////////////////////////////////////////
+		let scrollBar=document.querySelectorAll('[Class=ag-body-vertical-scroll-viewport]')[0];
+		let scrollBarRect=scrollBar.getBoundingClientRect();
+		let scrollBarRectWidth=scrollBarRect.width;
+		//////////////////////////////////////////////
+		let innerTableWidth=innerTable.getBoundingClientRect().width;
+		let windowWidth=window.innerWidth;
+		let width="30%";
+		let height="100%";
+		if(innerTableWidth>=windowWidth)width="auto";
+		else{
+			width=(innerTableRectRight+scrollBarRectWidth)+"px";
+		}
+		let marginBottom:number=-5;
+		height=(window.innerHeight-containerRectTop+window.scrollY-navContainerHeight)+marginBottom+"px";
+		this.tableContainerStyle={
+			width:width,
+			height:height,
+		};
+	};
+	public gridSearch=(event:any)=>{
+		let data=event.target.value;
+		this.gridOptions.api.setQuickFilter(data);
+	}
 	/// ag-grid handler ///
 	
 	/// excel handler ///
@@ -461,5 +559,27 @@ export class ImportComponent {
 		});
 		return temp;
 	};
+	excludeCol=(data:Array<any>,exCol:Array<string>)=>{
+		///return array of object except excluded by exCol array
+		let temp:any=[];
+		let i=0;
+		let isValid:any;;
+		data.map(item=>{
+			temp[i]={};
+			Object.keys(item).map(pointer=>{
+				isValid=1;
+				exCol.map(exColPointer=>{
+					if(!!(pointer===exColPointer)){
+						isValid--;
+					};
+				});
+				if(!!isValid){
+					temp[i][pointer]=item[pointer];
+				};
+			});
+			i++;
+		})
+		return temp;
+	}
 }
 

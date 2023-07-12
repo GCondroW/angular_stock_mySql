@@ -1,47 +1,4 @@
-<div style="margin-top:5px" class="table-button-container">
-	<span style="margin-left:0px;margin-right:2px;">
-		<div class="btn-group btn-group-sm" role="group">
-			<button 
-				type="button"
-				class="btn btn-outline-secondary btn-sm"
-				*ngFor="let navState of navStates;" 
-				(click)="navState.funct()"
-				[ngClass]="{'active':isActive(navState.name,activeNav)}"
-			>{{navState.name}}
-			</button>
-		</div>
-	</span>
-	<span> | </span>
-	
-	<div class="btn-group btn-group-sm" role="group">
-		<button type="button" class="btn btn-outline-secondary btn-sm" (click)="downloadExcel(dbName)">Download</button>
-		<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refresh()">Refresh</button>
-				<div class="search-container" style="display:inline-flex">
-				<input (input)="testFunct($event)" type="text" placeholder="Search.." name="search">
-			<button type="submit"><i class="fa fa-search"></i></button>
-		</div>
-	</div>
 
-	<span style="margin:0 2px">
-	</span>
-	<span style="margin:0 2px">
-
-	</span>
-
-	
-	
-	<span> | </span>
-
-	<span> | </span>
-	<span style="margin:0 2px">
-		<button (click)="deleteHandler(selectedDataId)">Delete</button>
-	</span>
-
-</div>
-<div id="gridTable" class="max-container table-container" style="width:50%"
-	[style.width]="containerStyle.width"
-	[style.height]="containerStyle.height"
->
 	<div style="display: flex; flex-direction: row; height: 100%;">
 		<div style=" overflow: hidden; flex-grow: 1">
 			<ag-grid-angular
@@ -56,5 +13,4 @@
 	<!--<div style="background-color:#ccc; padding: 2rem">right side column</div>-->
   </div>
 	
-</div>
 

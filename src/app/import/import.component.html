@@ -1,40 +1,108 @@
-<div #a>
-	<app-upload 
-		[currentPage]="currentPage"
-		[uploadHandler]="postExcel"
-	></app-upload>
-	<button (click)="deleteAll(currentPage)">deleteAll</button>
-	<!--<button (click)="alert('testButtonClicked')">TEST</button>-->
-</div>
-<div>
-	<app-data-table *ngIf="isLoaded && dataIsNotEmpty &&!errMessage" 
-		[selectedDataId]="selectedDataId"
-		[gridOptions]="gridOptions"
-		[rowData]="rowData"
-		[gridApi]="gridApi"
-		[gridColumnApi]="gridColumnApi"
-		[defaultColDef]="defaultColDef"
-		[deleteHandler]="precisionDelete" 
-		[activeNav]="activeNav"
-		[navStates]="navStates"
-		[refresh]="refresh"
-		[downloadExcel]="downloadExcel"
-		[dbName]="currentPage"
-		[rowHeight]="rowHeight"
-		[testFunct]="testFunct"
-	></app-data-table>
-	<div *ngIf="!isLoaded" class="spinner-border m-1" role="status">
-		<span class="visually-hidden">Loading...</span>
+
+
+<ng-template #offcanvasContent>
+	<div class="container-fluid">
+		<app-upload 
+			[currentPage]="currentPage"
+			[uploadHandler]="postExcel"
+		></app-upload>
+		<button (click)="deleteAll(currentPage)">deleteAll</button>
+		<!--<button (click)="alert('testButtonClicked')">TEST</button>-->
 	</div>
-	<div *ngIf="isLoaded && !dataIsNotEmpty &&!errMessage">
-		<p>{{message.dataIsEmpty}}</p>
+	<div class="container-fluid">
+		<span style="margin-left:0px;margin-right:2px;">
+			<div class="btn-group btn-group-sm" role="group">
+				<button 
+					type="button"
+					class="btn btn-outline-secondary btn-sm"
+					*ngFor="let navState of navStates;" 
+					(click)="navState.funct()"
+					[ngClass]="{'active':navIsActive(navState.name,activeNav)}"
+				>{{navState.name}}
+				</button>
+			</div>
+		</span>
+		<span> | </span>
+		<div class="btn-group btn-group-sm" role="group">
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="downloadExcel(currentPage)">Download</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refresh()">Refresh</button>
+		</div>
+		<span> | </span>
+		<span> | </span>
+		<span style="margin:0 2px">
+			<button (click)="precisionDelete(selectedDataId)">Delete</button>
+		</span>
 	</div>
-	<div *ngIf="isLoaded && errMessage">
-		<h1>{{errMessage.message}}</h1>
-		<h2>{{errMessage.status}}</h2>
-		<pre>{{errMessage.stack}}</pre>
+</ng-template>
+
+<ng-template #mainContent>
+	<div id="gridTable" class="max-container table-container" style="width:50%"
+		[style.width]="tableContainerStyle.width"
+		[style.height]="tableContainerStyle.height"
+	>
+		<div id="navContainerId" class="container mb-1">	
+			<div class="row">
+				<div class="col px-0">
+					<button class="btn btn-outline-secondary btn-sm" type="button" (click)="openOffcanvas(offcanvasContent)">offcanvas</button>
+				</div>
+				<div class="input-group col px-0">
+					<input 
+						(input)="gridSearch($event)"
+						type="text" class="form-control form-control-sm" placeholder="Search.." aria-describedby="button-addon2">
+					<button (click)="_modal.filterModal.open(filterModal,excludeCol(gridOptions.rowData,['_id','Ctn']))" class="btn btn-outline-secondary btn-sm" type="button" id="button-addon2">Filter</button>
+				</div>
+			</div>
+		</div>
+		<app-data-table *ngIf="isLoaded && dataIsNotEmpty &&!errMessage" 
+			[gridOptions]="gridOptions"
+			[rowData]="rowData"
+			[defaultColDef]="defaultColDef"
+			[rowHeight]="rowHeight"
+		></app-data-table>
+		<div *ngIf="!isLoaded" class="spinner-border m-1" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+		<div *ngIf="isLoaded && !dataIsNotEmpty &&!errMessage">
+			<p>{{message.dataIsEmpty}}</p>
+		</div>
+		<div *ngIf="isLoaded && errMessage">
+			<h1>{{errMessage.message}}</h1>
+			<h2>{{errMessage.status}}</h2>
+			<pre>{{errMessage.stack}}</pre>
+		</div>
+		<ng-template #filterModal let-filterModal let-c="close" let-d="dismiss">
+			<app-dynamic-modal 
+				[modalBody]="filterModalBody"
+				[modalFooter]="filterModalFooter"
+				[modal]="filterModal"
+				[modalTitle]="'Filter'"
+			></app-dynamic-modal>
+			<ng-template #filterModalBody>
+				<div class="container">
+					<div class="row">
+						<div class="col" *ngFor="let pointer of Object.keys(_modal.filterModal.filterData)">
+							<label>{{pointer}}</label>
+							<select class="form-select form-select-sm">
+								<option selected>-</option>
+								<option 
+									*ngFor="let item of _modal.filterModal.filterData[pointer]"
+									(click)="_modal.filterModal.changeFIlter(pointer,$event)"
+									value={{item}} 
+								>{{item}}</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</ng-template>
+			<ng-template #filterModalFooter>
+				<button type="button" class="btn btn-outline-dark" (click)="console.log(_modal.filterModal.filterData)">Test</button>
+				<button type="button" class="btn btn-outline-dark" (click)="c('close')">Close</button>
+			</ng-template>
+		</ng-template>
 	</div>
-</div>
+</ng-template>
+<ng-container *ngTemplateOutlet="mainContent"></ng-container>
+
 <ng-template #mainModal let-modal>
 	<app-dynamic-modal 
 		[modalBody]="modalBody"
