@@ -195,11 +195,21 @@ export class ImportComponent {
 	
 	public _modal:any={
 		filterModal:{
-			open:(modalName:string,data:Array<any>)=>{
-				console.log('data',data);
-				let dataColumn=Object.keys(data[0])
-				
+			old_open:(modalName:string,data:Array<any>)=>{
+				console.log('this._modal.filterModal.filterModel',this._modal.filterModal.getFilterModel);
+				let temp=this._modal.filterModal.generateFilterData(data);
+				this._modal.filterModal.filterData=temp;
+				this.modalService.open(modalName);
+			},
+			open:()=>{
+				console.log('this._modal.filterModal.filterModel',this._modal.filterModal.getFilterModel);
+				this._modal.filterModal.filterElementIsActive=!this._modal.filterModal.filterElementIsActive;
+				let temp=this._modal.filterModal.generateFilterData(this._modal.filterModal.getDisplayData());
+				this._modal.filterModal.filterData=temp;
+			},
+			generateFilterData:(data:Array<any>)=>{
 				let temp:any={};
+				let dataColumn=Object.keys(data[0]);
 				dataColumn.map(pointer=>{
 					temp[pointer]=[];
 				});
@@ -210,24 +220,70 @@ export class ImportComponent {
 				});
 				dataColumn.map(pointer=>{
 					temp[pointer]=[...new Set(temp[pointer])]
+					temp[pointer].sort();
 				});
-				this._modal.filterModal.filterData=temp;
-				this._modal.filterModal.initFilter(Object.keys(temp));
-				this.modalService.open(modalName);
+				return temp;
 			},
 			filterData:"",
-			initFilter:(col:Array<any>)=>{
+			filterElementIsActive:false,
+			getDisplayData:()=>this.gridOptions.api.rowModel.rowsToDisplay.map((x:any)=>x.data),
+			resetFilter:()=>{
+				let temp=this._modal.filterModal.generateFilterData(this.gridOptions.rowData);
+				this._modal.filterModal.filterData=temp;
+				this.gridOptions.api.setFilterModel(null);
+				this.consoleDump([
+					['_modal.filterModal',this._modal.filterModal],
+				]);
+			},
+			filterSetterObj:{},
+			initFilter:(col:Array<any>)=>{//unused
 				let temp:any={};
 				col.map(pointer=>{
 					temp[pointer]={
 						filterType: 'text',
 						type:'contains',
+						filter:'',
 					};
 				});
-				console.log(temp);
-				this.gridOptions.api.setFilterModel(temp);
+				//this.gridOptions.api.setFilterModel(temp);
+				console.log(this.gridOptions.api.getFilterModel());
 			},
-			changeFilter:"",
+			addFilter:(pointer:string,event:any)=>{
+				let eventValue=event.target.value;
+				
+				let main=this._modal.filterModal;
+				let excludedColArray=main.excludedColArray;
+				let filterSetterObj=main.filterSetterObj;
+				let filterData=main.filterData;
+				let generateFilterData=main.generateFilterData;
+				let filterModel=main.filterModel;
+				
+				let temp:any={}
+				temp[pointer]={
+					filterType: 'text',
+					type:'equals',
+					filter:eventValue,
+				};
+				filterSetterObj[pointer]=temp[pointer];
+				this.gridOptions.api.setFilterModel(filterSetterObj)
+				this._modal.filterModal.filterModel=this.gridOptions.api.getFilterModel();
+				
+				let newFilterData=this.excludeCol(this.gridOptions.api.rowModel.rowsToDisplay.map((x:any)=>x.data),excludedColArray);
+				this._modal.filterModal.filterData=generateFilterData(newFilterData);
+				this.consoleDump([
+					['this',this],
+					['this.excludeCol',this.excludeCol(this.gridOptions.api.rowModel.rowsToDisplay,excludedColArray)],
+					['this.gridOptions.api.rowModel.rowsToDisplay',this.gridOptions.api.rowModel.rowsToDisplay],
+					['excludedColArray',excludedColArray],
+					['_modal.filterModal.filterModel',this._modal.filterModal.filterModel],
+				]);
+			},
+			filterModel:"",
+			getFilterModel:()=>this.gridOptions.api.getFilterModel(),
+			isFilterActive:(name:string,pointer:string)=>{
+				
+			},
+			excludedColArray:['_id','Ctn'],
 		},
 	};
 	/// MODAL HANDLER ///
@@ -321,8 +377,7 @@ export class ImportComponent {
 	public defaultColDef: ColDef = {
 		resizable:true,
 		sortable: true,
-		filter: 'agTextColumnFilter',
-		menuTabs: ['filterMenuTab'],
+		filter: true,
 		editable:false,
 	};
 	private getColumnDefs=(data:any)=>{
@@ -333,7 +388,7 @@ export class ImportComponent {
 			let pushVar:any={};
 			if(item==="_id")pushVar["hide"]=true;//hiding _id column
 			if(item==="Ctn")pushVar["editable"]=false;
-			pushVar["filter"]='agSetColumnFilter';		
+			//pushVar["filter"]='agSetColumnFilter';		
 			pushVar["autoHeight"]=true;		
 			pushVar["field"]=item;	
 			temp.push(pushVar)		
