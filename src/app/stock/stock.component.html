@@ -1,0 +1,32 @@
+<button (click)="_offCanvas.open(offcanvasContent)" type="button">---</button>
+<ng-template #offcanvasContent>
+	<div class="container-fluid">
+		<div class="row mb-1">
+			<div class="col">
+				<app-upload 
+					[currentPage]="currentPage"
+					[uploadHandler]="_excel.postExcel"
+				></app-upload>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid" >
+		<div class="btn-group btn-group-sm" role="group">
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="_excel.downloadExcel(currentPage)">Download</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refresh()">Refresh</button>
+		</div>
+	</div>
+</ng-template>
+<ng-container *ngIf="!!data;then mainContent; else loadingElement">
+
+</ng-container>
+<ng-template #mainContent>
+	<app-dynamic-table
+		[data]="data"
+		[defaultColumnDefs]="Object.keys(data[0])"
+	></app-dynamic-table>
+</ng-template>
+<ng-template #loadingElement>
+	<p>Loading..</p>
+</ng-template>
+

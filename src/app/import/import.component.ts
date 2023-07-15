@@ -13,7 +13,7 @@ import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 
 import { FormBuilder,FormControl, FormGroup, Validators } from '@angular/forms';
-import { ValidateForm } from '../shared/formValidator';
+import { ValidateForm, ValidateFormNotZero } from '../shared/formValidator';
 
 @Component({
   selector: 'app-import',
@@ -43,6 +43,7 @@ export class ImportComponent {
 	};
 	ngOnInit(){
 			console.log(this);
+			
 	};
 
 	public Object=Object;//enable the use of "Object" method inside angular component ex: looping an object
@@ -75,6 +76,7 @@ export class ImportComponent {
 	@ViewChild("mainModal") mainModal!:DynamicModalComponent;
 	@ViewChild("newTransactionModal") newTransactionModal!:DynamicModalComponent;
 	@ViewChild(DataTableComponent) child!:DataTableComponent;
+
 	closeResult:string="";
 	private getDismissReason(reason: any): string {
 		if (reason === ModalDismissReasons.ESC) {
@@ -127,10 +129,11 @@ export class ImportComponent {
 	};
 	public queryUpdateValue:number=0;
 	public openNewTransactionModal=(modalData:any)=>{
+		this.queryUpdateValue=0;
 		this.formTest=this.fb.group({
 			_id:[modalData._id],
 			init:[modalData.Ctn],
-			update:[0,[Validators.required,ValidateForm]],
+			update:[0,[Validators.required,ValidateFormNotZero]],
 			final:[0,[Validators.required,ValidateForm]],
 			keterangan:["-"],
 		});
@@ -176,8 +179,6 @@ export class ImportComponent {
 		console.log("onSubmit : ", postData);
 		this.post(this.currentPage,postData,"transaction",id).subscribe(x=>{
 			this.newTransactionModalRef.close();
-			console.log(x);
-			console.log(this.modalData=x);
 			Object.assign(this.modalData,{Ctn:this.sumAll(this.modalData['transaction'],'value')});
 		})
 	};
@@ -193,6 +194,8 @@ export class ImportComponent {
 		}
 	};
 	
+	
+
 	public _modal:any={
 		filterModal:{
 			old_open:(modalName:string,data:Array<any>)=>{
@@ -204,7 +207,9 @@ export class ImportComponent {
 			open:()=>{
 				console.log('this._modal.filterModal.filterModel',this._modal.filterModal.getFilterModel);
 				this._modal.filterModal.filterElementIsActive=!this._modal.filterModal.filterElementIsActive;
-				let temp=this._modal.filterModal.generateFilterData(this._modal.filterModal.getDisplayData());
+				let excludedColArray=this._modal.filterModal.excludedColArray;
+				let data=this.excludeCol(this._modal.filterModal.getDisplayData(),excludedColArray);
+				let temp=this._modal.filterModal.generateFilterData(data);
 				this._modal.filterModal.filterData=temp;
 			},
 			generateFilterData:(data:Array<any>)=>{
@@ -228,12 +233,12 @@ export class ImportComponent {
 			filterElementIsActive:false,
 			getDisplayData:()=>this.gridOptions.api.rowModel.rowsToDisplay.map((x:any)=>x.data),
 			resetFilter:()=>{
-				let temp=this._modal.filterModal.generateFilterData(this.gridOptions.rowData);
+				let excludedColArray=this._modal.filterModal.excludedColArray;
+				let data=this.excludeCol(this.gridOptions.rowData,excludedColArray);
+				let temp=this._modal.filterModal.generateFilterData(data);
+				this._modal.filterModal.filterElementIsActive=!this._modal.filterModal.filterElementIsActive;
 				this._modal.filterModal.filterData=temp;
 				this.gridOptions.api.setFilterModel(null);
-				this.consoleDump([
-					['_modal.filterModal',this._modal.filterModal],
-				]);
 			},
 			filterSetterObj:{},
 			initFilter:(col:Array<any>)=>{//unused
@@ -424,7 +429,11 @@ export class ImportComponent {
 			};
 			let id=this.selectedDataId;
 			this.updateDataNew=data;
-			if(JSON.stringify(this.updateDataOld)===JSON.stringify(data))return
+			this.consoleDump([
+				['JSON.stringify(this.updateDataOld)',JSON.stringify(this.updateDataOld)],
+				['JSON.stringify(data)',JSON.stringify(data)],
+			])
+			if(JSON.stringify(this.updateDataOld)===JSON.stringify(event.data))return
 			this.update(this.currentPage,id,data);
 		},
 		onPaginationChanged:(params:any)=>{
@@ -447,40 +456,56 @@ export class ImportComponent {
 	};
 	public rowData:Array<any>=[];
 	public tableContainerStyle:any={};
+	@ViewChild('filterModalBody') set filterModalBody(element:any) {
+		if (element) {
+			console.log(element);
+			setTimeout(() => {
+				this.adjustTableContainerSize();
+			});
+		}
+	};
 	public adjustTableContainerSize=()=>{
 		console.log("dataTable event => this.adjustContainerSize()");
 		let navContainer=document.getElementById("navContainerId");
 		let navContainerRect=navContainer?.getBoundingClientRect();
 		let navContainerHeight:number=0;
-		
 		if(!!navContainerRect?.height)navContainerHeight=navContainerRect?.height;
+		////////////////////////////////////////////
+		let filterContainer=document.getElementById("nonModalFilterId");
+		let filterContainerRect=filterContainer?.getBoundingClientRect();
+		let filterContainerHeight:number=0;
+		if(!!filterContainerRect?.height)filterContainerHeight=filterContainerRect?.height;
 		////////////////////////////////////////////
 		let container=document.getElementById("gridTable")!;
 		let containerRect=container.getBoundingClientRect();
 		let containerRectTop=containerRect.top;
 		////////////////////////////////////////////
 		let innerTable=document.querySelectorAll('[Class=ag-center-cols-container]')[0];
-		let innerTableRect=innerTable.getBoundingClientRect();
-		let innerTableRectRight=innerTableRect.right;
+		let innerTableRect=innerTable?.getBoundingClientRect();
+		let innerTableRectRight:number=0;;
+		if(!!innerTableRect?.right)innerTableRectRight=innerTableRect.right;
 		/////////////////////////////////////////////
 		let scrollBar=document.querySelectorAll('[Class=ag-body-vertical-scroll-viewport]')[0];
-		let scrollBarRect=scrollBar.getBoundingClientRect();
-		let scrollBarRectWidth=scrollBarRect.width;
+		let scrollBarRect=scrollBar?.getBoundingClientRect();
+		let scrollBarRectWidth=scrollBarRect?.width;
 		//////////////////////////////////////////////
-		let innerTableWidth=innerTable.getBoundingClientRect().width;
-		let windowWidth=window.innerWidth;
-		let width="30%";
-		let height="100%";
-		if(innerTableWidth>=windowWidth)width="auto";
-		else{
-			width=(innerTableRectRight+scrollBarRectWidth)+"px";
-		}
-		let marginBottom:number=-5;
-		height=(window.innerHeight-containerRectTop+window.scrollY-navContainerHeight)+marginBottom+"px";
-		this.tableContainerStyle={
-			width:width,
-			height:height,
+		if(!!innerTable){
+			let innerTableWidth=innerTable.getBoundingClientRect().width;
+			let windowWidth=window.innerWidth;
+			let width="30%";
+			let height="100%";
+			if(innerTableWidth>=windowWidth)width="auto";
+			else{
+				width=(innerTableRectRight+scrollBarRectWidth)+"px";
+			}
+			let marginBottom:number=-5;
+			height=(window.innerHeight-containerRectTop+window.scrollY-navContainerHeight-filterContainerHeight)+marginBottom+"px";
+			this.tableContainerStyle={
+				width:width,
+				height:height,
+			};
 		};
+		
 	};
 	public gridSearch=(event:any)=>{
 		let data=event.target.value;

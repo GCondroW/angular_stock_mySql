@@ -18,6 +18,7 @@ import { DynamicModalComponent } from './misc/dynamic-modal/dynamic-modal.compon
 
 import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule } from '@angular/forms';
+import { StockComponent } from './stock/stock.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     DataTableComponent,
     DynamicModalComponent,
     DynamicTableComponent,
+    StockComponent,
   ],
   imports: [
     BrowserModule,

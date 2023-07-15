@@ -11,3 +11,11 @@ export function ValidateForm(control: AbstractControl) {
 	return null;
 
 }
+
+export function ValidateFormNotZero(control: AbstractControl) {
+	let data=control.value;
+	let pattern=RegExp(regex.number)
+	if (pattern.test(data)||data===0)return { invalidUrl: true };
+	return null;
+
+}

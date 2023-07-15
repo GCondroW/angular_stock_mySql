@@ -53,36 +53,37 @@
 							<button (click)="_modal.filterModal.open(filterModal,excludeCol(_modal.filterModal.getDisplayData(),_modal.filterModal.excludedColArray))" class="btn btn-outline-secondary btn-sm" type="button" id="button-addon2">Filter</button>
 						-->
 						<button (click)="_modal.filterModal.open()"class="btn btn-outline-secondary btn-sm" type="button" id="button-addon2">Filter</button>
-						<button (click)="_modal.filterModal.resetFilter()" class="btn btn-outline-secondary btn-sm" type="button" id="button-addon2">Reset Filter</button>
 				</div>
 			</div>
 		</div>
-		<div id="nonModalFilterId">
-			<ng-container *ngIf="!!_modal.filterModal.filterElementIsActive;then filterModalBody">
-			
-			</ng-container>
-			<ng-template #filterModalBody>
-				<div class="container">
+		<ng-container *ngIf="!!_modal.filterModal.filterElementIsActive;then filterModalBody" ></ng-container>
+		<ng-template #filterModalBody>
+			<div class="container  mb-1" id="nonModalFilterId">
+				<form>
 					<div class="row">
-						<div class="col" *ngFor="let pointer of Object.keys(_modal.filterModal.filterData)">
-							<label>{{pointer}}</label>
+						<div class="col px-0" *ngFor="let pointer of Object.keys(_modal.filterModal.filterData)">
 							<select class="form-select form-select-sm">
+								<option 
+									(click)="_modal.filterModal.addFilter(pointer,$event)"
+									[attr.selected]="this._modal.filterModal.getFilterModel()[pointer]?null:'selected'"
+									value=''
+								>{{pointer}}</option>
+								<ng-container *ngFor="let item of _modal.filterModal.filterData[pointer]">
 									<option 
-										[attr.selected]="this._modal.filterModal.getFilterModel()[pointer]?null:'selected'"
-									>-</option>
-									<ng-container *ngFor="let item of _modal.filterModal.filterData[pointer]">
-										<option 
-											[attr.selected]="this._modal.filterModal.getFilterModel()[pointer]?.filter===item?'selected':null"
-											(click)="_modal.filterModal.addFilter(pointer,$event)"
-											value={{item}} 
-										>{{item}}</option>
-									</ng-container>
+										[attr.selected]="this._modal.filterModal.getFilterModel()[pointer]?.filter===item?'selected':null"
+										(click)="_modal.filterModal.addFilter(pointer,$event)"
+										value={{item}} 
+									>{{item}}</option>
+								</ng-container>
 							</select>
 						</div>
-					</div>
+						<div class="col-auto ms-auto pe-0">
+							<button type="reset"(click)="_modal.filterModal.resetFilter()" class="btn btn-outline-secondary btn-sm" type="button" id="button-addon2">Reset</button>
+						</div>
 				</div>
-			</ng-template>
-		</div>
+				</form>
+			</div>
+		</ng-template>
 		<app-data-table *ngIf="isLoaded && dataIsNotEmpty &&!errMessage" 
 			[gridOptions]="gridOptions"
 			[rowData]="rowData"
@@ -231,7 +232,7 @@
 						formControlName="update"
 					>
 					<div class="input-group=append">
-						<button class="btn btn-outline-secondary" (click)="resetTransactionValue()">reset</button>
+						<button type="button" class="btn btn-outline-secondary" (click)="resetTransactionValue()">reset</button>
 					</div>
 				</div>
 			</div>
@@ -249,7 +250,7 @@
 						formControlName="final"
 					>
 					<div class="input-group=append">
-						<button class="btn btn-outline-secondary" (click)="resetTransactionValue()">reset</button>
+						<button type="button" class="btn btn-outline-secondary" (click)="resetTransactionValue()">reset</button>
 					</div>
 				</div>
 			</div>

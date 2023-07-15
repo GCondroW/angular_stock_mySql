@@ -7,6 +7,7 @@ import { Component, Input, inject } from '@angular/core';
 })
 export class UploadComponent{
 	constructor(){
+		console.log("uploadButton",this)
 	}
 	toggleValue=false;
 	toggleUploadField=()=>this.toggleValue=!this.toggleValue;
