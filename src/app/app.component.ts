@@ -13,24 +13,11 @@ export class AppComponent {
 	globalService : GlobalService = inject(GlobalService);
 	appRoutingModule : AppRoutingModule = inject(AppRoutingModule);
 	dynamicRoutes=this.appRoutingModule.dynamicRoutes;
-	excelDb = GlobalVar.excelDb;
-	tableNames:any=[];
-	sheetNames:any=[];
-	pages:any="";
-	
 	constructor(){
-		this.pages=this.dynamicRoutes;
-		/*this.globalService.getData(this.globalService.getCurrentPage()).subscribe(
-			(response) => {
-				this.excelDb.data = response;
-				this.excelDb.tableNames = Object.keys(response);
-				this.excelDb.sheetNames = this.globalService.getSheetNames(response);
-				console.log(GlobalVar);
-			},
-			(error) => { console.log(error); });*/
+		GlobalVar.pages=this.dynamicRoutes;
 	};
 	ngOnInit() {
-		console.log(this.dynamicRoutes);
+
 	};
 	title = 'app_angular_jsonServer';
 }

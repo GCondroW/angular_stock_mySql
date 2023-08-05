@@ -1,10 +1,13 @@
-import { Component,OnInit,inject } from '@angular/core';
+import { Component,OnInit,inject, Input } from '@angular/core';
 import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { DataTableComponent } from '../misc/data-table/data-table.component';
 import { GlobalService } from '../service/global/global.service';
 import { GlobalVar } from '../globalVar'
 import { DynamicTableComponent } from '../misc/dynamic-table/dynamic-table.component';
+import { ColDef } from 'ag-grid-community';
+import { Socket } from 'ngx-socket-io';
+
 
 @Component({
   selector: 'app-stock',
@@ -13,15 +16,27 @@ import { DynamicTableComponent } from '../misc/dynamic-table/dynamic-table.compo
 })
 export class StockComponent {
 	private globalService:GlobalService=inject(GlobalService);
+	private dbKey=GlobalVar.dbKey;
+	public socket:Socket=inject(Socket);
 	public currentPage=this.globalService.getCurrentPage();
 	public downloadExcel = this.globalService.downloadExcel;
 	public JSON=JSON;
 	public Object=Object;
+	public data=new GlobalVar.stockData([])
+	public dataIsReady:Boolean=false;
+	public navigationPages:any;
 	constructor(){
-		console.log(this);
+		this.navigationPages=GlobalVar.pages;
+		
 	};
 	ngOnInit(){
-		this.get(this.currentPage);
+		this.socket.emit("hello from client", 5, "6", { 7: Uint8Array.from([8]) });
+		this.socket.on("__1", (arg1:any) => {
+			console.log("__1",arg1); // 1
+			this.get(this.currentPage);
+		});
+		console.log(this);
+		
 	};
 	
 	/// OFFCANVAS ///
@@ -29,29 +44,138 @@ export class StockComponent {
 	public _offCanvas={
 		open:(content:any)=>this.offcanvasService.open(content),
 	};
-	/// OFFCANVAS ///
+	/// \OFFCANVAS ///
 	
-	/// excel handler ///
+	/// EXCEL ///
 	public _excel={
 		postExcel:(dbName:string,data:any)=>{
-			//this.isLoaded=false;	
-			this.globalService.excelHandler(data).then(x=>{
-				let api1=this.globalService.postData(dbName,x);
-				api1.subscribe(x=>this.data=x);
-			});
+			this.globalService.wipeData(dbName).subscribe(x=>{
+				this.globalService.excelHandler(data).then(x=>{
+					console.log("Excel : ", x)
+					this.rw(()=>this.globalService.postData(dbName,x));
+				});x
+			});				
 		},
 		downloadExcel:this.globalService.downloadExcel,
 	};
-	/// excel handler ///
-	public data:any;
-	get=(page:string)=>{
-		return this.globalService.getData(page,undefined).subscribe(x=>this.data=x);
+	/// \EXCEL ///
+	
+	/// AG-GRID ///
+	public defaultColDef: ColDef = {
+		resizable:true,
+		sortable: true,
+		filter: true,
+		editable:false,
+	};	
+	public gridOptions:any= {
+		columnDefs:[],
+		pagination: true,
+		rowSelection: 'single',
+		onRowClicked: ()=>alert("ERR"),
+		paginationAutoPageSize:false,
+		onGridReady:(params:any)=>{
+			console.log("grid Event => onGridReady : ");
+
+		},
+		onCellEditingStarted:(event:any)=>{
+			console.log("grid Event => onCellEditingStarted : ");
+
+		},
+		onCellEditingStopped:(event:any)=>{
+			console.log("grid Event => onCellEditingStopped : ");
+
+		},
+		onPaginationChanged:(params:any)=>{
+			if(!params.newPage)return
+			console.log("grid Event => paginationChanged : ");
+			this.gridOptions.columnApi.autoSizeAllColumns();
+			this.adjustTableContainerSize();
+		},
+		onRowDataUpdated:(event:any)=>{
+			console.log("grid Event => onRowDataUpdated : ");
+			this.gridOptions.columnApi.autoSizeAllColumns();
+			this.adjustTableContainerSize()
+		},
+		onColumnResized: (event:any) => {
+			console.log("grid Event => onColumnResized : ");
+		},
 	};
-	public updateTable=(x:any)=>{
-		console.log('updateTablePlaceHolder');
+	public tableContainerStyle:any={};
+	public adjustTableContainerSize=()=>{
+		console.log("dataTable event => this.adjustContainerSize()");
+		let navbarHeight=document.getElementById("navbarId")?.clientHeight;
+		if(navbarHeight===undefined)navbarHeight=0;
+		////////////////////////////////////////////
+		let container=document.getElementById("gridTable")!;
+		let containerRect=container.getBoundingClientRect();
+		let containerRectTop=containerRect.top;
+		////////////////////////////////////////////
+		let innerTable=document.querySelectorAll('[Class=ag-center-cols-container]')[0];
+		let innerTableRect=innerTable?.getBoundingClientRect();
+		let innerTableRectRight:number=0;;
+		if(!!innerTableRect?.right)innerTableRectRight=innerTableRect.right;
+		/////////////////////////////////////////////
+		let scrollBar=document.querySelectorAll('[Class=ag-body-vertical-scroll-viewport]')[0];
+		let scrollBarRect=scrollBar?.getBoundingClientRect();
+		let scrollBarRectWidth=scrollBarRect?.width;
+		//////////////////////////////////////////////
+		if(!!innerTable){
+			let innerTableWidth=innerTable.getBoundingClientRect().width;
+			let windowWidth=window.innerWidth;
+			let width="30%";
+			let height="100%";
+			if(innerTableWidth>=windowWidth)width="auto";
+			else{
+				width=(innerTableRectRight+scrollBarRectWidth)+"px";
+			}
+			let marginBottom:number=-5;
+			height=(window.innerHeight-containerRectTop+window.scrollY)+marginBottom-navbarHeight+"px";
+			this.tableContainerStyle={
+				width:width,
+				height:height,
+			};
+		};
+		
+	};
+	/// \AG-GRID ///
+	
+	rw=(request:any)=>{
+		console.log("Request",request);
+		return request().subscribe((x:any)=>{
+			if (!!x.ERR) return alert(x.ERR.message);
+			if (!!x.dbKey){
+				let dbKey=x.dbKey.toString();
+				
+				this.getDbKey(dbKey)
+				
+				return this.rw(()=>request());
+			}else this.updateData(x);
+		})
+	}
+	
+	getDbKey=(dbKey:string)=>{
+		console.log("dbKey : ",dbKey )
+		GlobalVar.dbKey=dbKey;
+		alert ("set db key "+JSON.stringify(GlobalVar.dbKey));
+		this.globalService.setHeaders("dbKey",dbKey);
+	};
+	
+	get=(page:string)=>{
+		return this.rw(()=>this.globalService.getData(page));
+	};
+	public updateData=(x:any)=>{
+		let returnVal=this.data.set(x);
+		let gridOptionCallback=()=>this.gridOptions.columnDefs=this.data.list.colDef;
+		gridOptionCallback();
+		return returnVal;
 	};
 	public refresh=()=>{
 		console.log('refreshPlaceHolder');
 	};
+	
+	public misc={
+
+	};
+	
 
 }

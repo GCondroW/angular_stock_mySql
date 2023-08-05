@@ -135,7 +135,6 @@
 				<button type="button" class="btn btn-outline-dark" (click)="c('close')">Close</button>
 			</ng-template>
 		</ng-template>
-		
 	</div>
 </ng-template>
 <ng-container *ngTemplateOutlet="mainContent"></ng-container>
@@ -208,7 +207,6 @@
 <ng-template #newTransactionModalBody>
 	<form [formGroup]="formTest" (ngSubmit)="newTransactionSubmit()">
 		<button id="submitButton" type="submit" hidden></button>
-		
 		<!--
 			<ngb-alert *ngIf="!formTest.valid" [dismissible]="false" type='danger'>{{message.inputInvalid}}</ngb-alert>
 			<p hidden><label>id : </label><input formControlName="_id"></p>

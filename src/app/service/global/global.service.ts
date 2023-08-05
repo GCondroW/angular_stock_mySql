@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { GlobalVar } from '../../globalVar';
 import { Router } from '@angular/router';
 import { read, utils, writeFile } from "xlsx";
@@ -18,11 +18,17 @@ export class GlobalService {
 	private http : HttpClient = inject(HttpClient);
 	private router : Router = inject(Router);
 	//private dynamicModalComponent = inject(DynamicModalComponent);
-	private url = GlobalVar.dbServerUrl;
+
 	private globalErrorHandlerService: GlobalErrorHandlerService = inject(GlobalErrorHandlerService);
 	private modalService:NgbModal=inject(NgbModal);
+	
+	private url = GlobalVar.dbServerUrl;
+	private dbKey = GlobalVar.dbKey;
+	private headers=new HttpHeaders();
+	
 	constructor() { 
-
+		 this.setHeaders('dbKey', this.dbKey.toString());
+		 console.log(this)
 	}
 	
 	_modal={
@@ -44,6 +50,11 @@ export class GlobalService {
 		}
 	};
 	
+	setHeaders=(key:string,value:string)=>{
+		 this.headers=this.headers.set(key,value);
+		 console.log('header set ', this.headers);
+	};
+	
 	getCurrentUrl=()=>{
 		//console.log('getCurrentUrl', this.router.routerState.snapshot.url);
 		return this.router.routerState.snapshot.url;
@@ -53,7 +64,7 @@ export class GlobalService {
 		return this.getCurrentUrl().split('/')[1];
 	};
 	
-	getData=(dbName:string,id:number | undefined)=>{
+	getData=(dbName:string,id?:number | undefined)=>{
 		let url=this.url;
 		let result:any;
 		if(id===undefined){
@@ -61,18 +72,18 @@ export class GlobalService {
 		}else{
 			url=url+dbName+"/"+id;
 		}
-		return this.http.get(url);
+		return this.http.get(url,{headers:this.headers});
 	};
 
 	
 	postData=(dbName:string,data:any={})=>{
 		let url=this.url+dbName;
-		return this.http.post(url,data)
+		return this.http.post(url,data,{headers:this.headers})
 	};
 	
 	postEmbedData=(dbName:string,data:any={},embedName:string|undefined,id:string|undefined)=>{
 		let url=this.url+dbName+"/"+embedName+"/"+id;
-		return this.http.post(url,data)
+		return this.http.post<any>(url,data)
 	};
 	
 	putData=(dbName:string,id:number,data:any={})=>{
@@ -84,7 +95,7 @@ export class GlobalService {
 		let url=this.url+dbName;
 		console.log("wipeData",url);
 		let data:any=[];
-		return this.http.delete(url);
+		return this.http.delete(url,{headers:this.headers});
 	};
 	
 	deleteData=(dbName:string,id:number)=>{
@@ -104,7 +115,7 @@ export class GlobalService {
 		let temp: {[index: string]:any} = {};
 		
 		workBook.SheetNames.map((sheetName:any)=>{
-			temp[sheetName]=utils.sheet_to_json(workBook.Sheets[sheetName]);
+			temp[sheetName]=utils.sheet_to_json(workBook.Sheets[sheetName],{blankrows:true,defval:""});
 			
 		});
 		return temp[sheetName];

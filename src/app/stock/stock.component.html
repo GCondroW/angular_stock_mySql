@@ -1,6 +1,8 @@
-<button (click)="_offCanvas.open(offcanvasContent)" type="button">---</button>
 <ng-template #offcanvasContent>
 	<div class="container-fluid">
+		<app-navigation 
+			[pages]="navigationPages"
+		></app-navigation>
 		<div class="row mb-1">
 			<div class="col">
 				<app-upload 
@@ -17,16 +19,30 @@
 		</div>
 	</div>
 </ng-template>
-<ng-container *ngIf="!!data;then mainContent; else loadingElement">
+<div id="gridTable" 
+	[style.width]="tableContainerStyle.width" 
+	[style.height]="tableContainerStyle.height"
+>
+	<nav id="navbarId" class="m-0 p-1 navbar sticky-top navbar-light bg-light">
+		<div class="container-fluid">
+			<button class="btn btn-outline-secondary btn-sm" (click)="_offCanvas.open(offcanvasContent)" type="button">=</button>
+		</div>
+	</nav>
+	<ng-container *ngIf="data.raw.length>0;then dataTable; else emptyDataElement"></ng-container>
+	<ng-template #dataTable>
+		<app-data-table 
+			[gridOptions]="gridOptions"
+			[rowData]="data.list.data"
+			[defaultColDef]="defaultColDef"
+			[rowHeight]=20
+		></app-data-table>
+	</ng-template>
+	<ng-template #emptyDataElement>
+		<p>kosong..</p>
+	</ng-template>
+</div>
 
-</ng-container>
-<ng-template #mainContent>
-	<app-dynamic-table
-		[data]="data"
-		[defaultColumnDefs]="Object.keys(data[0])"
-	></app-dynamic-table>
-</ng-template>
-<ng-template #loadingElement>
-	<p>Loading..</p>
-</ng-template>
+
+
+
 

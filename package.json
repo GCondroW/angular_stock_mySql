@@ -24,6 +24,7 @@
     "ag-grid-community": "^29.3.5",
     "bootstrap": "^5.2.3",
     "lowdb": "^6.0.1",
+    "ngx-socket-io": "^4.5.1",
     "path": "^0.12.7",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

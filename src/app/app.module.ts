@@ -20,6 +20,13 @@ import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule } from '@angular/forms';
 import { StockComponent } from './stock/stock.component';
 
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+
+import { GlobalVar } from './globalVar'
+
+const config: SocketIoConfig = { url: GlobalVar.dbServerUrl, options: {} };
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -35,6 +42,7 @@ import { StockComponent } from './stock/stock.component';
   ],
   imports: [
     BrowserModule,
+	SocketIoModule.forRoot(config),
     AppRoutingModule,
 	HttpClientModule,
 	AgGridModule,
