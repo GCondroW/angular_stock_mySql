@@ -22,6 +22,7 @@ export class StockComponent {
 	public downloadExcel = this.globalService.downloadExcel;
 	public JSON=JSON;
 	public Object=Object;
+	public console=console;
 	public data=new GlobalVar.stockData([])
 	public dataIsReady:Boolean=false;
 	public navigationPages:any;
@@ -53,7 +54,7 @@ export class StockComponent {
 				this.globalService.excelHandler(data).then(x=>{
 					console.log("Excel : ", x)
 					this.rw(()=>this.globalService.postData(dbName,x));
-				});x
+				});
 			});				
 		},
 		downloadExcel:this.globalService.downloadExcel,
@@ -61,20 +62,96 @@ export class StockComponent {
 	/// \EXCEL ///
 	
 	/// AG-GRID ///
+	
 	public defaultColDef: ColDef = {
 		resizable:true,
 		sortable: true,
 		filter: true,
 		editable:false,
 	};	
+	
+	public filter:any={
+		defaultFilterParam:{
+			supplier:{
+				filterType: 'text',
+				type:'contains',
+				filter:"",
+			},
+			kategori:{
+				filterType: 'text',
+				type:'contains',
+				filter:"PAJAK",
+			},
+			ctn:{
+				filterType: 'number',
+				type:'greaterThanOrEqual',
+				filter:1,
+			},
+			"Qty/ Ctn":{
+				filterType: 'text',
+				type:'contains',
+				filter:"",
+			},
+		},
+		getCurrentFilter:()=>this.gridApi.getFilterModel(),
+		setFilter:(header:any,filter:any,filterType?:string,type?:string)=>{
+			let filterInstance = this.gridApi.getFilterInstance(header); 
+			let defaultFilterParam=this.filter.defaultFilterParam;
+			let temp1:any={};
+			temp1['filter']=filter;
+			if(!filterType){
+				if(filterInstance.filterType) return temp1['filterType']=filterInstance.filterType;
+				temp1['filterType']=defaultFilterParam[header].filterType;
+			} else {
+				temp1['filterType']=filterType;
+			};
+			if(!type){
+				if(filterInstance.type) return temp1['type']=filterInstance.type;
+				temp1['type']=defaultFilterParam[header].type;
+			} else {
+				temp1['type']=type;
+			};
+			filterInstance.setModel(temp1);
+			this.gridApi.onFilterChanged();
+			console.log(" temp : ",temp1)
+			console.log(" GRIDAPI : ",this.gridApi)
+			
+		},
+		setFilterOld:(header:any,filter:any,filterType?:string,type?:string)=>{
+			let temp=this.filter.getCurrentFilter();
+			console.log('filterEval 1 : ',header,type)
+			
+			//if(!filter)filter=this.filter.defaultFilterParam[header].filter;
+			if(!filterType)filterType=this.filter.defaultFilterParam[header].filterType;
+			if(!type)type=this.filter.defaultFilterParam[header].type;
+			
+			console.log('filterEval 2 : ',header,type)
+			Object.assign(temp[header],{
+				filter:filter,
+				filterType:filterType,
+				type:type,
+				
+			});
+			this.gridApi.setFilterModel(temp);
+			console.log(" temp : ",temp)
+			console.log(" GRIDAPI : ",this.gridApi)
+		},
+	};
+	
+	
 	public gridOptions:any= {
 		columnDefs:[],
 		pagination: true,
+		paginationAutoPageSize:true,
 		rowSelection: 'single',
 		onRowClicked: ()=>alert("ERR"),
-		paginationAutoPageSize:false,
 		onGridReady:(params:any)=>{
+			
 			console.log("grid Event => onGridReady : ");
+			this.gridApi=this.gridOptions.api;
+			this.gridApi.setFilterModel(this.filter.defaultFilterParam);
+			console.log(this.gridApi.getFilterModel(),this.filter.defaultFilterParam);
+			
 
 		},
 		onCellEditingStarted:(event:any)=>{
@@ -88,20 +165,27 @@ export class StockComponent {
 		onPaginationChanged:(params:any)=>{
 			if(!params.newPage)return
 			console.log("grid Event => paginationChanged : ");
-			this.gridOptions.columnApi.autoSizeAllColumns();
-			this.adjustTableContainerSize();
+		//	this.adjustTableContainerSize();
+			this.adjustTableContainerSize()
+		
+
+
 		},
 		onRowDataUpdated:(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
-			this.gridOptions.columnApi.autoSizeAllColumns();
-			this.adjustTableContainerSize()
+			this.adjustTableContainerSize();
+
 		},
 		onColumnResized: (event:any) => {
 			console.log("grid Event => onColumnResized : ");
+			
+			//this.adjustTableContainerSize()
 		},
 	};
+	public gridApi:any;//initialize at gridOptions.onGridReady
 	public tableContainerStyle:any={};
 	public adjustTableContainerSize=()=>{
+			this.gridOptions.columnApi.autoSizeAllColumns();
 		console.log("dataTable event => this.adjustContainerSize()");
 		let navbarHeight=document.getElementById("navbarId")?.clientHeight;
 		if(navbarHeight===undefined)navbarHeight=0;
@@ -136,6 +220,7 @@ export class StockComponent {
 			};
 		};
 		
+		
 	};
 	/// \AG-GRID ///
 	
@@ -145,21 +230,17 @@ export class StockComponent {
 			if (!!x.ERR) return alert(x.ERR.message);
 			if (!!x.dbKey){
 				let dbKey=x.dbKey.toString();
-				
 				this.getDbKey(dbKey)
-				
 				return this.rw(()=>request());
 			}else this.updateData(x);
-		})
-	}
-	
+		});
+	};
 	getDbKey=(dbKey:string)=>{
 		console.log("dbKey : ",dbKey )
 		GlobalVar.dbKey=dbKey;
 		alert ("set db key "+JSON.stringify(GlobalVar.dbKey));
 		this.globalService.setHeaders("dbKey",dbKey);
 	};
-	
 	get=(page:string)=>{
 		return this.rw(()=>this.globalService.getData(page));
 	};
@@ -172,10 +253,7 @@ export class StockComponent {
 	public refresh=()=>{
 		console.log('refreshPlaceHolder');
 	};
-	
 	public misc={
 
 	};
-	
-
 }

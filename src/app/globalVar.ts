@@ -9,9 +9,11 @@ export const GlobalVar = {
 	pages:{},
 	stockData:class stockData{
 		raw:Array<any>=[];
-		list:{data:any,colDef:any}={
+		list:{data:any,colDef:any,header:any,filterData:any}={
 			data:[],
 			colDef:[],
+			header:[],
+			filterData:[],
 			
 		};
 		constructor(data:Array<any>){
@@ -24,7 +26,7 @@ export const GlobalVar = {
 
 		};
 		get=()=>this.raw;
-		createView={
+		private createView={
 			list:(data:any)=>{
 				let getColumnDefs=(data:any)=>{
 					let tableColumn=Object.keys(data[0]);
@@ -33,7 +35,8 @@ export const GlobalVar = {
 					tableColumn.map((item:string)=>{
 						let pushVar:any={};
 						if(item==="_id")pushVar["hide"]=true;//hiding _id column
-						if(item==="Ctn")pushVar["editable"]=false;
+						if(item==="ctn")pushVar["editable"]=false;
+						if(item==="ctn")pushVar["filter"]='agNumberColumnFilter';
 						//pushVar["filter"]='agSetColumnFilter';		
 						pushVar["autoHeight"]=true;		
 						pushVar["field"]=item;	
@@ -48,18 +51,51 @@ export const GlobalVar = {
 						let qty=0; 
 						itemData.transaksi.map((itemTransaksi:any)=>{
 							qty=qty+itemTransaksi.qty;
-						})
+						});
 						return qty;
 					};
-					Object.assign(itemData,{ctn:ctnValue()})
+					let qtyCtn=()=>{
+						let qtyCtn:any;
+						qtyCtn=(itemData.qty+" "+itemData.stn);
+						return qtyCtn;;
+					};
+					Object.assign(itemData,{
+						ctn:ctnValue(),
+						['Qty/ Ctn']:qtyCtn(),
+					});
 					delete itemData.transaksi;
+					delete itemData.qty;
+					delete itemData.stn;
 					temp.push(itemData)
 				})
-				this.list.data=temp;
+				this.list.data=JSON.parse(JSON.stringify((temp)));
 				this.list.colDef=getColumnDefs(temp);
-				
-				
+				this.list.header=Object.keys(temp[0]);
+				this.list.filterData=this.generateFilterData(temp);
 			},
+		};
+		private generateFilterData=(data:Array<any>)=>{
+			let temp:any={};
+			data.map(item=>{
+				delete item._id;
+				delete item.nama;
+				delete item.ctn;
+			});
+			let dataColumn=Object.keys(data[0]);
+			dataColumn.map(pointer=>{
+				temp[pointer]=[];
+			});
+			data.map(item=>{
+				dataColumn.map(pointer=>{
+					temp[pointer].push(item[pointer]);
+				});
+			});
+			dataColumn.map(pointer=>{
+				temp[pointer]=[...new Set(temp[pointer])]
+				if(pointer!=="ctn") return temp[pointer].sort();
+				temp[pointer].sort((a:any, b:any) => (a - b));
+			});
+			return temp;
 		};
 	},
 	

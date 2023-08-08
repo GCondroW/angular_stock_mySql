@@ -1,12 +1,5 @@
-.ag-theme-alpine {
-	--ag-grid-size: 3px;
-	--ag-font-size: 10px;
-}
+
 div.table-container{
 	margin-top:5px;
 	margin-bottom:5px;
-}
-
-button.nav-states-handler-button {
-	--ag-font-size: 10px;
 }

@@ -1,4 +1,30 @@
-<ng-template #offcanvasContent>
+s
+<div id="gridTable" 
+	[style.width]="tableContainerStyle.width" 
+	[style.height]="tableContainerStyle.height"
+>
+	<nav id="navbarId" class="m-0 p-1 navbar sticky-top navbar-light bg-light">
+		<div class="container-fluid px-1">
+			<button class="btn btn-outline-secondary btn-sm" (click)="_offCanvas.open(mainOffcanvasContent)" type="button">=</button>
+			<button class="btn btn-outline-secondary btn-sm" (click)="_offCanvas.open(filterOffcanvassContent)" type="button">FIlter</button>
+		</div>
+	</nav>
+	<ng-container *ngIf="data.raw.length>0;then dataTable; else emptyDataElement"></ng-container>
+	<ng-template #dataTable>
+		<app-data-table 
+			[gridOptions]="gridOptions"
+			[rowData]="data.list.data"
+			[defaultColDef]="defaultColDef"
+			[rowHeight]=15
+			[headerHeight]=20
+		></app-data-table>
+	</ng-template>
+	<ng-template #emptyDataElement>
+		<p>kosong..</p>
+	</ng-template>
+</div>
+
+<ng-template #mainOffcanvasContent>
 	<div class="container-fluid">
 		<app-navigation 
 			[pages]="navigationPages"
@@ -19,30 +45,90 @@
 		</div>
 	</div>
 </ng-template>
-<div id="gridTable" 
-	[style.width]="tableContainerStyle.width" 
-	[style.height]="tableContainerStyle.height"
->
-	<nav id="navbarId" class="m-0 p-1 navbar sticky-top navbar-light bg-light">
-		<div class="container-fluid">
-			<button class="btn btn-outline-secondary btn-sm" (click)="_offCanvas.open(offcanvasContent)" type="button">=</button>
+
+<ng-template #filterOffcanvassContent>
+	<div class="container-fluid">
+		<h3>Filter</h3>
+		<button (click)="gridApi.setFilterModel(filter.defaultFilterParam)">Reset</button>
+		<hr>
+		<div class="row mb-1">
+			<label>Stock : </label>
+			<div>
+				<select class="form-select form-select-sm">
+					<option
+						(click)="filter.setFilter('ctn','','number','greaterThanOrEqual')"
+						[attr.selected]="this.filter.getCurrentFilter().ctn?.filter===''?'selected':null"
+					>
+						Semua
+					</option>
+					<option
+						(click)="filter.setFilter('ctn',1,'number','greaterThanOrEqual')"
+						[attr.selected]="
+							this.filter.getCurrentFilter().ctn?.filter===1
+							&&
+							this.filter.getCurrentFilter().ctn?.type==='greaterThanOrEqual'
+							?'selected':null"
+					>
+						Ada
+					</option>
+					<option
+						(click)="filter.setFilter('ctn',1,'number','lessThan')"
+						[attr.selected]=
+							"this.filter.getCurrentFilter().ctn?.filter===1
+							&&
+							this.filter.getCurrentFilter().ctn?.type==='lessThan'
+							?'selected':null"
+					>
+						Habis
+					</option>
+				</select>
+			</div>
 		</div>
-	</nav>
-	<ng-container *ngIf="data.raw.length>0;then dataTable; else emptyDataElement"></ng-container>
-	<ng-template #dataTable>
-		<app-data-table 
-			[gridOptions]="gridOptions"
-			[rowData]="data.list.data"
-			[defaultColDef]="defaultColDef"
-			[rowHeight]=20
-		></app-data-table>
-	</ng-template>
-	<ng-template #emptyDataElement>
-		<p>kosong..</p>
-	</ng-template>
-</div>
-
-
-
+		<div class="row mb-1">
+			<label>Pajak : </label>
+			<div>
+				<select  class="form-select form-select-sm">
+					<option
+						(click)="filter.setFilter('kategori','')"
+						[attr.selected]="!this.filter.getCurrentFilter().kategori?.filter?'selected':null"
+					>
+						Semua
+					</option>
+					<option
+						(click)="filter.setFilter('kategori','PAJAK')"
+						[attr.selected]="this.filter.getCurrentFilter().kategori?.filter==='PAJAK'?'selected':null"
+					>
+						Pajak
+					</option>
+					<option
+						(click)="filter.setFilter('kategori','Non-Pajak')"
+						[attr.selected]="this.filter.getCurrentFilter().kategori?.filter==='Non-Pajak'?'selected':null"
+					>
+						Non-Pajak
+					</option>
+				</select>
+			</div>
+		</div>		
+		<hr>
+		<div class="row mb-1" *ngFor="let header of Object.keys(data.list.filterData)">
+			<label class="col-4" for="sort">{{header}} : </label>
+			<div class="col-8">
+				<select class="form-select form-select-sm" name="sort" id="sort" aria-label="Small select example">
+					<option
+						[attr.selected]="!this.filter.getCurrentFilter()[header]?'selected':null"
+						(click)="filter.setFilter(header,'')"
+					>Semua</option>
+					<option 
+						[attr.selected]="this.filter.getCurrentFilter()[header]?'selected':null"
+						*ngFor="let filterItem of data.list.filterData[header]"
+						(click)="filter.setFilter(header,filterItem)"
+					>
+						{{filterItem}}
+					</option>
+				</select>
+			</div>
+		</div>
+	</div>
+</ng-template>
 
 
