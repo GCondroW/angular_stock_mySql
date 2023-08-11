@@ -20,12 +20,19 @@ export class StockComponent {
 	public socket:Socket=inject(Socket);
 	public currentPage=this.globalService.getCurrentPage();
 	public downloadExcel = this.globalService.downloadExcel;
+	
 	public JSON=JSON;
 	public Object=Object;
 	public console=console;
-	public data=new GlobalVar.stockData([])
+	public toUpperCase="".toUpperCase;
+	
+	public stock=new GlobalVar.stock([]);
+	public viewArr=Object.keys(this.stock.stock)
+	public activeView:any="";//public activeView=this.viewArr[1];
+	
 	public dataIsReady:Boolean=false;
 	public navigationPages:any;
+	
 	constructor(){
 		this.navigationPages=GlobalVar.pages;
 		
@@ -71,28 +78,7 @@ export class StockComponent {
 	};	
 	
 	public filter:any={
-		defaultFilterParam:{
-			supplier:{
-				filterType: 'text',
-				type:'contains',
-				filter:"",
-			},
-			kategori:{
-				filterType: 'text',
-				type:'contains',
-				filter:"PAJAK",
-			},
-			ctn:{
-				filterType: 'number',
-				type:'greaterThanOrEqual',
-				filter:1,
-			},
-			"Qty/ Ctn":{
-				filterType: 'text',
-				type:'contains',
-				filter:"",
-			},
-		},
+		defaultFilterParam:this.stock.stock[this.activeView].defaultFilterParam,
 		getCurrentFilter:()=>this.gridApi.getFilterModel(),
 		setFilter:(header:any,filter:any,filterType?:string,type?:string)=>{
 			let filterInstance = this.gridApi.getFilterInstance(header); 
@@ -113,47 +99,36 @@ export class StockComponent {
 			};
 			filterInstance.setModel(temp1);
 			this.gridApi.onFilterChanged();
+			console.log(" filterInstance : ",filterInstance)
 			console.log(" temp : ",temp1)
 			console.log(" GRIDAPI : ",this.gridApi)
 			
 		},
-		setFilterOld:(header:any,filter:any,filterType?:string,type?:string)=>{
-			let temp=this.filter.getCurrentFilter();
-			console.log('filterEval 1 : ',header,type)
-			
-			//if(!filter)filter=this.filter.defaultFilterParam[header].filter;
-			if(!filterType)filterType=this.filter.defaultFilterParam[header].filterType;
-			if(!type)type=this.filter.defaultFilterParam[header].type;
-			
-			console.log('filterEval 2 : ',header,type)
-			Object.assign(temp[header],{
-				filter:filter,
-				filterType:filterType,
-				type:type,
-				
-			});
-			this.gridApi.setFilterModel(temp);
-			console.log(" temp : ",temp)
-			console.log(" GRIDAPI : ",this.gridApi)
-		},
+		search:(event:any)=>console.log(event.target.value),
 	};
 	
 	
 	public gridOptions:any= {
 		columnDefs:[],
 		pagination: true,
-		paginationAutoPageSize:true,
+		paginationAutoPageSize:false,	
+		paginationPageSize:20,
 		rowSelection: 'single',
-		onRowClicked: ()=>alert("ERR"),
+		onRowClicked: ()=>console.log("ERR"),		
 		onGridReady:(params:any)=>{
 			
 			console.log("grid Event => onGridReady : ");
 			this.gridApi=this.gridOptions.api;
-			this.gridApi.setFilterModel(this.filter.defaultFilterParam);
-			console.log(this.gridApi.getFilterModel(),this.filter.defaultFilterParam);
-			
-
+			this.adjustTableContainerSize()
 		},
+		
+		onFirstDataRendered:(event:any)=>{
+			console.log("grid Event => onFirstDataRendered : ");
+			this.gridOptions.columnDefs=this.stock.stock[this.activeView].colDef;
+
+			this.adjustTableContainerSize()
+		},
+		
 		onCellEditingStarted:(event:any)=>{
 			console.log("grid Event => onCellEditingStarted : ");
 
@@ -165,27 +140,26 @@ export class StockComponent {
 		onPaginationChanged:(params:any)=>{
 			if(!params.newPage)return
 			console.log("grid Event => paginationChanged : ");
-		//	this.adjustTableContainerSize();
 			this.adjustTableContainerSize()
-		
-
-
 		},
+		
 		onRowDataUpdated:(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
-			this.adjustTableContainerSize();
-
+			this.adjustTableContainerSize()
+		},
+		onFilterChanged:(event:any)=>{
+			console.log("grid Event => onFilterChanged : ");
+			this.adjustTableContainerSize()
 		},
 		onColumnResized: (event:any) => {
 			console.log("grid Event => onColumnResized : ");
 			
-			//this.adjustTableContainerSize()
+			
 		},
 	};
 	public gridApi:any;//initialize at gridOptions.onGridReady
-	public tableContainerStyle:any={};
+	public tableContainerStyle:{width:string,height:string}={width:'0px',height:'0px'};
 	public adjustTableContainerSize=()=>{
-			this.gridOptions.columnApi.autoSizeAllColumns();
 		console.log("dataTable event => this.adjustContainerSize()");
 		let navbarHeight=document.getElementById("navbarId")?.clientHeight;
 		if(navbarHeight===undefined)navbarHeight=0;
@@ -207,19 +181,32 @@ export class StockComponent {
 			let innerTableWidth=innerTable.getBoundingClientRect().width;
 			let windowWidth=window.innerWidth;
 			let width="30%";
-			let height="100%";
+			let height:any="100%";
 			if(innerTableWidth>=windowWidth)width="auto";
 			else{
 				width=(innerTableRectRight+scrollBarRectWidth)+"px";
 			}
-			let marginBottom:number=-5;
-			height=(window.innerHeight-containerRectTop+window.scrollY)+marginBottom-navbarHeight+"px";
+			let marginBottom:number=0;
+			let tempHeight=(window.innerHeight-containerRectTop+window.scrollY)+marginBottom-navbarHeight;
+			height=20*Math.floor(tempHeight/20);
 			this.tableContainerStyle={
 				width:width,
-				height:height,
+				height:height+'px',
 			};
+			console.log("tableHeight",height/20);
+			console.log("aaa0",this.gridOptions.paginationPageSize=(20*Math.floor((height-navbarHeight)/20)/20)-3);
 		};
 		
+	};
+	public changeView=(view:string)=>{
+		if(this.activeView===""){
+			this.gridApi.setColumnDefs(this.stock.stock[view].colDef);
+			this.activeView=view;
+		};
+		if(view===this.activeView)return
+		this.gridApi.setColumnDefs(this.stock.stock[view].colDef);
+		this.activeView=view;
+		console.log(this.gridOptions);
 		
 	};
 	/// \AG-GRID ///
@@ -245,11 +232,11 @@ export class StockComponent {
 		return this.rw(()=>this.globalService.getData(page));
 	};
 	public updateData=(x:any)=>{
-		let returnVal=this.data.set(x);
-		let gridOptionCallback=()=>this.gridOptions.columnDefs=this.data.list.colDef;
-		gridOptionCallback();
+		let returnVal=this.stock.set(x);
+		this.changeView(this.viewArr[1]);
 		return returnVal;
 	};
+
 	public refresh=()=>{
 		console.log('refreshPlaceHolder');
 	};

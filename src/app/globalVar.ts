@@ -7,79 +7,201 @@ export const GlobalVar = {
 		tableNames:{},
 	},
 	pages:{},
-	stockData:class stockData{
+	stock:class stockData{
 		raw:Array<any>=[];
-		list:{data:any,colDef:any,header:any,filterData:any}={
-			data:[],
-			colDef:[],
-			header:[],
-			filterData:[],
-			
-		};
+		maxCharLength:any={};
+		
+		stock:any={
+			daftar:{
+				data:[],
+				colDef:[],
+				header:[],
+				filterData:[],
+				maxCharLength:{},
+				defaultFilterParam:{
+					supplier:{
+						filterType: 'text',
+						type:'contains',
+						filter:"",
+					},
+					kategori:{
+						filterType: 'text',
+						type:'contains',
+						filter:"PAJAK",
+					},
+					ctn:{
+						filterType: 'number',
+						type:'greaterThanOrEqual',
+						filter:1,
+					},
+					"Qty/ Ctn":{
+						filterType: 'text',
+						type:'contains',
+						filter:"",
+					},
+				},
+				createView:(data:any)=>{
+					let getColumnDefs=(data:any)=>{
+						let tableColumn=Object.keys(data[0]);
+						let temp:ColDef[];
+						temp=[];
+						tableColumn.map((item:string)=>{
+							let pushVar:any={};
+							if(item==="_id")pushVar["hide"]=true;//hiding _id column
+							if(item==="supplier")pushVar["hide"]=true;
+							if(item==="kategori")pushVar["hide"]=true;
+							if(item==="ctn")pushVar["editable"]=false;
+							if(item==="ctn")pushVar["filter"]='agNumberColumnFilter';
+							//pushVar["filter"]='agSetColumnFilter';	
+							if(item==="ctn")pushVar["editable"]=false;
+							if(item==="nama")pushVar["width"]=500;
+							if(item==="Qty/ Ctn")pushVar["width"]=150;
+							if(item==="ctn")pushVar["width"]=100;
+							//pushVar["width"]=this.maxCharLength[item]*15	
+							pushVar["autoHeight"]=true;		
+							pushVar["field"]=item;	
+							temp.push(pushVar)		
+						});
+						console.log(temp);
+						return temp;
+					};
+					let temp:Array<any>=[];
+					
+					data.map((itemData:any)=>{
+						let ctnValue=()=>{
+							let qty=0; 
+							itemData.transaksi.map((itemTransaksi:any)=>{
+								qty=qty+itemTransaksi.qty;
+							});
+							return qty;
+						};
+						let qtyCtn=()=>{
+							let qtyCtn:any;
+							qtyCtn=(itemData.qty+" "+itemData.stn);
+							return qtyCtn;;
+						};
+						Object.assign(itemData,{
+							ctn:ctnValue(),
+							['Qty/ Ctn']:qtyCtn(),
+						});
+						delete itemData.transaksi;
+						delete itemData.qty;
+						delete itemData.stn;
+						temp.push(itemData)
+					})
+					this.stock.daftar.data=JSON.parse(JSON.stringify((temp)));
+					this.stock.daftar.maxCharLength=this.getMaxCharLength(temp);
+					this.stock.daftar.colDef=getColumnDefs(temp);
+					this.stock.daftar.header=Object.keys(temp[0]);
+					this.stock.daftar.filterData=this.generateFilterData(JSON.parse(JSON.stringify((temp))),
+						["_id","nama","ctn"]
+					);
+				},
+			},
+			transaksi:{
+				data:[],
+				colDef:[],
+				header:[],
+				filterData:[],
+				maxCharLength:{},
+				defaultFilterParam:{
+					nama:{
+						filterType: 'text',
+						type:'contains',
+						filter:"",
+					},
+					qty:{
+						filterType: 'number',
+						type:'greaterThanOrEqual',
+						filter:1,
+					},
+					user:{
+						filterType: 'text',
+						type:'contains',
+						filter:"",
+					},
+					tanggal:{
+						filterType: 'text',
+						type:'contains',
+						filter:"",
+					},
+					keterangan:{
+						filterType: 'text',
+						type:'contains',
+						filter:"",
+					},					
+				},
+				createView:(data:any)=>{
+					let getColumnDefs=(data:any)=>{
+						let tableColumn=Object.keys(data[0]);
+						let temp:ColDef[];
+						temp=[];
+						tableColumn.map((item:string)=>{
+							let pushVar:any={};
+							if(item==="_id")pushVar["hide"]=true;//hiding _id column
+						//	if(item==="nama")pushVar["width"]=500;
+						//	if(item==="Qty/ Ctn")pushVar["width"]=150;
+						//	if(item==="ctn")pushVar["width"]=100;
+							pushVar["autoHeight"]=true;		
+							pushVar["field"]=item;	
+							temp.push(pushVar)		
+						});
+						return temp;
+					};
+					let temp:Array<any>=[];
+					data.map((itemData:any)=>{
+						let nama=itemData.nama;
+						let transaksi=itemData.transaksi;
+						transaksi.map((item:any)=>{
+							temp.push(Object.assign({nama:nama},item));
+						});
+					});
+					this.stock.transaksi.data=JSON.parse(JSON.stringify((temp)));
+					this.stock.transaksi.maxCharLength=this.getMaxCharLength(temp);
+					this.stock.transaksi.colDef=getColumnDefs(temp);
+					this.stock.transaksi.header=Object.keys(temp[0]);
+					this.stock.transaksi.filterData=this.generateFilterData(JSON.parse(JSON.stringify((temp))),
+						[]
+					);
+				},
+			},
+		}
+		
+		
 		constructor(data:Array<any>){
 			this.raw=data;
 		};
+		
 		length=this.raw.length;
+		
 		set=(data:Array<any>)=>{
 			this.raw=data;
-			this.createView.list(data);
-
+			Object.keys(this.stock).map(pointer=>{
+				this.stock[pointer].createView(JSON.parse(JSON.stringify((data))));
+			})
+		};
+		
+		private getMaxCharLength=(data:Array<any>)=>{
+			let header=Object.keys(data[0]);
+			let returnVar:any={};
+			header.map(item=>{
+				returnVar[item]=0;
+			})
+			data.map(item=>{
+				header.map(headerItem=>{
+					let temp=item[headerItem].toString().length;
+					if(temp>returnVar[headerItem])returnVar[headerItem]=temp;
+				});
+			});
+			return returnVar;
 		};
 		get=()=>this.raw;
-		private createView={
-			list:(data:any)=>{
-				let getColumnDefs=(data:any)=>{
-					let tableColumn=Object.keys(data[0]);
-					let temp:ColDef[];
-					temp=[];
-					tableColumn.map((item:string)=>{
-						let pushVar:any={};
-						if(item==="_id")pushVar["hide"]=true;//hiding _id column
-						if(item==="ctn")pushVar["editable"]=false;
-						if(item==="ctn")pushVar["filter"]='agNumberColumnFilter';
-						//pushVar["filter"]='agSetColumnFilter';		
-						pushVar["autoHeight"]=true;		
-						pushVar["field"]=item;	
-						temp.push(pushVar)		
-					});
-					console.log(temp);
-					return temp;
-				};
-				let temp:Array<any>=[];
-				data.map((itemData:any)=>{
-					let ctnValue=()=>{
-						let qty=0; 
-						itemData.transaksi.map((itemTransaksi:any)=>{
-							qty=qty+itemTransaksi.qty;
-						});
-						return qty;
-					};
-					let qtyCtn=()=>{
-						let qtyCtn:any;
-						qtyCtn=(itemData.qty+" "+itemData.stn);
-						return qtyCtn;;
-					};
-					Object.assign(itemData,{
-						ctn:ctnValue(),
-						['Qty/ Ctn']:qtyCtn(),
-					});
-					delete itemData.transaksi;
-					delete itemData.qty;
-					delete itemData.stn;
-					temp.push(itemData)
-				})
-				this.list.data=JSON.parse(JSON.stringify((temp)));
-				this.list.colDef=getColumnDefs(temp);
-				this.list.header=Object.keys(temp[0]);
-				this.list.filterData=this.generateFilterData(temp);
-			},
-		};
-		private generateFilterData=(data:Array<any>)=>{
+		private generateFilterData=(data:Array<any>,excludedCol:Array<any>)=>{
 			let temp:any={};
 			data.map(item=>{
-				delete item._id;
-				delete item.nama;
-				delete item.ctn;
+				excludedCol.map(excludedColItem=>{
+					delete item[excludedColItem];
+				})
 			});
 			let dataColumn=Object.keys(data[0]);
 			dataColumn.map(pointer=>{

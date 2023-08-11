@@ -1,22 +1,47 @@
-s
 <div id="gridTable" 
 	[style.width]="tableContainerStyle.width" 
 	[style.height]="tableContainerStyle.height"
 >
 	<nav id="navbarId" class="m-0 p-1 navbar sticky-top navbar-light bg-light">
 		<div class="container-fluid px-1">
-			<button class="btn btn-outline-secondary btn-sm" (click)="_offCanvas.open(mainOffcanvasContent)" type="button">=</button>
-			<button class="btn btn-outline-secondary btn-sm" (click)="_offCanvas.open(filterOffcanvassContent)" type="button">FIlter</button>
-		</div>
+			<div class="d-flex">
+				<button class="float-start btn btn-outline-secondary btn-sm" (click)="_offCanvas.open(mainOffcanvasContent)" type="button">=</button>
+				<button 
+					[ngClass]="activeView===a?{'active':true}:null"
+					*ngFor="let a of viewArr"
+					class="float-start btn btn-outline-secondary btn-sm ms-2" 
+					(click)="changeView(a)"
+					type="button"
+				>
+					{{a.toUpperCase()}}
+				</button>
+			</div>
+			
+			<div class="d-flex">
+				<input 
+					class="form-control me-2" 
+					type="search" 
+					placeholder="Cari.." 
+					aria-label="Search"
+					(input)="filter.search($event)"
+				>
+				<button 
+					class="btn btn-outline-secondary btn-sm" 
+					type="button"
+					(click)="_offCanvas.open(filterOffcanvassContent)" 
+				>
+					Filter
+				</button>
+
+			</div>
+	</div>
 	</nav>
-	<ng-container *ngIf="data.raw.length>0;then dataTable; else emptyDataElement"></ng-container>
+	<ng-container *ngIf="stock.raw.length>0;then dataTable; else emptyDataElement"></ng-container>
 	<ng-template #dataTable>
 		<app-data-table 
 			[gridOptions]="gridOptions"
-			[rowData]="data.list.data"
+			[rowData]="stock.stock[activeView].data"
 			[defaultColDef]="defaultColDef"
-			[rowHeight]=15
-			[headerHeight]=20
 		></app-data-table>
 	</ng-template>
 	<ng-template #emptyDataElement>
@@ -47,7 +72,7 @@ s
 </ng-template>
 
 <ng-template #filterOffcanvassContent>
-	<div class="container-fluid">
+	<div *ngIf="activeView==='daftar'" class="container-fluid">
 		<h3>Filter</h3>
 		<button (click)="gridApi.setFilterModel(filter.defaultFilterParam)">Reset</button>
 		<hr>
@@ -110,7 +135,7 @@ s
 			</div>
 		</div>		
 		<hr>
-		<div class="row mb-1" *ngFor="let header of Object.keys(data.list.filterData)">
+		<div class="row mb-1" *ngFor="let header of Object.keys(stock.stock[activeView].filterData)">
 			<label class="col-4" for="sort">{{header}} : </label>
 			<div class="col-8">
 				<select class="form-select form-select-sm" name="sort" id="sort" aria-label="Small select example">
@@ -119,8 +144,8 @@ s
 						(click)="filter.setFilter(header,'')"
 					>Semua</option>
 					<option 
-						[attr.selected]="this.filter.getCurrentFilter()[header]?'selected':null"
-						*ngFor="let filterItem of data.list.filterData[header]"
+						*ngFor="let filterItem of stock.stock[activeView].filterData[header]"
+						[attr.selected]="this.filter.getCurrentFilter()[header]?.filter===filterItem?'selected':null"
 						(click)="filter.setFilter(header,filterItem)"
 					>
 						{{filterItem}}
@@ -129,6 +154,14 @@ s
 			</div>
 		</div>
 	</div>
+	
+	<div *ngIf="activeView==='transaksi'" class="container-fluid">
+	
+	
+	
+	</div>
+	
+	
 </ng-template>
 
 

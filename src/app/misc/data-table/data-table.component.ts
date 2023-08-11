@@ -18,8 +18,8 @@ export class DataTableComponent implements OnInit {
 	@Input() rowData:Array<any>=[];
 	@Input() gridOptions:GridOptions<any>={};
 	@Input() defaultColDef:any;
-	@Input() rowHeight:number=0;
-	@Input() headerHeight:number=0;
+	//@Input() rowHeight:number=0;
+	//@Input() headerHeight:number=0;
 	@Input() testFunct:any;
 	public modalIsActive=false;
 }

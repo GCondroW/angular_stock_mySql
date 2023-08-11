@@ -1,7 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
 @import 'ag-grid-community/styles/ag-grid.css';
-@import 'ag-grid-community/styles/ag-theme-alpine.css';
 @import 'node_modules/bootstrap/dist/css/bootstrap.min.css';
+@import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+.ag-theme-alpine {
+  --ag-grid-size: 3px;
+  --ag-list-item-height: 20px;
+  --ag-font-size: 10px;
+}
+
 html,body{
 	box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
@@ -31,3 +37,4 @@ body {
 div.max-container{
 	box-sizing:border-box;
 }
+

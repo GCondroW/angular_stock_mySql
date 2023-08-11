@@ -1,8 +1,7 @@
+/* You can add global styles to this file, and also import other style files */
+
+
 body {
 	overflow: auto;
 }
 
-.ag-theme-alpine {
-    --ag-grid-size: 3px;
-    --ag-list-item-height: 20px;
-}
