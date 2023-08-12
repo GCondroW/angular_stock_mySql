@@ -154,14 +154,10 @@
 			</div>
 		</div>
 	</div>
-	
 	<div *ngIf="activeView==='transaksi'" class="container-fluid">
-	
-	
-	
+		<h3>Filter</h3>
+		<button (click)="gridApi.setFilterModel(filter.defaultFilterParam)">Reset</button>
 	</div>
-	
-	
 </ng-template>
 
 

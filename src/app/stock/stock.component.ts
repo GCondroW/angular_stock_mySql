@@ -28,7 +28,7 @@ export class StockComponent {
 	
 	public stock=new GlobalVar.stock([]);
 	public viewArr=Object.keys(this.stock.stock)
-	public activeView:any="";//public activeView=this.viewArr[1];
+	public activeView:any=this.viewArr[0];//public activeView=this.viewArr[1];
 	
 	public dataIsReady:Boolean=false;
 	public navigationPages:any;
@@ -78,11 +78,10 @@ export class StockComponent {
 	};	
 	
 	public filter:any={
-		defaultFilterParam:this.stock.stock[this.activeView].defaultFilterParam,
 		getCurrentFilter:()=>this.gridApi.getFilterModel(),
 		setFilter:(header:any,filter:any,filterType?:string,type?:string)=>{
 			let filterInstance = this.gridApi.getFilterInstance(header); 
-			let defaultFilterParam=this.filter.defaultFilterParam;
+			let defaultFilterParam=this.stock.stock[this.activeView].defaultFilterParam;
 			let temp1:any={};
 			temp1['filter']=filter;
 			if(!filterType){
@@ -112,20 +111,18 @@ export class StockComponent {
 		columnDefs:[],
 		pagination: true,
 		paginationAutoPageSize:false,	
-		paginationPageSize:20,
 		rowSelection: 'single',
-		onRowClicked: ()=>console.log("ERR"),		
+		onRowClicked: ()=>console.log("ERR"),	
+		paginationPageSize:50,	
 		onGridReady:(params:any)=>{
-			
 			console.log("grid Event => onGridReady : ");
-			this.gridApi=this.gridOptions.api;
-			this.adjustTableContainerSize()
+			this.gridApi=this.gridOptions.api;	
+			this.gridOptions.api.setColumnDefs(this.stock.stock[this.activeView].colDef);
+			this.gridOptions.api?.setFilterModel(this.stock.stock[this.activeView].defaultFilterParam);
 		},
 		
 		onFirstDataRendered:(event:any)=>{
 			console.log("grid Event => onFirstDataRendered : ");
-			this.gridOptions.columnDefs=this.stock.stock[this.activeView].colDef;
-
 			this.adjustTableContainerSize()
 		},
 		
@@ -138,22 +135,26 @@ export class StockComponent {
 
 		},
 		onPaginationChanged:(params:any)=>{
-			if(!params.newPage)return
 			console.log("grid Event => paginationChanged : ");
-			this.adjustTableContainerSize()
 		},
-		
 		onRowDataUpdated:(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
-			this.adjustTableContainerSize()
+			
 		},
 		onFilterChanged:(event:any)=>{
 			console.log("grid Event => onFilterChanged : ");
-			this.adjustTableContainerSize()
+			
 		},
 		onColumnResized: (event:any) => {
 			console.log("grid Event => onColumnResized : ");
 			
+		},
+		onModelUpdated: (event:any)=>{
+			console.log("grid Event => onModelUpdated : ");
+			this.adjustTableContainerSize()
+		},
+		onComponentStateChanged:(event:any)=>{
+			console.log("grid Event => onComponentStateChanged : ");
 			
 		},
 	};
@@ -188,26 +189,26 @@ export class StockComponent {
 			}
 			let marginBottom:number=0;
 			let tempHeight=(window.innerHeight-containerRectTop+window.scrollY)+marginBottom-navbarHeight;
-			height=20*Math.floor(tempHeight/20);
-			this.tableContainerStyle={
+			height=22*Math.floor(tempHeight/22)+11;
+			let temp={
 				width:width,
 				height:height+'px',
 			};
-			console.log("tableHeight",height/20);
-			console.log("aaa0",this.gridOptions.paginationPageSize=(20*Math.floor((height-navbarHeight)/20)/20)-3);
+			
+			if(JSON.stringify(this.tableContainerStyle)===JSON.stringify(temp))return
+			
+			this.tableContainerStyle=temp;;
+			console.log("tableHeight",height);
+			console.log("tableWidth",width);
+			console.log("aaa0",this.gridOptions.paginationPageSize=(22*Math.floor((height-navbarHeight)/22)/22));
 		};
+		this.gridOptions.api.hideOverlay();
 		
 	};
 	public changeView=(view:string)=>{
-		if(this.activeView===""){
-			this.gridApi.setColumnDefs(this.stock.stock[view].colDef);
-			this.activeView=view;
-		};
-		if(view===this.activeView)return
-		this.gridApi.setColumnDefs(this.stock.stock[view].colDef);
 		this.activeView=view;
-		console.log(this.gridOptions);
-		
+		this.gridOptions.api?.setColumnDefs(this.stock.stock[this.activeView].colDef);
+		this.gridOptions.api?.setFilterModel(this.stock.stock[this.activeView].defaultFilterParam);
 	};
 	/// \AG-GRID ///
 	
@@ -233,7 +234,8 @@ export class StockComponent {
 	};
 	public updateData=(x:any)=>{
 		let returnVal=this.stock.set(x);
-		this.changeView(this.viewArr[1]);
+		this.changeView(this.activeView);
+		
 		return returnVal;
 	};
 

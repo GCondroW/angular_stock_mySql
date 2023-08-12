@@ -54,8 +54,8 @@ export const GlobalVar = {
 							if(item==="ctn")pushVar["filter"]='agNumberColumnFilter';
 							//pushVar["filter"]='agSetColumnFilter';	
 							if(item==="ctn")pushVar["editable"]=false;
-							if(item==="nama")pushVar["width"]=500;
-							if(item==="Qty/ Ctn")pushVar["width"]=150;
+							if(item==="nama")pushVar["width"]=300;
+							if(item==="Qty/ Ctn")pushVar["width"]=100;
 							if(item==="ctn")pushVar["width"]=100;
 							//pushVar["width"]=this.maxCharLength[item]*15	
 							pushVar["autoHeight"]=true;		
@@ -139,9 +139,12 @@ export const GlobalVar = {
 						tableColumn.map((item:string)=>{
 							let pushVar:any={};
 							if(item==="_id")pushVar["hide"]=true;//hiding _id column
-						//	if(item==="nama")pushVar["width"]=500;
-						//	if(item==="Qty/ Ctn")pushVar["width"]=150;
-						//	if(item==="ctn")pushVar["width"]=100;
+							if(item==="nama")pushVar["width"]=300;
+							if(item==="qty")pushVar["width"]=50;
+							if(item==="qty")pushVar["filter"]='agNumberColumnFilter';
+							if(item==="user")pushVar["width"]=100;
+							if(item==="jenis")pushVar["width"]=100;
+							if(item==="keterangan")pushVar["width"]=100;
 							pushVar["autoHeight"]=true;		
 							pushVar["field"]=item;	
 							temp.push(pushVar)		
