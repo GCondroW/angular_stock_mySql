@@ -83,7 +83,7 @@ export class GlobalService {
 	
 	postEmbedData=(dbName:string,data:any={},embedName:string|undefined,id:string|undefined)=>{
 		let url=this.url+dbName+"/"+embedName+"/"+id;
-		return this.http.post<any>(url,data)
+		return this.http.post<any>(url,data,{headers:this.headers})
 	};
 	
 	putData=(dbName:string,id:number,data:any={})=>{

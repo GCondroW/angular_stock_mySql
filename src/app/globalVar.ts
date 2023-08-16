@@ -110,6 +110,16 @@ export const GlobalVar = {
 						type:'contains',
 						filter:"",
 					},
+					supplier:{
+						filterType: 'text',
+						type:'contains',
+						filter:"",
+					},
+					kategori:{
+						filterType: 'text',
+						type:'contains',
+						filter:"",
+					},
 					qty:{
 						filterType: 'number',
 						type:'greaterThanOrEqual',
@@ -125,6 +135,11 @@ export const GlobalVar = {
 						type:'contains',
 						filter:"",
 					},
+					jenis:{
+						filterType: 'text',
+						type:'notContains',
+						filter:"awal",
+					},	
 					keterangan:{
 						filterType: 'text',
 						type:'contains',
@@ -140,9 +155,14 @@ export const GlobalVar = {
 							let pushVar:any={};
 							if(item==="_id")pushVar["hide"]=true;//hiding _id column
 							if(item==="nama")pushVar["width"]=300;
-							if(item==="qty")pushVar["width"]=50;
+							if(item==="supplier")pushVar["width"]=100;
+							//if(item==="supplier")pushVar["hide"]=false;
+							if(item==="kategori")pushVar["width"]=100;
+							//if(item==="kategori")pushVar["hide"]=false;
+							if(item==="qty")pushVar["width"]=75;
 							if(item==="qty")pushVar["filter"]='agNumberColumnFilter';
 							if(item==="user")pushVar["width"]=100;
+							if(item==="tanggal")pushVar["width"]=100;
 							if(item==="jenis")pushVar["width"]=100;
 							if(item==="keterangan")pushVar["width"]=100;
 							pushVar["autoHeight"]=true;		
@@ -156,7 +176,12 @@ export const GlobalVar = {
 						let nama=itemData.nama;
 						let transaksi=itemData.transaksi;
 						transaksi.map((item:any)=>{
-							temp.push(Object.assign({nama:nama},item));
+							if(!!item.tanggal)item.tanggal=this.convertDate(item.tanggal);
+							temp.push(Object.assign({
+								nama:nama,
+								supplier:itemData.supplier,
+								kategori:itemData.kategori,
+							},item));
 						});
 					});
 					this.stock.transaksi.data=JSON.parse(JSON.stringify((temp)));
@@ -164,32 +189,31 @@ export const GlobalVar = {
 					this.stock.transaksi.colDef=getColumnDefs(temp);
 					this.stock.transaksi.header=Object.keys(temp[0]);
 					this.stock.transaksi.filterData=this.generateFilterData(JSON.parse(JSON.stringify((temp))),
-						[]
+						['id','nama','qty',]
 					);
+					console.log(temp);
 				},
 			},
-		}
-		
-		
+		};
 		constructor(data:Array<any>){
 			this.raw=data;
 		};
-		
+		public findById=(id:string)=>{
+			return this.raw.find((item)=>item._id===id)
+		};
 		length=this.raw.length;
-		
 		set=(data:Array<any>)=>{
 			this.raw=data;
 			Object.keys(this.stock).map(pointer=>{
 				this.stock[pointer].createView(JSON.parse(JSON.stringify((data))));
 			})
 		};
-		
 		private getMaxCharLength=(data:Array<any>)=>{
 			let header=Object.keys(data[0]);
 			let returnVar:any={};
 			header.map(item=>{
 				returnVar[item]=0;
-			})
+			});
 			data.map(item=>{
 				header.map(headerItem=>{
 					let temp=item[headerItem].toString().length;
@@ -204,7 +228,7 @@ export const GlobalVar = {
 			data.map(item=>{
 				excludedCol.map(excludedColItem=>{
 					delete item[excludedColItem];
-				})
+				});
 			});
 			let dataColumn=Object.keys(data[0]);
 			dataColumn.map(pointer=>{
@@ -222,8 +246,11 @@ export const GlobalVar = {
 			});
 			return temp;
 		};
+		private convertDate=(dateString:string)=>{
+			let temp=new Date(dateString).toLocaleDateString('id');
+			return temp;
+		};
 	},
-	
 	import:{
 		message:{
 			dataIsEmpty:"DATA_IS_EMPTY_MESSAGE",
@@ -253,11 +280,9 @@ export const GlobalVar = {
 			this.count=this.count+this.iterateValue;
 			return this.count;
 		};
-		
 		public down=()=>{
 			this.count=this.count-this.iterateValue;
 			return this.count;
-		}
-		
+		};
 	},
 }

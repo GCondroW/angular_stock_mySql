@@ -137,16 +137,13 @@ export class ImportComponent {
 			final:[0,[Validators.required,ValidateForm]],
 			keterangan:["-"],
 		});
-		
 		let formInit=this.formTest.get("init");
 		let formUpdate=this.formTest.get("update");
-		let formFinal=this.formTest.get("final");
-		
+		let formFinal=this.formTest.get("final");	
 		let temp=formInit.value+formUpdate.value
 		formFinal.setValue(temp,{onlySelf:true});
 		let alreadyOnce:boolean=false;
-		formInit.disable();
-			
+		formInit.disable();	
 		formUpdate.valueChanges
 			.subscribe((x:number)=>{
 				if(alreadyOnce){alreadyOnce=false}
@@ -154,10 +151,9 @@ export class ImportComponent {
 					alreadyOnce=true
 					this.queryUpdateValue=formUpdate.value;
 					formFinal.setValue(formInit.value+formUpdate.value);
-					console.log('Valid?', this.formTest.valid)
+					console.log('Valid?', this.formTest.valid);
 				};
 			})
-			
 		formFinal.valueChanges
 			.subscribe((x:number)=>{
 				if(alreadyOnce){alreadyOnce=false}

@@ -9,7 +9,10 @@
 		</thead>
 		<tbody>
 			<tr *ngFor="let row of data">
-				<td *ngFor="let pointer of Object.keys(row)">
+				<td 
+					*ngFor="let pointer of Object.keys(row)"
+					[style.visibility]="hiddenCollumn[pointer]===true?'hidden':'visible'"
+				>
 					{{row[pointer]}}
 				</td>
 			</tr>

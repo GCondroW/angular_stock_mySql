@@ -5,3 +5,6 @@ body {
 	overflow: auto;
 }
 
+.form-control.is-invalid-xs{
+	border-color:red;
+}

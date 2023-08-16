@@ -12,10 +12,8 @@ export class DynamicTableComponent{
 	};
 	
 	ngOnInit(){
-		
 		this.data=this.dataPreProcessor(this.data);
 		this.header=Object.keys(this.data[0]);
-		console.log(this)
 	}
 	
   ngOnChanges(changes: SimpleChanges) {
@@ -24,15 +22,18 @@ export class DynamicTableComponent{
 	
 	public Object=Object;//enable the use of "Object" method inside angular component ex: looping an object	
 	public header:Array<any>=[];
+	public hiddenCollumn:any={};
 	
-	@Input() data:Array<any>=[];
-	@Input() defaultColumnDefs:any={};
+	@Input() data?:Array<any>=[];
+	@Input() defaultColumnDefs?:any={};
 
 	dataReProcessor=()=>{
 		return this.data=this.dataPreProcessor(this.data);
 	}
 	
 	dataPreProcessor=(data:any)=>{
+		console.log("data ", data);
+		console.log("this.defaultColumnDefs ", this.defaultColumnDefs);
 		let header=this.header;
 		//let data=this.data;
 		let defaultColumnDefs=this.defaultColumnDefs;
@@ -48,6 +49,9 @@ export class DynamicTableComponent{
 				};
 				if(!!defaultColumnDefs[pointer].headerName){
 					temp2[defaultColumnDefs[pointer].headerName]=dataItem[pointer];
+				};
+				if(!!defaultColumnDefs[pointer].hidden===true){
+					this.hiddenCollumn[defaultColumnDefs[pointer].headerName]=true;
 				};
 
 				return

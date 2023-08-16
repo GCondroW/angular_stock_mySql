@@ -1,8 +1,9 @@
-<div id="gridTable" 
-	[style.width]="tableContainerStyle.width" 
-	[style.height]="tableContainerStyle.height"
+<div  
+
 >
-	<nav id="navbarId" class="m-0 p-1 navbar sticky-top navbar-light bg-light">
+	<nav id="navbarId" class="m-0 p-1 navbar sticky-top navbar-light bg-light"
+		[style.width]="tableContainerStyle.width" 
+	>
 		<div class="container-fluid px-1">
 			<div class="d-flex">
 				<button class="float-start btn btn-outline-secondary btn-sm" (click)="_offCanvas.open(mainOffcanvasContent)" type="button">=</button>
@@ -36,17 +37,24 @@
 			</div>
 	</div>
 	</nav>
-	<ng-container *ngIf="stock.raw.length>0;then dataTable; else emptyDataElement"></ng-container>
-	<ng-template #dataTable>
-		<app-data-table 
-			[gridOptions]="gridOptions"
-			[rowData]="stock.stock[activeView].data"
-			[defaultColDef]="defaultColDef"
-		></app-data-table>
-	</ng-template>
-	<ng-template #emptyDataElement>
-		<p>kosong..</p>
-	</ng-template>
+	<div id="gridTable"
+		[style.width]="tableContainerStyle.width" 
+		[style.height]="tableContainerStyle.height"
+	>	
+		<ng-container *ngIf="stock.raw.length>0;then dataTable; else emptyDataElement"></ng-container>
+	</div>	
+	
+		<ng-template #dataTable>
+			<app-data-table 
+				[gridOptions]="gridOptions"
+				[rowData]="stock.stock[activeView].data"
+				[defaultColDef]="defaultColDef"
+			></app-data-table>
+		</ng-template>
+		<ng-template #emptyDataElement>
+			<p>kosong..</p>
+		</ng-template>
+
 </div>
 
 <ng-template #mainOffcanvasContent>
@@ -74,7 +82,7 @@
 <ng-template #filterOffcanvassContent>
 	<div *ngIf="activeView==='daftar'" class="container-fluid">
 		<h3>Filter</h3>
-		<button (click)="gridApi.setFilterModel(filter.defaultFilterParam)">Reset</button>
+		<button (click)="gridApi.setFilterModel(filter.getDefaultFilterParam())">Reset</button>
 		<hr>
 		<div class="row mb-1">
 			<label>Stock : </label>
@@ -156,8 +164,336 @@
 	</div>
 	<div *ngIf="activeView==='transaksi'" class="container-fluid">
 		<h3>Filter</h3>
-		<button (click)="gridApi.setFilterModel(filter.defaultFilterParam)">Reset</button>
+		<button (click)="gridApi.setFilterModel(filter.getDefaultFilterParam())">Reset</button>
+	
+		<hr>
+		<div class="row mb-1">
+			<label>Jenis : </label>
+			<div>
+				<select class="form-select form-select-sm">
+					<option
+						(click)="filter.setFilter('jenis','','text','contains')"
+						[attr.selected]="this.filter.getCurrentFilter().jenis?.filter===''
+						?'selected':null"
+					>
+						Semua
+					</option>
+					<option
+						(click)="filter.setFilter('jenis','masuk','text','contains')"
+						[attr.selected]="
+							this.filter.getCurrentFilter().jenis?.filter==='masuk'
+							?'selected':null"
+					>
+						Masuk
+					</option>
+					<option
+						(click)="filter.setFilter('jenis','keluar','text','contains')"
+						[attr.selected]=
+							"this.filter.getCurrentFilter().jenis?.filter==='keluar'
+							?'selected':null"
+					>
+						Keluar
+					</option>
+					<option
+						(click)="filter.setFilter('jenis','awal','text','notContains')"
+						[attr.selected]=
+							"this.filter.getCurrentFilter().jenis?.filter==='awal'
+							&&
+							this.filter.getCurrentFilter().jenis?.type==='notContains'
+							?'selected':null"
+					>
+						Keluar dan Masuk
+					</option>
+					<option
+						(click)="filter.setFilter('jenis','awal','text','contains')"
+						[attr.selected]=
+							"this.filter.getCurrentFilter().ctn?.filter==='awal'
+							?'selected':null"
+					>
+						Stock Awal
+					</option>
+				</select>
+			</div>
+		</div>
+		<div class="row mb-1">
+			<label>Pajak : </label>
+			<div>
+				<select class="form-select form-select-sm">
+					<option
+						(click)="filter.setFilter('kategori','')"
+						[attr.selected]="this.filter.getCurrentFilter().kategori?.filter===''
+						?'selected':null"
+					>
+						Semua
+					</option>
+					<option
+						(click)="filter.setFilter('kategori','Pajak')"
+						[attr.selected]="
+							this.filter.getCurrentFilter().kategori?.filter==='Pajak'
+							?'selected':null"
+					>
+						Pajak
+					</option>
+					<option
+						(click)="filter.setFilter('kategori','Non-Pajak')"
+						[attr.selected]=
+							"this.filter.getCurrentFilter().kategori?.filter==='Non-Pajak'
+							?'selected':null"
+					>
+						Non-Pajak
+					</option>
+				</select>
+			</div>
+		</div>
+		<hr>
+		<div class="row mb-1" *ngFor="let header of Object.keys(stock.stock[activeView].filterData)">
+			<label class="col-4" for="sort">{{header}} : </label>
+			<div class="col-8">
+				<select class="form-select form-select-sm" name="sort" id="sort" aria-label="Small select example">
+					<option
+						[attr.selected]="!this.filter.getCurrentFilter()[header]?'selected':null"
+						(click)="filter.setFilter(header,'')"
+					>Semua</option>
+					<option 
+						*ngFor="let filterItem of stock.stock[activeView].filterData[header]"
+						[attr.selected]="this.filter.getCurrentFilter()[header]?.filter===filterItem?'selected':null"
+						(click)="filter.setFilter(header,filterItem)"
+					>
+						{{filterItem}}
+					</option>
+				</select>
+			</div>
+		</div>
 	</div>
 </ng-template>
 
+<ng-template #modal_1 let-modal1>
+	<app-dynamic-modal 
+		[modalBody]="modalBody1"
+		[modalFooter]="modalFooter1"
+		[modal]="modal1"
+		[modalTitle]="'Transaksi'"
+	></app-dynamic-modal>
+</ng-template>
+<ng-template #modalBody1>
+	<div>
+		<div class="container">
+			<div *ngFor="let item of Object.keys(modal.modal_1.data)" class="row">
+				<label for="{{item+'Id'}}" class="col-sm-4 col-form-label col-form-label-sm">
+					{{item}}
+				</label>
+				<div class="col-sm-8">
+					<input 
+						style="{border:none;}" 
+						type="text" 
+						id="{{item+'Id'}}"
+						readonly
+						class="form-control-plaintext" 
+						value="{{': '+modal.modal_1.data[item]}}"
+					>
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="container">
+			<div class="row">
+				<h4>Riwayat</h4>
+			</div>
+			<div class="row" *ngIf="stock.findById(modal.modal_1.data._id).transaksi as items">
+				<app-dynamic-table
+					[data]="items"
+					[defaultColumnDefs]="modal.modal_1.innerTable.defaultColumnDefs"
+				>
+				</app-dynamic-table>
+			</div>
+		</div>
+	</div>
+</ng-template>
+<ng-template #modalFooter1>
+	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_2.openModal(modal.modal_1.data)">Baru</button>
+	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_1.closeModal()">Close</button>
+</ng-template>
 
+<ng-template #modal_2 let-modal2>
+	<app-dynamic-modal 
+		[modalBody]="modalBody2"
+		[modalFooter]="modalFooter2"
+		[modal]="modal2"
+		[modalTitle]="'Transaksi'"
+	></app-dynamic-modal>
+</ng-template>
+<ng-template #modalBody2>
+	<div>
+		<div class="container">
+			<div class="row">
+				<label for="l_1" class="col-sm-4 col-form-label col-form-label-sm">
+					Nama
+				</label>
+				<div class="col-sm-8">
+					<input 
+						style="{border:none;}" 
+						type="text" 
+						id="l_1"
+						readonly
+						class="form-control-plaintext form-control-sm" 
+						value="{{': '+modal.modal_2.data.nama}}"
+					>
+				</div>
+			</div>
+			<div class="row">
+				<label for="l_2" class="col-sm-4 col-form-label col-form-label-sm">
+					Supplier
+				</label>
+				<div class="col-sm-8">
+					<div class="col-8">
+						<input 
+							style="{border:none;}" 
+							type="text" 
+							id="l_2"
+							readonly
+							class="form-control-plaintext form-control-sm" 
+							value="{{': '+modal.modal_2.data.supplier}}"
+						>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<label for="l_3" class="col-sm-4 col-form-label col-form-label-sm">
+					Kategori
+				</label>
+				<div class="col-sm-8">
+					<div class="col-8">
+						<input 
+							style="{border:none;}" 
+							type="text" 
+							id="l_3"
+							readonly
+							class="form-control-plaintext form-control-sm" 
+							value="{{': '+modal.modal_2.data.kategori}}"
+						>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<label for="l_4" class="col-sm-4 col-form-label col-form-label-sm">
+					Qty/ Ctn 
+				</label>
+				<div class="col-sm-8">
+					<div class="col-8">
+						<input 
+							style="{border:none;}" 
+							type="text" 
+							id="l_4"
+							readonly
+							class="form-control-plaintext form-control-sm" 
+							value="{{': '+modal.modal_2.data['Qty/ Ctn']}}"
+						>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<form [formGroup]="modal.modal_2.form" (ngSubmit)="modal.modal_2.newTransactionSubmit()">
+				<hr>
+				<div class="row mb-1">
+					<label for="l_5" class="col-sm-4 col-form-label col-form-label-sm">
+						Jumlah Ctn Awal
+					</label>
+					<div class="col-8">
+						<input 
+							style="{border:none;}" 
+							type="text" 
+							id="l_5"
+							readonly
+							class="form-control-plaintext form-control-sm" 
+							value="{{': '+modal.modal_2.data.ctn}}"
+						>
+					</div>
+				</div>
+				<div class="row mb-1">
+					<label for="l_6" class="col-sm-4 col-form-label col-form-label-sm">
+						Jumlah Ctn Akhir
+					</label>
+					<div class="col-8">
+						<input
+							onclick="this.select()" 
+							type="number" 
+							id="l_6"
+							class="form-control form-control-sm"
+							[class.is-invalid-xs]="
+								!modal.modal_2.form.get('final').valid 
+								&& 
+								modal.modal_2.isInteracted
+								"
+							formControlName="final"
+						>
+					</div>
+				</div>
+				<hr>
+				<div class="row mb-1">
+					<div class="col-4">
+						<label for="l_7" class="col-sm-4 col-form-label col-form-label-sm">
+							Perubahan
+						</label>
+					</div>
+					<div class="col-8">
+						<input
+							onclick="this.select()" 
+							type="number"
+							id="l_7"
+							class="form-control form-control-sm"
+							[class.is-invalid]="
+								!modal.modal_2.form.get('update').valid
+								&& 
+								modal.modal_2.isInteracted"
+							[class.is-valid]="
+								modal.modal_2.form.get('update').valid
+								&& 
+								modal.modal_2.isInteracted
+							"
+							formControlName="update"
+						>
+					</div>
+				</div>
+				<div class="row mb-1">
+					<div class="col-4">
+						<label for="l_8" class="col-sm-4 col-form-label col-form-label-sm">
+							Jenis
+						</label>
+					</div>
+					<div class="col-8">
+						<input
+							style="{border:none;}" 
+							id="l_8"
+							readonly
+							class="form-control form-control-sm"
+							formControlName="jenis"
+						>
+					</div>
+				</div>
+				<div class="row mb-1">
+					<div class="col-4">
+						<label for="l_9" class="col-sm-4 col-form-label col-form-label-sm">
+							Keterangan
+						</label>
+					</div>
+					<div class="col-8">
+						<input
+							id="l_9"
+							class="form-control form-control-sm"
+							formControlName="keterangan"
+						>
+					</div>
+				</div>
+				<button id="submitButtonId" type="submit" hidden></button>
+			</form>
+		</div>
+	</div>
+</ng-template>
+<ng-template #modalFooter2>
+	<button type="button" class="btn btn-outline-dark" 
+		[disabled]="!modal.modal_2.form.valid"
+		onclick="(()=>document.getElementById('submitButtonId').click())()"
+	>Submit</button>
+	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_2.closeModal()">Close</button>
+</ng-template>
