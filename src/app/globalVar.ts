@@ -122,8 +122,8 @@ export const GlobalVar = {
 					},
 					qty:{
 						filterType: 'number',
-						type:'greaterThanOrEqual',
-						filter:1,
+						type:'notEqual',
+						filter:0,
 					},
 					user:{
 						filterType: 'text',
@@ -184,6 +184,7 @@ export const GlobalVar = {
 							},item));
 						});
 					});
+					console.log('transaksi => ',JSON.parse(JSON.stringify((temp))))
 					this.stock.transaksi.data=JSON.parse(JSON.stringify((temp)));
 					this.stock.transaksi.maxCharLength=this.getMaxCharLength(temp);
 					this.stock.transaksi.colDef=getColumnDefs(temp);

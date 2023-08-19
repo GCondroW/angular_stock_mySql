@@ -99,8 +99,8 @@ export class GlobalService {
 	};
 	
 	deleteData=(dbName:string,id:number)=>{
-		let url=this.url+dbName+"/"+id;
-		return this.http.delete(url);
+		let url=this.url+dbName;
+		return this.http.delete(url,{headers:this.headers,body:id});
 	};
 	
 	excelHandler=async(e:any)=>{

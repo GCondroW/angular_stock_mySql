@@ -1,5 +1,6 @@
 import { Component,OnInit,inject, Input, ViewChild } from '@angular/core';
 import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { DataTableComponent } from '../misc/data-table/data-table.component';
 import { GlobalService } from '../service/global/global.service';
@@ -8,7 +9,7 @@ import { DynamicTableComponent } from '../misc/dynamic-table/dynamic-table.compo
 import { DynamicModalComponent } from '../misc/dynamic-modal/dynamic-modal.component';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder,FormControl, FormGroup, Validators } from '@angular/forms';
-import { ValidateForm, ValidateFormNotZero } from '../shared/formValidator';
+import { StockValidators } from '../shared/formValidator';
 import { ColDef } from 'ag-grid-community';
 import { Socket } from 'ngx-socket-io';
 
@@ -34,8 +35,57 @@ export class StockComponent {
 	public toUpperCase="".toUpperCase;
 	
 	public stock=new GlobalVar.stock([]);
-	public viewArr=Object.keys(this.stock.stock)
+	public viewArr=Object.keys(this.stock.stock);
 	public activeView:any=this.viewArr[0];//public activeView=this.viewArr[1];
+	
+	//public operation:any={}
+	public operation:any={
+		mode:{
+			view:{
+				gridOptions:{
+					onRowDoubleClicked:(event:any)=>{
+						this.modal.modal_1.openModal(event.data);
+					},
+				},
+			},
+			edit:{
+				gridOptions:{
+					onRowDoubleClicked:(event:any)=>{
+						console.log("placeHolder edit operation event")
+					},
+				},
+			},
+			delete:{
+				gridOptions:{
+					onRowDoubleClicked:(event:any)=>{
+						console.log(this.gridOptions);
+						console.log("placeHolder delete operation event")
+						
+					},
+				},
+				selectedData:null,
+				deleteFunction:(data:any)=>{
+					let selectedRow=this.gridOptions.api.getSelectedRows();
+					this.delete(selectedRow);
+				},
+			},
+		},
+		active:'view',
+		changeOperation:(name:string)=>{
+			this.operation.active=name
+
+		},
+		updateGridOptions:()=>{
+			console.log('updateGridOptions , gridOptions');
+			/*
+			let gridOptions=this.operation.mode[this.operation.active].gridOptions;
+			Object.keys(gridOptions).map(pointer=>{
+				this.gridOptions[pointer]=gridOptions[pointer];
+				console.log('grid Options pointer :',pointer);
+			})
+			*/
+		},
+	};
 	
 	private fb : FormBuilder = inject(FormBuilder);
 	
@@ -44,16 +94,23 @@ export class StockComponent {
 	
 	constructor(){
 		this.navigationPages=GlobalVar.pages;
+		this.operation.active=Object.keys(this.operation.mode)[0];
 		
 	};
 	ngOnInit(){
 		this.socket.emit("hello from client", 5, "6", { 7: Uint8Array.from([8]) });
 		this.socket.on("__1", (arg1:any) => {
-			console.log("__1",arg1); // 1
+			console.log('arg1 : ',arg1)
+			if(arg1.message==='DELETE') {
+				alert(`DELETE\n`+
+					`NAMA:`+arg1.data.nama+`\n`+
+					`SUPPLIER:`+arg1.data.supplier+`
+				`)
+				return console.log('deleted : ',arg1)
+			}
 			this.get(this.currentPage);
 		});
 		console.log(this);
-		
 	};
 	
 	
@@ -76,6 +133,7 @@ export class StockComponent {
 				this.modal.modal_1.modalRef=this.modalService.open(this.modal_1);
 			},
 			closeModal:()=>{
+			
 				this.modal.modal_1.modalRef.close();
 			},
 			data:{},
@@ -90,7 +148,7 @@ export class StockComponent {
 					},
 					tanggal:{
 						headerName:'Tanggal',
-						callback:(x:any)=>new Date(x).toLocaleDateString('id'),
+						callback:(x:any)=>new Date(x).toLocaleString('id'),
 					},
 					keterangan:{
 						headerName:'Keterangan',
@@ -110,10 +168,13 @@ export class StockComponent {
 				this.modal.modal_2.data=modalData;
 				this.modal.modal_2.form=this.fb.group({
 					_id:modalData._id,
-					update:[0,[Validators.required,ValidateFormNotZero]],
-					final:[modalData.ctn,[Validators.required,ValidateForm]],
+					update:[0,[Validators.required,StockValidators.update]],
+					final:[modalData.ctn,[Validators.required,StockValidators.final]],
 					jenis:["-"],
 					keterangan:["-"],
+				},
+				{
+					validator:StockValidators.number,
 				});
 				let form=this.modal.modal_2.form;
 				let formUpdateValue=form.get("update");
@@ -122,14 +183,14 @@ export class StockComponent {
 				//formJenisValue.disable();
 				console.log("formUpdateValue",formUpdateValue)
 				let alreadyOnce:boolean=false;
+				this.modal.modal_2.isInteracted=false
 				
 				let f_1=(x:any)=>{
 					console.log(x)
-					if(!(x>0) && !(x<0)) formJenisValue.setValue("-");
-					if(x<0)this.modal.modal_2.form.get('jenis').setValue("KELUAR");
-					if(x>0)this.modal.modal_2.form.get('jenis').setValue("MASUK");
-					
-;					
+					if(!(x>0) && !(x<0)) return formJenisValue.setValue("-");
+					if(x<0) return this.modal.modal_2.form.get('jenis').setValue("KELUAR");
+					if(x>0) return this.modal.modal_2.form.get('jenis').setValue("MASUK");
+					return(alert('error'));
 				};
 				
 				formUpdateValue.valueChanges.subscribe((x:number)=>{
@@ -177,7 +238,6 @@ export class StockComponent {
 			form:{},
 			modalRef:undefined,
 			newTransactionSubmit:()=>{
-				console.log(this.modal.modal_2.form);
 				let data={
 					_id:this.modal.modal_2.form.value._id,
 					value:this.modal.modal_2.form.value.update,
@@ -255,7 +315,6 @@ export class StockComponent {
 		},
 	};
 	
-	
 	public gridOptions:any= {
 		columnDefs:[],
 		pagination: true,
@@ -274,7 +333,9 @@ export class StockComponent {
 			console.log("grid Event => onFirstDataRendered : ");
 			this.adjustTableContainerSize()
 		},
-		
+		onSelectionChanged:(event: any)=>{
+			console.log("selectedData :",this.gridOptions.api.getSelectedRows());
+		},
 		onCellEditingStarted:(event:any)=>{
 			console.log("grid Event => onCellEditingStarted : ");
 		},
@@ -302,9 +363,8 @@ export class StockComponent {
 		},
 		onRowDoubleClicked:(event:any)=>{
 			console.log("grid Event => onRowDoubleClicked : ");
-			console.log(event);
-			this.modal.modal_1.openModal(event.data)
-		},
+			this.operation.mode[this.operation.active].gridOptions.onRowDoubleClicked(event);
+		}
 	};
 	public gridApi:any;//initialize at gridOptions.onGridReady
 	public tableContainerStyle:{width:string,height:string}={width:'auto',height:'0px'};
@@ -357,6 +417,7 @@ export class StockComponent {
 		
 	};
 	public changeView=(view:string)=>{
+		this.gridOptions.api?.deselectAll();
 		this.activeView=view;
 		this.gridOptions.api?.setColumnDefs(this.stock.stock[view].colDef);
 		this.gridOptions.api?.setFilterModel(this.stock.stock[view].defaultFilterParam);
@@ -393,13 +454,15 @@ export class StockComponent {
 			return returnVal;
 		}else{
 			try{
-				
-				if(!x.transaksi) throw new Error('Err no transaksi');
+				if(!!x.deletedCount) return console.log('delete');
+				if(!x.transaksi) return console.log("error, data : ",JSON.stringify(x));
 				let oldData=this.stock.raw;
 				let oldDataIndex=oldData.findIndex((item)=>item._id===x._id);
 				console.log("oldData",oldData);
 				console.log("temp",oldData.findIndex((item)=>item._id===x._id))
-				let temp=oldData[oldDataIndex].transaksi=x.transaksi;
+				let temp;
+				temp=oldData;
+				temp[oldDataIndex].transaksi=x.transaksi;
 				console.log(oldData,x.transaksi);
 				let returnVal=this.stock.set(temp);
 				this.changeView(this.activeView);
@@ -413,6 +476,17 @@ export class StockComponent {
 	};
 	post=(dbName:string,data:any,embedName:string|undefined,id:string|undefined)=>{
 		return this.rw(()=> this.globalService.postEmbedData(dbName,data,embedName,id));
+	};
+	delete=(data:any)=>{
+		console.log("delete data :",data);
+		return this.rw(()=> this.globalService.deleteData(this.currentPage,data.map((item:any)=>item._id)));
+		/*
+		let temp=confirm("delete : "+id+" ?");
+		if(temp===true)return this.globalService.deleteData(page,id).subscribe(x=>{
+			this.refresh();
+		})
+		return
+		*/
 	};
 	public refresh=()=>{
 		console.log('refreshPlaceHolder');

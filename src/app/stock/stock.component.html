@@ -5,8 +5,12 @@
 		[style.width]="tableContainerStyle.width" 
 	>
 		<div class="container-fluid px-1">
+			<!--
 			<div class="d-flex">
-				<button class="float-start btn btn-outline-secondary btn-sm" (click)="_offCanvas.open(mainOffcanvasContent)" type="button">=</button>
+				<button 
+					class="float-start btn btn-outline-secondary btn-sm" 
+					(click)="_offCanvas.open(mainOffcanvasContent)" 
+					type="button">=</button>
 				<button 
 					[ngClass]="activeView===a?{'active':true}:null"
 					*ngFor="let a of viewArr"
@@ -17,10 +21,59 @@
 					{{a.toUpperCase()}}
 				</button>
 			</div>
+			-->
+			<div class="d-flex">
+				<button 
+					class="float-start btn btn-outline-secondary btn-sm" 
+					(click)="_offCanvas.open(mainOffcanvasContent)" type="button"
+				>=</button>
+				
+				<div ngbDropdown class="float-start ms-1">
+					<button ngbDropdownToggle class="btn btn-secondary btn-sm dropdown-toggle" type="button">
+						{{activeView.toUpperCase()}}
+					</button>
+					<div ngbDropdownMenu class="dropdown-menu">
+						<button 
+							ngbDropdownItem
+							*ngFor="let a of viewArr"
+							(click)="changeView(a)"
+							type="button"
+						>
+							{{a.toUpperCase()}}
+						</button>
+					</div>
+				</div>
+				
+				<!-- OPERATION MODE -->
+				<div ngbDropdown class="float-start ms-1"> 
+					<button ngbDropdownToggle class="btn  btn-secondary btn-sm dropdown-toggle" type="button">
+						{{operation.active.toUpperCase()}}
+					</button>
+					<div ngbDropdownMenu class="dropdown-menu">
+						<button 
+							ngbDropdownItem
+							*ngFor="let operationPointer of Object.keys(operation.mode)"
+							(click)="operation.changeOperation(operationPointer)"
+							type="button"
+						>
+							{{operationPointer.toUpperCase()}}
+						</button>
+					</div>
+				</div>
+				
+				<button
+					class="btn-sm"
+					*ngIf="gridOptions.api?.getSelectedRows().length>0 && operation.active==='delete'"
+					(click)="console.log('delete :',operation.mode.delete.deleteFunction(gridOptions.api.getSelectedRows()))"
+				>
+					delete
+				</button>
+				
+			</div>
 			
 			<div class="d-flex">
 				<input 
-					class="form-control me-2" 
+					class="form-control form-control me-1" 
 					type="search" 
 					placeholder="Cari.." 
 					aria-label="Search"
@@ -406,42 +459,47 @@
 							id="l_5"
 							readonly
 							class="form-control-plaintext form-control-sm" 
-							value="{{': '+modal.modal_2.data.ctn}}"
+							value="{{' : '+modal.modal_2.data.ctn}}"
 						>
 					</div>
 				</div>
-				<div class="row mb-1">
+				<div class="row mb-1" id="updatePrepend">
 					<label for="l_6" class="col-sm-4 col-form-label col-form-label-sm">
 						Jumlah Ctn Akhir
 					</label>
-					<div class="col-8">
+					<div class="col-4">
 						<input
 							onclick="this.select()" 
 							type="number" 
 							id="l_6"
 							class="form-control form-control-sm"
-							[class.is-invalid-xs]="
+							[class.is-invalid]="
 								!modal.modal_2.form.get('final').valid 
 								&& 
 								modal.modal_2.isInteracted
-								"
+							"
+							[class.is-valid]="
+								modal.modal_2.form.get('final').valid 
+								&& 
+								modal.modal_2.isInteracted
+							"
 							formControlName="final"
 						>
+						<div class="invalid-feedback">
+							{{modal.modal_2.form.controls.final.errors?.message}}
+						</div>
 					</div>
 				</div>
 				<hr>
 				<div class="row mb-1">
-					<div class="col-4">
-						<label for="l_7" class="col-sm-4 col-form-label col-form-label-sm">
-							Perubahan
-						</label>
-					</div>
-					<div class="col-8">
+					<label for="l_7" class="col-sm-4 col-form-label col-form-label-sm">
+						Perubahan
+					</label>
+					<div class="col-sm-4">
 						<input
-							onclick="this.select()" 
 							type="number"
 							id="l_7"
-							class="form-control form-control-sm"
+							class="form-control form-control-sm"						
 							[class.is-invalid]="
 								!modal.modal_2.form.get('update').valid
 								&& 
@@ -453,7 +511,12 @@
 							"
 							formControlName="update"
 						>
+						<div class="invalid-feedback">
+							{{modal.modal_2.form.controls.update.errors?.message}}
+						</div>
 					</div>
+
+
 				</div>
 				<div class="row mb-1">
 					<div class="col-4">
@@ -464,9 +527,10 @@
 					<div class="col-8">
 						<input
 							style="{border:none;}" 
+							type="text"
 							id="l_8"
 							readonly
-							class="form-control form-control-sm"
+							class="form-control-plaintext form-control-sm"
 							formControlName="jenis"
 						>
 					</div>
@@ -479,6 +543,8 @@
 					</div>
 					<div class="col-8">
 						<input
+							onclick="this.select()" 
+							type="text"
 							id="l_9"
 							class="form-control form-control-sm"
 							formControlName="keterangan"

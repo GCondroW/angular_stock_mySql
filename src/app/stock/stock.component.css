@@ -8,3 +8,8 @@ body {
 .form-control.is-invalid-xs{
 	border-color:red;
 }
+
+dynamic-hide{
+	
+	hidden:true;
+}

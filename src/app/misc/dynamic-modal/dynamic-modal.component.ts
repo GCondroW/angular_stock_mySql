@@ -10,9 +10,6 @@ export class DynamicModalComponent {
 		
 		};
 		ngOnInit(){
-			console.log("selectedDataId",this.selectedDataId);
-			console.log("this",this);
-			console.log(this.modalRef=this.modal);
 			
 		};
 		@Input() modalTitle:string="defaultTitleName";

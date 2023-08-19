@@ -16,7 +16,9 @@ import { DynamicTableComponent } from './misc/dynamic-table/dynamic-table.compon
 import { AgGridModule } from 'ag-grid-angular';
 import { DynamicModalComponent } from './misc/dynamic-modal/dynamic-modal.component';
 
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+//import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { ReactiveFormsModule } from '@angular/forms';
 import { StockComponent } from './stock/stock.component';
 
@@ -47,7 +49,7 @@ const config: SocketIoConfig = { url: GlobalVar.dbServerUrl, options: {} };
 	HttpClientModule,
 	AgGridModule,
 	ReactiveFormsModule,
-	NgbAlertModule
+	NgbModule,
   ],
   providers: [GlobalService],
   bootstrap: [AppComponent]

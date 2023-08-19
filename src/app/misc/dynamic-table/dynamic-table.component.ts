@@ -32,8 +32,6 @@ export class DynamicTableComponent{
 	}
 	
 	dataPreProcessor=(data:any)=>{
-		console.log("data ", data);
-		console.log("this.defaultColumnDefs ", this.defaultColumnDefs);
 		let header=this.header;
 		//let data=this.data;
 		let defaultColumnDefs=this.defaultColumnDefs;
