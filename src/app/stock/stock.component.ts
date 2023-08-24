@@ -65,8 +65,7 @@ export class StockComponent {
 				},
 				selectedData:null,
 				deleteFunction:(data:any)=>{
-					let selectedRow=this.gridOptions.api.getSelectedRows();
-					this.delete(selectedRow);
+					this.delete(data);
 				},
 			},
 		},
@@ -101,16 +100,63 @@ export class StockComponent {
 		this.socket.emit("hello from client", 5, "6", { 7: Uint8Array.from([8]) });
 		this.socket.on("__1", (arg1:any) => {
 			console.log('arg1 : ',arg1)
-			if(arg1.message==='DELETE') {
-				alert(`DELETE\n`+
-					`NAMA:`+arg1.data.nama+`\n`+
-					`SUPPLIER:`+arg1.data.supplier+`
-				`)
-				return console.log('deleted : ',arg1)
-			}
-			this.get(this.currentPage);
+			let emitRequest=arg1.request;
+			let alertArr:Array<any>=[];
+			let data=[];
+			let oldData=[];
+			let temp:Array<any>=[];
+			console.log("emitRequest=",emitRequest);
+			switch(emitRequest){
+				case 'add_few':
+					
+					break;
+				case 'add':
+					data=arg1.data;
+					data.map((item:any)=>{
+						alertArr.push({
+							nama:item.nama,
+							supplier:item.supplier,
+							kategori:item.kategori,
+						});
+					});
+					alert(GlobalVar.alert(alertArr,arg1.message));
+					this.getDbKey(arg1.dbKey);
+					oldData=this.stock.raw;
+					console.log('oldData',oldData)
+					console.log('data',data)
+					temp=oldData;
+					temp.push(...data);
+					this.stock.set(temp);
+					this.changeView(this.activeView);
+					
+					break;
+				case 'delete':
+					data=arg1.data;
+					data.map((item:any)=>{
+						alertArr.push({
+							nama:item.nama,
+							supplier:item.supplier,
+							kategori:item.kategori,
+						});
+					});
+					alert(GlobalVar.alert(alertArr,arg1.message));
+					this.getDbKey(arg1.dbKey);
+					oldData=this.stock.raw;
+					let deletedData=data;
+					let oldDataId=oldData.map(item=>item._id);
+					let deletedDataId=deletedData.map((item:any)=>item._id);
+					let deletedIndex=deletedData.map((newId:any)=>oldDataId.findIndex(oldItem=>oldItem===newId))									
+					temp=oldData.filter((item:any)=>!deletedDataId.includes(item._id));
+					this.stock.set(temp);
+					this.changeView(this.activeView);
+
+					break;
+				default :
+				return
+			};
+			
 		});
-		console.log(this);
+		this.get(this.currentPage);
 	};
 	
 	
@@ -258,12 +304,10 @@ export class StockComponent {
 	/// EXCEL ///
 	public _excel={
 		postExcel:(dbName:string,data:any)=>{
-			this.globalService.wipeData(dbName).subscribe(x=>{
-				this.globalService.excelHandler(data).then(x=>{
-					console.log("Excel : ", x)
-					this.rw(()=>this.globalService.postData(dbName,x));
-				});
-			});				
+			this.globalService.excelHandler(data).then(x=>{
+				console.log("Excel : ", x)
+				this.rw(()=>this.globalService.postData(dbName,x));
+			});		
 		},
 		downloadExcel:this.globalService.downloadExcel,
 	};
@@ -282,11 +326,19 @@ export class StockComponent {
 		}
 	};	
 	
+	public getAllAgGridRows=()=>{
+		this.gridOptions.api.selectAll();
+		let returnVar=this.gridOptions.api.getSelectedRows();
+		this.gridOptions.api.deselectAll;
+		console.log(returnVar)
+		return returnVar
+	};
+	
 	public filter:any={
-		getCurrentFilter:()=>this.gridApi.getFilterModel(),
+		getCurrentFilter:()=>this.gridOptions.api.getFilterModel(),
 		getDefaultFilterParam:()=>this.stock.stock[this.activeView].defaultFilterParam,
 		setFilter:(header:any,filter:any,filterType?:string,type?:string)=>{
-			let filterInstance = this.gridApi.getFilterInstance(header); 
+			let filterInstance = this.gridOptions.api.getFilterInstance(header); 
 			let defaultFilterParam=this.stock.stock[this.activeView].defaultFilterParam;
 			let temp1:any={};
 			temp1['filter']=filter;
@@ -304,10 +356,10 @@ export class StockComponent {
 				temp1['type']=type;
 			};
 			filterInstance.setModel(temp1);
-			this.gridApi.onFilterChanged();
+			this.gridOptions.api.onFilterChanged();
 			console.log(" filterInstance : ",filterInstance)
 			console.log(" temp : ",temp1)
-			console.log(" GRIDAPI : ",this.gridApi)
+			console.log(" GRIDAPI : ",this.gridOptions.api)
 			
 		},
 		search:(event:any)=>{
@@ -396,7 +448,8 @@ export class StockComponent {
 				width="auto";
 			}
 			else{
-				width=(innerTableRectRight+scrollBarRectWidth)+"px";
+				if(innerTableWidth===0) width='50%'
+				else width=(innerTableRectRight+scrollBarRectWidth)+"px";
 			}
 			let marginBottom:number=0;
 			let tempHeight=(window.innerHeight-containerRectTop+window.scrollY)+marginBottom;
@@ -446,8 +499,8 @@ export class StockComponent {
 		return this.rw(()=>this.globalService.getData(page));
 	};
 	public updateData=(x:any)=>{
-		console.log(Array.isArray(x))
-		
+		console.log(Array.isArray(x))	
+		console.log(x)
 		if(Array.isArray(x)){
 			let returnVal=this.stock.set(x);
 			this.changeView(this.activeView);
@@ -472,12 +525,27 @@ export class StockComponent {
 				console.log("ERR", e)
 				alert('error : '+e)
 			}};
-		}
+		};
 	};
 	post=(dbName:string,data:any,embedName:string|undefined,id:string|undefined)=>{
 		return this.rw(()=> this.globalService.postEmbedData(dbName,data,embedName,id));
 	};
 	delete=(data:any)=>{
+		let temp:boolean=false;
+		console.log('data',data)
+		if(data.length===this.gridOptions.rowData.length){
+			temp=confirm(GlobalVar.alert([],"Hapus Semua Data ?"));
+		}else{
+			temp=confirm(GlobalVar.alert(data,"Hapus Data ?"));
+		}
+		if(!!temp){
+			let idArr:any;
+			if(Array.isArray(data))idArr=data.map(item=>item._id);
+			let dbName=this.currentPage;
+			return this.rw(()=> this.globalService.deleteData(dbName,idArr));
+		};
+	};
+	old_delete=(data:any)=>{
 		console.log("delete data :",data);
 		return this.rw(()=> this.globalService.deleteData(this.currentPage,data.map((item:any)=>item._id)));
 		/*
@@ -488,6 +556,7 @@ export class StockComponent {
 		return
 		*/
 	};
+	
 	public refresh=()=>{
 		console.log('refreshPlaceHolder');
 	};

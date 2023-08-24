@@ -73,7 +73,7 @@
 			
 			<div class="d-flex">
 				<input 
-					class="form-control form-control me-1" 
+					class="form-control me-1" 
 					type="search" 
 					placeholder="Cari.." 
 					aria-label="Search"
@@ -94,7 +94,7 @@
 		[style.width]="tableContainerStyle.width" 
 		[style.height]="tableContainerStyle.height"
 	>	
-		<ng-container *ngIf="stock.raw.length>0;then dataTable; else emptyDataElement"></ng-container>
+		<ng-container *ngIf="stock.raw;then dataTable; else emptyDataElement"></ng-container>
 	</div>	
 	
 		<ng-template #dataTable>
@@ -102,6 +102,7 @@
 				[gridOptions]="gridOptions"
 				[rowData]="stock.stock[activeView].data"
 				[defaultColDef]="defaultColDef"
+				[overlayNoRowsTemplate]="'<div>kosong..</div>'"
 			></app-data-table>
 		</ng-template>
 		<ng-template #emptyDataElement>
@@ -127,7 +128,8 @@
 	<div class="container-fluid" >
 		<div class="btn-group btn-group-sm" role="group">
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="_excel.downloadExcel(currentPage)">Download</button>
-			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refresh()">Refresh</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="get(currentPage)">Refresh</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="delete(getAllAgGridRows())">Delete All</button>
 		</div>
 	</div>
 </ng-template>

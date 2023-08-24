@@ -42,8 +42,10 @@ export const GlobalVar = {
 				},
 				createView:(data:any)=>{
 					let getColumnDefs=(data:any)=>{
-						let tableColumn=Object.keys(data[0]);
 						let temp:ColDef[];
+						
+						if(!data[0])return [];
+						let tableColumn=Object.keys(data[0]);
 						temp=[];
 						tableColumn.map((item:string)=>{
 							let pushVar:any={};
@@ -92,7 +94,9 @@ export const GlobalVar = {
 					this.stock.daftar.data=JSON.parse(JSON.stringify((temp)));
 					this.stock.daftar.maxCharLength=this.getMaxCharLength(temp);
 					this.stock.daftar.colDef=getColumnDefs(temp);
-					this.stock.daftar.header=Object.keys(temp[0]);
+					this.stock.daftar.header={};
+					if(!!temp[0])this.stock.daftar.header=Object.keys(temp[0]);
+					if(!!temp[0])
 					this.stock.daftar.filterData=this.generateFilterData(JSON.parse(JSON.stringify((temp))),
 						["_id","nama","ctn"]
 					);
@@ -148,8 +152,10 @@ export const GlobalVar = {
 				},
 				createView:(data:any)=>{
 					let getColumnDefs=(data:any)=>{
-						let tableColumn=Object.keys(data[0]);
 						let temp:ColDef[];
+						if(!data[0])return [];
+						let tableColumn=Object.keys(data[0]);
+						
 						temp=[];
 						tableColumn.map((item:string)=>{
 							let pushVar:any={};
@@ -188,7 +194,9 @@ export const GlobalVar = {
 					this.stock.transaksi.data=JSON.parse(JSON.stringify((temp)));
 					this.stock.transaksi.maxCharLength=this.getMaxCharLength(temp);
 					this.stock.transaksi.colDef=getColumnDefs(temp);
-					this.stock.transaksi.header=Object.keys(temp[0]);
+					this.stock.transaksi.header={};
+					if(!!temp[0])this.stock.transaksi.header=Object.keys(temp[0]);
+					if(!!temp[0])
 					this.stock.transaksi.filterData=this.generateFilterData(JSON.parse(JSON.stringify((temp))),
 						['id','nama','qty',]
 					);
@@ -210,18 +218,22 @@ export const GlobalVar = {
 			})
 		};
 		private getMaxCharLength=(data:Array<any>)=>{
-			let header=Object.keys(data[0]);
-			let returnVar:any={};
-			header.map(item=>{
-				returnVar[item]=0;
-			});
-			data.map(item=>{
-				header.map(headerItem=>{
-					let temp=item[headerItem].toString().length;
-					if(temp>returnVar[headerItem])returnVar[headerItem]=temp;
+			try{
+				let header=Object.keys(data[0]);
+				let returnVar:any={};
+				header.map(item=>{
+					returnVar[item]=0;
 				});
-			});
-			return returnVar;
+				data.map(item=>{
+					header.map(headerItem=>{
+						let temp=item[headerItem].toString().length;
+						if(temp>returnVar[headerItem])returnVar[headerItem]=temp;
+					});
+				});
+				return returnVar;
+			}catch(e){
+				return 0;
+			}
 		};
 		get=()=>this.raw;
 		private generateFilterData=(data:Array<any>,excludedCol:Array<any>)=>{
@@ -268,6 +280,35 @@ export const GlobalVar = {
 		})
 		console.log("/\\============================================ C O N S O L E  D U M P ============================================/\\");
 	},
+	alert:(body:any,header?:string|undefined)=>{
+		let alertString:string="";
+		if(!header)header="";
+		if(!!header)header=header+"\n";
+		alertString+=header;
+		try{
+			if(Array.isArray(body)){
+				let i=0;
+				body.map(item=>{
+					alertString+="["+(i+1)+"]"+"\n:";
+					Object.keys(item).map((pointer:any)=>{
+						alertString+=pointer+"\t:"+item[pointer]+"\n";
+					});
+					i++;
+					alertString+="====================\n";
+				});
+				return alertString;
+			}else{
+				Object.keys(body).map((pointer:any)=>{
+					alertString+=pointer+"\t:"+body[pointer]+"\n";
+				});
+				return alertString;
+			}
+		}catch(e){
+			alert("ERR")
+			return
+		};
+	},
+	
 	counter:class counter{
 		private startNumber:number;
 		private count:number;

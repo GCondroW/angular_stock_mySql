@@ -568,9 +568,9 @@ export class ImportComponent {
 		let page=this.currentPage;
 		
 		let temp=confirm("delete : "+id+" ?");
-		if(temp===true)return this.globalService.deleteData(page,id).subscribe(x=>{
-			this.refresh();
-		})
+	//	if(temp===true)return this.globalService.deleteData(page,id).subscribe(x=>{
+	//		this.refresh();
+	//	})
 		return
 	};
 	precisionGet=(page:string,id:number)=>{

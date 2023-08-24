@@ -98,7 +98,7 @@ export class GlobalService {
 		return this.http.delete(url,{headers:this.headers});
 	};
 	
-	deleteData=(dbName:string,id:number)=>{
+	deleteData=(dbName:string,id:any)=>{
 		let url=this.url+dbName;
 		return this.http.delete(url,{headers:this.headers,body:id});
 	};

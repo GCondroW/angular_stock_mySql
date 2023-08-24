@@ -21,5 +21,8 @@ export class DataTableComponent implements OnInit {
 	//@Input() rowHeight:number=0;
 	//@Input() headerHeight:number=0;
 	@Input() testFunct:any;
+	@Input() overlayLoadingTemplate?:any|null;
+	@Input() overlayNoRowsTemplate?:any;			
+				
 	public modalIsActive=false;
 }
