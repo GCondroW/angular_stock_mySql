@@ -75,8 +75,14 @@ export class GlobalService {
 		return this.http.get(url,{headers:this.headers});
 	};
 
+	postData=(dbName:string,data:Array<any>,embedName?:string|undefined,id?:string|undefined)=>{
+		let url=this.url+dbName;
+		if (!!embedName) url+='/'+embedName
+		if (!!id) url+='/'+id
+		return this.http.post(url,data,{headers:this.headers})
+	};
 	
-	postData=(dbName:string,data:any={})=>{
+	old_postData=(dbName:string,data:any={})=>{
 		let url=this.url+dbName;
 		return this.http.post(url,data,{headers:this.headers})
 	};

@@ -43,7 +43,6 @@ export const GlobalVar = {
 				createView:(data:any)=>{
 					let getColumnDefs=(data:any)=>{
 						let temp:ColDef[];
-						
 						if(!data[0])return [];
 						let tableColumn=Object.keys(data[0]);
 						temp=[];
@@ -236,7 +235,7 @@ export const GlobalVar = {
 			}
 		};
 		get=()=>this.raw;
-		private generateFilterData=(data:Array<any>,excludedCol:Array<any>)=>{
+		public generateFilterData=(data:Array<any>,excludedCol:Array<any>)=>{
 			let temp:any={};
 			data.map(item=>{
 				excludedCol.map(excludedColItem=>{
