@@ -554,7 +554,11 @@
 	></app-dynamic-modal>
 </ng-template>
 <ng-template #modalBody3>
-	<div class="container-fluid">
+	<div 
+		[formGroup]="modal.modal_3.form" 
+		(ngSubmit)="modal.modal_3.submit"
+		class="container-fluid"
+	>
 		<div class="row mb-1">
 			<label for="l_10" class="col-sm-3 col-form-label col-form-label-sm">
 				Nama Barang
@@ -565,6 +569,7 @@
 					type="text"
 					id="l_10"
 					class="form-control form-control-sm"
+					formControlName="formNama"
 				>
 			</div>
 		</div>
@@ -579,22 +584,23 @@
 						type="text"
 						id="l_11"
 						class="form-control form-control-sm"
-						list="datalistOptions"
+						list="datalistOptions-inputSupplier"
+						formControlName="formSupplier"
 					>
 					<div ngbDropdown>
-						<button ngbDropdownToggle class="btn btn-outline-secondary dropdown-toggle" type="button"></button>
+						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
 						<div ngbDropdownMenu class="dropdown-menu">
 							<button 
 								ngbDropdownItem
 								*ngFor="let a of modal.modal_3.getDatalist('supplier')"
-								(click)="console.log(a)"
+								(click)="modal.modal_3.form.get('formSupplier').setValue(a)"
 								type="button"
 							>
 								<a>{{a}}</a>
 							</button>
 						</div>
 					</div>		
-					<datalist id="datalistOptions">
+					<datalist id="datalistOptions-inputSupplier">
 						<option 
 							*ngFor="let a of modal.modal_3.getDatalist('supplier')"
 							value={{a}}
@@ -610,10 +616,20 @@
 			<div class="col-4">
 				<input
 					onclick="this.select()" 
-					type="text"
+					type="number"
 					id="l_12"
 					class="form-control form-control-sm"
+					formControlName="formQty"
+					[class.is-invalid]="
+						!formQty.valid 
+					"
+					[class.is-valid]="
+						formQty.valid 
+					"
 				>
+				<div class="invalid-feedback" *ngIf="formQty.errors && (formQty.dirty || formQty.touched)">
+					{{formQty.errors?.message}}
+				</div>
 			</div>
 		</div>
 		<div class="row mb-1">
@@ -621,12 +637,35 @@
 				Satuan
 			</label>
 			<div class="col-4">
-				<input
-					onclick="this.select()" 
-					type="text"
-					id="l_13"
-					class="form-control form-control-sm"
-				>
+				<div class="input-group">
+					<input
+						onclick="this.select()" 
+						type="text"
+						id="l_13"
+						class="form-control form-control-sm"
+						list="datalistOptions-inputStn"
+						formControlName="formStn"
+					>
+					<div ngbDropdown>
+						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
+						<div ngbDropdownMenu class="dropdown-menu">
+							<button 
+								ngbDropdownItem
+								*ngFor="let a of modal.modal_3.getStnFilterData()"
+								(click)="modal.modal_3.form.get('formStn').setValue(a)"
+								type="button"
+							>
+								<a>{{a}}</a>
+							</button>
+						</div>
+					</div>		
+					<datalist id="datalistOptions-inputStn">
+						<option 
+							*ngFor="let a of modal.modal_3.getStnFilterData()"
+							value={{a}}
+						>
+					</datalist>
+				</div>
 			</div>
 		</div>
 		<div class="row mb-1">
@@ -634,7 +673,11 @@
 				Kategori
 			</label>
 			<div class="col-4">
-				<select class="form-select" aria-label="Default select example">
+				<select 
+					class="form-select form-sm" 
+					aria-label="Default select example"
+					formControlName="formKategori"
+				>
 					<option selected>-</option>
 					<option>NON-PAJAK</option>
 					<option>PAJAK</option>
@@ -648,9 +691,10 @@
 			<div class="col-4">
 				<input
 					onclick="this.select()" 
-					type="text"
+					type="number"
 					id="l_15"
 					class="form-control form-control-sm"
+					formControlName="formCtn"
 				>
 			</div>
 		</div>

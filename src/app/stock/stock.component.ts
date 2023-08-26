@@ -10,6 +10,7 @@ import { DynamicModalComponent } from '../misc/dynamic-modal/dynamic-modal.compo
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder,FormControl, FormGroup, Validators } from '@angular/forms';
 import { StockValidators } from '../shared/formValidator';
+import { GlobalValidator } from '../shared/formValidator';
 import { ColDef } from 'ag-grid-community';
 import { Socket } from 'ngx-socket-io';
 
@@ -320,15 +321,45 @@ export class StockComponent {
 		modal_3:{
 			openModal:()=>{
 				this.modal.modal_3.modalRef=this.modalService.open(this.modal_3);
+				
+				this.modal.modal_3.form=this.fb.group({
+					formNama:[""],
+					formSupplier:[""],
+					formQty:[0,[Validators.required,GlobalValidator.number]],
+					formStn:[""],
+					formKategori:[""],
+					formCtn:[0,[Validators.required,GlobalValidator.number]],
+				},{});
+				let form=this.modal.modal_3.form;
+				let formNamaValue=form.get("formNama");
+				let formSupplierValue=form.get("formSupplier");
+				let formQtyValue=form.get("formQty");
+				let formStnValue=form.get("formStn");
+				let formKategoriValue=form.get("formKategori");
+				let formCtnValue=form.get("formCtn");
+				
+				formNamaValue.valueChanges.subscribe((x:string)=>console.log(x))
+				formSupplierValue.valueChanges.subscribe((x:string)=>console.log(x))
+				formQtyValue.valueChanges.subscribe((x:number)=>{
+					console.log(this.modal.modal_3.form.controls.formQty);
+				});
+				formStnValue.valueChanges.subscribe((x:string)=>console.log(x))
+				formKategoriValue.valueChanges.subscribe((x:string)=>console.log(x))
+				formCtnValue.valueChanges.subscribe((x:number)=>console.log(x))
+				
 			},
 			closeModal:()=>{
 				this.modal.modal_3.modalRef.close();
 			},
 			data:{},
+			form:{},
+			submit:()=>console.log('submit placeholder'),
 			modalRef:undefined,
+			getStnFilterData:()=>[...new Set(this.stock.stock.daftar.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))],
 			getDatalist:(pointer:string)=>this.stock.stock.daftar.filterData[pointer],
 		},
 	};
+	get formQty() { return this.modal.modal_3.form.get('formQty'); }
 	/// \MODAL ///
 	
 	/// EXCEL ///

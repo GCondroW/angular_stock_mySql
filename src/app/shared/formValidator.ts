@@ -1,7 +1,7 @@
 import { AbstractControl } from '@angular/forms';
 
 let regex={
-	number:"(\-*\d)",
+	number:'\-*\d',
 };
 
 export function ValidateForm(control: AbstractControl) {
@@ -40,4 +40,14 @@ export let StockValidators={
 		if (data<0)return{invalidUrl:true,message:"Stock dibawah 0"};
 		return null;
 	}
+};
+
+export let GlobalValidator={
+	number:(control: AbstractControl)=>{
+		let data=control.value;
+		let pattern=RegExp(regex.number);
+		console.log(pattern.test(data))
+		if (pattern.test(data))return{notNumber:true,message:"Hanya menerima input angka"};
+		return data;
+	},
 };
