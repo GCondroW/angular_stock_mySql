@@ -27,7 +27,7 @@ export const GlobalVar = {
 					kategori:{
 						filterType: 'text',
 						type:'contains',
-						filter:"PAJAK",
+						filter:"",
 					},
 					ctn:{
 						filterType: 'number',
@@ -159,6 +159,7 @@ export const GlobalVar = {
 						tableColumn.map((item:string)=>{
 							let pushVar:any={};
 							if(item==="_id")pushVar["hide"]=true;//hiding _id column
+							if(item==="_idDaftar")pushVar["hide"]=true;//hiding _id column
 							if(item==="nama")pushVar["width"]=300;
 							if(item==="supplier")pushVar["width"]=100;
 							//if(item==="supplier")pushVar["hide"]=false;
@@ -186,6 +187,7 @@ export const GlobalVar = {
 								nama:nama,
 								supplier:itemData.supplier,
 								kategori:itemData.kategori,
+								_idDaftar:itemData._id,
 							},item));
 						});
 					});
@@ -298,9 +300,9 @@ export const GlobalVar = {
 				return alertString;
 			}else{
 				Object.keys(body).map((pointer:any)=>{
-					alertString+=pointer+"\t:"+body[pointer]+"\n";
+					alertString+=pointer+"\t:\t"+body[pointer]+"\n";
 				});
-				return alertString;
+				return "<a>"+alertString+"</a>";
 			}
 		}catch(e){
 			alert("ERR")

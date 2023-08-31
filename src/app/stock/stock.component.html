@@ -119,8 +119,8 @@
 		<button (click)="gridApi.setFilterModel(filter.getDefaultFilterParam())">Reset</button>
 		<hr>
 		<div class="row mb-1">
-			<label>Stock : </label>
-			<div>
+			<label class="col-4">Stock : </label>
+			<div class="col-8">
 				<select class="form-select form-select-sm">
 					<option
 						(click)="filter.setFilter('ctn','','number','greaterThanOrEqual')"
@@ -150,32 +150,7 @@
 					</option>
 				</select>
 			</div>
-		</div>
-		<div class="row mb-1">
-			<label>Pajak : </label>
-			<div>
-				<select  class="form-select form-select-sm">
-					<option
-						(click)="filter.setFilter('kategori','')"
-						[attr.selected]="!this.filter.getCurrentFilter().kategori?.filter?'selected':null"
-					>
-						Semua
-					</option>
-					<option
-						(click)="filter.setFilter('kategori','PAJAK')"
-						[attr.selected]="this.filter.getCurrentFilter().kategori?.filter==='PAJAK'?'selected':null"
-					>
-						Pajak
-					</option>
-					<option
-						(click)="filter.setFilter('kategori','Non-Pajak')"
-						[attr.selected]="this.filter.getCurrentFilter().kategori?.filter==='Non-Pajak'?'selected':null"
-					>
-						Non-Pajak
-					</option>
-				</select>
-			</div>
-		</div>		
+		</div>	
 		<hr>
 		<div class="row mb-1" *ngFor="let header of Object.keys(stock.stock[activeView].filterData)">
 			<label class="col-4" for="sort">{{header}} : </label>
@@ -554,9 +529,9 @@
 	></app-dynamic-modal>
 </ng-template>
 <ng-template #modalBody3>
-	<div 
+	<form
 		[formGroup]="modal.modal_3.form" 
-		(ngSubmit)="modal.modal_3.submit"
+		(ngSubmit)="modal.modal_3.submit()"
 		class="container-fluid"
 	>
 		<div class="row mb-1">
@@ -570,7 +545,13 @@
 					id="l_10"
 					class="form-control form-control-sm"
 					formControlName="formNama"
+					[class.is-invalid]="
+						!formNama.valid && (formNama.dirty || formNama.touched)
+					"
 				>
+				<div class="invalid-feedback" *ngIf="formNama.errors && (formNama.dirty || formNama.touched)">
+					{{formNama.errors?.message}}
+				</div>
 			</div>
 		</div>
 		<div class="row mb-1">
@@ -586,7 +567,11 @@
 						class="form-control form-control-sm"
 						list="datalistOptions-inputSupplier"
 						formControlName="formSupplier"
+						[class.is-invalid]="
+							!formSupplier.valid && (formSupplier.dirty || formSupplier.touched)
+						"
 					>
+
 					<div ngbDropdown>
 						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
 						<div ngbDropdownMenu class="dropdown-menu">
@@ -606,6 +591,9 @@
 							value={{a}}
 						>
 					</datalist>
+					<div class="invalid-feedback" *ngIf="formSupplier.errors && (formSupplier.dirty || formSupplier.touched)">
+						{{formSupplier.errors?.message}}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -616,15 +604,12 @@
 			<div class="col-4">
 				<input
 					onclick="this.select()" 
-					type="number"
+					type="text"
 					id="l_12"
 					class="form-control form-control-sm"
 					formControlName="formQty"
 					[class.is-invalid]="
-						!formQty.valid 
-					"
-					[class.is-valid]="
-						formQty.valid 
+						!formQty.valid && (formQty.dirty || formQty.touched)
 					"
 				>
 				<div class="invalid-feedback" *ngIf="formQty.errors && (formQty.dirty || formQty.touched)">
@@ -645,6 +630,9 @@
 						class="form-control form-control-sm"
 						list="datalistOptions-inputStn"
 						formControlName="formStn"
+						[class.is-invalid]="
+							!formStn.valid && (formStn.dirty || formStn.touched)
+						"
 					>
 					<div ngbDropdown>
 						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
@@ -665,6 +653,9 @@
 							value={{a}}
 						>
 					</datalist>
+					<div class="invalid-feedback" *ngIf="formStn.errors && (formStn.dirty || formStn.touched)">
+						{{formStn.errors?.message}}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -677,11 +668,17 @@
 					class="form-select form-sm" 
 					aria-label="Default select example"
 					formControlName="formKategori"
+					[class.is-invalid]="
+						!formKategori.valid && (formKategori.dirty || formKategori.touched)
+					"
 				>
-					<option selected>-</option>
+
 					<option>NON-PAJAK</option>
 					<option>PAJAK</option>
 				</select>
+				<div class="invalid-feedback" *ngIf="formKategori.errors && (formKategori.dirty || formKategori.touched)">
+					{{formKategori.errors?.message}}
+				</div>
 			</div>
 		</div>
 		<div class="row mb-1">
@@ -691,18 +688,214 @@
 			<div class="col-4">
 				<input
 					onclick="this.select()" 
-					type="number"
+					type="text"
 					id="l_15"
 					class="form-control form-control-sm"
 					formControlName="formCtn"
+					[class.is-invalid]="
+						!formCtn.valid && (formCtn.dirty || formCtn.touched)
+					"
 				>
+				<div class="invalid-feedback" *ngIf="formCtn.errors && (formCtn.dirty || formCtn.touched)">
+					{{formCtn.errors?.message}}
+				</div>
 			</div>
 		</div>
-	</div>
+		<button button id="submitButtonId" hidden type="submit">submit</button>
+	</form>
 	
 </ng-template>
 <ng-template #modalFooter3>
 	<button type="button" class="btn btn-outline-dark" (click)="console.log(modal.modal_3.getDatalist('supplier'))">1</button>
-	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_3.openModal()">Baru</button>
+	<button 
+		type="button" 
+		class="btn btn-outline-dark" 
+		onclick="(()=>document.getElementById('submitButtonId').click())()"
+	>
+		Submit
+	</button>
 	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_3.closeModal()">Close</button>
+</ng-template>
+
+<ng-template #modal_4 let-modal4>
+	<app-dynamic-modal 
+		[modalBody]="modalBody4"
+		[modalFooter]="modalFooter4"
+		[modal]="modal4"
+		[modalTitle]="'Tambah'"
+	></app-dynamic-modal>
+</ng-template>
+<ng-template #modalBody4>
+	<form
+		[formGroup]="modal.modal_4.form" 
+		(ngSubmit)="modal.modal_4.submit()"
+		class="container-fluid"
+	>
+		<div class="row mb-1">
+			<label for="l_10" class="col-sm-3 col-form-label col-form-label-sm">
+				Nama Barang
+			</label>
+			<div class="col-9">
+				<input
+					onclick="this.select()" 
+					type="text"
+					id="l_10"
+					class="form-control form-control-sm"
+					formControlName="formNama"
+					[class.is-invalid]="
+						!formNama.valid && (formNama.dirty || formNama.touched)
+					"
+				>
+				<div class="invalid-feedback" *ngIf="formNama.errors && (formNama.dirty || formNama.touched)">
+					{{formNama.errors?.message}}
+				</div>
+			</div>
+		</div>
+		<div class="row mb-1">
+			<label for="l_11" class="col-sm-3 col-form-label col-form-label-sm">
+				Supplier
+			</label>
+			<div class="col-7">
+				<div class="input-group ">
+					<input
+						onclick="this.select()" 
+						type="text"
+						id="l_11"
+						class="form-control form-control-sm"
+						list="datalistOptions-inputSupplier"
+						formControlName="formSupplier"
+						[class.is-invalid]="
+							!formSupplier.valid && (formSupplier.dirty || formSupplier.touched)
+						"
+					>
+
+					<div ngbDropdown>
+						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
+						<div ngbDropdownMenu class="dropdown-menu">
+							<button 
+								ngbDropdownItem
+								*ngFor="let a of modal.modal_4.getDatalist('supplier')"
+								(click)="modal.modal_4.form.get('formSupplier').setValue(a)"
+								type="button"
+							>
+								<a>{{a}}</a>
+							</button>
+						</div>
+					</div>		
+					<datalist id="datalistOptions-inputSupplier">
+						<option 
+							*ngFor="let a of modal.modal_4.getDatalist('supplier')"
+							value={{a}}
+						>
+					</datalist>
+					<div class="invalid-feedback" *ngIf="formSupplier.errors && (formSupplier.dirty || formSupplier.touched)">
+						{{formSupplier.errors?.message}}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row mb-1">
+			<label for="l_12" class="col-sm-3 col-form-label col-form-label-sm">
+				Qty/ Ctn
+			</label>
+			<div class="col-4">
+				<input
+					onclick="this.select()" 
+					type="text"
+					id="l_12"
+					class="form-control form-control-sm"
+					formControlName="formQty"
+					[class.is-invalid]="
+						!formQty.valid && (formQty.dirty || formQty.touched)
+					"
+				>
+				<div class="invalid-feedback" *ngIf="formQty.errors && (formQty.dirty || formQty.touched)">
+					{{formQty.errors?.message}}
+				</div>
+			</div>
+		</div>
+		<div class="row mb-1">
+		
+			<label for="l_13" class="col-sm-3 col-form-label col-form-label-sm">
+				Satuan
+			</label>
+			<div class="col-4">
+				<div class="input-group">
+					<input
+						onclick="this.select()" 
+						type="text"
+						id="l_13"
+						class="form-control form-control-sm"
+						list="datalistOptions-inputStn"
+						formControlName="formStn"
+						[class.is-invalid]="
+							!formStn.valid && (formStn.dirty || formStn.touched)
+						"
+					>
+					<div ngbDropdown>
+						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
+						<div ngbDropdownMenu class="dropdown-menu">
+							<button 
+								ngbDropdownItem
+								*ngFor="let a of modal.modal_4.getStnFilterData()"
+								(click)="modal.modal_4.form.get('formStn').setValue(a)"
+								type="button"
+							>
+								<a>{{a}}</a>
+							</button>
+						</div>
+					</div>		
+					<datalist id="datalistOptions-inputStn">
+						<option 
+							*ngFor="let a of modal.modal_4.getStnFilterData()"
+							value={{a}}
+						>
+					</datalist>
+					<div class="invalid-feedback" *ngIf="formStn.errors && (formStn.dirty || formStn.touched)">
+						{{formStn.errors?.message}}
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="row mb-1">
+			<label for="l_14" class="col-sm-3 col-form-label col-form-label-sm">
+				Kategori
+			</label>
+			<div class="col-4">
+				<select 
+					class="form-select form-select-sm" 
+					aria-label="Default select example"
+					formControlName="formKategori"
+					[class.is-invalid]="
+						!formKategori.valid && (formKategori.dirty || formKategori.touched)
+					"
+				>
+					<option>NON-PAJAK</option>
+					<option>PAJAK</option>
+				</select>
+				<div class="invalid-feedback" *ngIf="formKategori.errors && (formKategori.dirty || formKategori.touched)">
+					{{formKategori.errors?.message}}
+				</div>
+			</div>
+		</div>
+		<button button id="submitButtonId" hidden type="submit">submit</button>
+	</form>
+</ng-template>
+<ng-template #modalFooter4>
+	<button 
+		type="button" 
+		class="btn btn-outline-dark" 
+		(click)="modal.modal_4.resetForm()"
+	>
+		Reset
+	</button>
+	<button 
+		type="button" 
+		class="btn btn-outline-dark" 
+		onclick="(()=>document.getElementById('submitButtonId').click())()"
+	>
+		Submit
+	</button>
+	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_4.closeModal()">Close</button>
 </ng-template>

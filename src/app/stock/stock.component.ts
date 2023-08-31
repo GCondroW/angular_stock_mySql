@@ -45,13 +45,19 @@ export class StockComponent {
 			view:{
 				gridOptions:{
 					onRowDoubleClicked:(event:any)=>{
-						this.modal.modal_1.openModal(event.data);
+						let activeView=this.activeView;
+						if(activeView==='daftar')return this.modal.modal_1.openModal(event.data);
+						if(activeView==='transaksi')return alert(GlobalVar.alert(event.data));
 					},
 				},
 			},
 			edit:{
 				gridOptions:{
 					onRowDoubleClicked:(event:any)=>{
+						let activeView=this.activeView;
+						let parentId=event.data._id;
+						
+						if(activeView==='daftar')return this.modal.modal_4.openModal(parentId);
 						console.log("placeHolder edit operation event")
 					},
 				},
@@ -65,7 +71,9 @@ export class StockComponent {
 				},
 				selectedData:null,
 				deleteFunction:(data:any)=>{
-					this.delete(data);
+					let activeView=this.activeView;
+					if(activeView==='daftar')return this.delete(data);
+					if(activeView==='transaksi')return this.delete(data,activeView);
 				},
 			},
 		},
@@ -107,8 +115,9 @@ export class StockComponent {
 			console.log('arg1 : ',arg1)
 			let emitRequest=arg1.request;
 			let alertArr:Array<any>=[];
-			let data:Array<any>=[];
+			let data:any=null;
 			let oldData:Array<any>=[];
+			let deletedData:any;
 			let newData:any;
 			let temp:Array<any>=[];
 			console.log("emitRequest=",emitRequest);
@@ -157,7 +166,7 @@ export class StockComponent {
 					this.changeView(this.activeView);
 					break;
 				case 'delete':
-					data=arg1.data;
+					data=arg1.data[0];
 					data.map((item:any)=>{
 						alertArr.push({
 							nama:item.nama,
@@ -168,11 +177,32 @@ export class StockComponent {
 					alert(GlobalVar.alert(alertArr,arg1.message));
 					this.getDbKey(arg1.dbKey);
 					oldData=this.stock.raw;
-					let deletedData=data;
+					deletedData=data;
 					let oldDataId=oldData.map(item=>item._id);
 					let deletedDataId=deletedData.map((item:any)=>item._id);					
 					temp=oldData.filter((item:any)=>!deletedDataId.includes(item._id));
-					console.log('empty Delelt',temp);
+					console.log('empty Delete',temp);
+					this.stock.set(temp);
+					this.changeView(this.activeView);
+					break;
+				case 'delete_embed':
+					data=arg1.data[0];
+					alertArr.push({
+						nama:data.nama,
+						supplier:data.supplier,
+						kategori:data.kategori,
+					});
+					alert(GlobalVar.alert(alertArr,arg1.message));
+					this.getDbKey(arg1.dbKey);
+					oldData=this.stock.raw;
+					let parentId=data._id;
+					let oldDataIndex=oldData.findIndex(item=>item._id===parentId);
+					oldData[oldDataIndex].transaksi=data.transaksi;
+					console.log(data);
+					console.log(oldData);
+					console.log(oldDataIndex);
+					temp=oldData;
+					
 					this.stock.set(temp);
 					this.changeView(this.activeView);
 					break;
@@ -194,9 +224,11 @@ export class StockComponent {
 	
 	/// MODAL ///
 	public modalService:NgbModal=inject(NgbModal);
-	@ViewChild('modal_1') modal_1!:DynamicModalComponent;//modal1
+	@ViewChild('modal_1') modal_1!:DynamicModalComponent;//modal daftar
 	@ViewChild('modal_2') modal_2!:DynamicModalComponent;//modal transaksi
-	@ViewChild('modal_3') modal_3!:DynamicModalComponent;//modal add
+	@ViewChild('modal_3') modal_3!:DynamicModalComponent;//modal add daftar
+	@ViewChild('modal_4') modal_4!:DynamicModalComponent;//modal edit daftar
+	public activeModal:string='';
 	public modal:any={
 		modal_1:{
 			openModal:(modalData:any)=>{
@@ -323,12 +355,12 @@ export class StockComponent {
 				this.modal.modal_3.modalRef=this.modalService.open(this.modal_3);
 				
 				this.modal.modal_3.form=this.fb.group({
-					formNama:[""],
-					formSupplier:[""],
-					formQty:[0,[Validators.required,GlobalValidator.number]],
-					formStn:[""],
-					formKategori:[""],
-					formCtn:[0,[Validators.required,GlobalValidator.number]],
+					formNama:["",[GlobalValidator.required]],
+					formSupplier:["",[GlobalValidator.required]],
+					formQty:[0,[GlobalValidator.number,GlobalValidator.required,GlobalValidator.cantBeZero]],
+					formStn:["",[GlobalValidator.required]],
+					formKategori:["",[GlobalValidator.required]],
+					formCtn:[0,[GlobalValidator.number,GlobalValidator.required]],
 				},{});
 				let form=this.modal.modal_3.form;
 				let formNamaValue=form.get("formNama");
@@ -346,20 +378,113 @@ export class StockComponent {
 				formStnValue.valueChanges.subscribe((x:string)=>console.log(x))
 				formKategoriValue.valueChanges.subscribe((x:string)=>console.log(x))
 				formCtnValue.valueChanges.subscribe((x:number)=>console.log(x))
+				this.activeModal='modal_3';
 				
 			},
 			closeModal:()=>{
 				this.modal.modal_3.modalRef.close();
+				this.activeModal='';
 			},
 			data:{},
 			form:{},
-			submit:()=>console.log('submit placeholder'),
+			submit:()=>{
+				let form=this.modal.modal_3.form;
+				form.markAllAsTouched()
+				form.updateValueAndValidity()
+				if(!!form.valid){
+					console.log('FORM IS VALID ');
+					console.log('form = >',form);
+					let reqVar={
+						nama:form.value.formNama,
+						supplier:form.value.formSupplier,
+						qty:form.value.formQty,
+						stn:form.value.formStn,
+						kategori:form.value.formKategori,
+						ctn:form.value.formCtn,
+					};
+					console.log('reqVar :',this.rw(()=>this.globalService.postData(this.currentPage,[reqVar])))
+					
+				}else return
+			},
+			modalRef:undefined,
+			getStnFilterData:()=>[...new Set(this.stock.stock.daftar.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))],
+			getDatalist:(pointer:string)=>this.stock.stock.daftar.filterData[pointer],
+		},
+		modal_4:{
+			openModal:(parentId:string)=>{
+				console.log(this.modal.modal_4)
+				let parentData=this.stock.raw.find((item:any)=>item._id===parentId);
+				this.modal.modal_4.modalRef=this.modalService.open(this.modal_4);
+				this.modal.modal_4.initialData=parentData;
+				let initialData=parentData;
+				this.modal.modal_4.form=this.fb.group({
+					form_id:[initialData._id],
+					formNama:[initialData.nama,[GlobalValidator.required]],
+					formSupplier:[initialData.supplier,[GlobalValidator.required]],
+					formQty:[initialData.qty,[GlobalValidator.number,GlobalValidator.required,GlobalValidator.cantBeZero]],
+					formStn:[initialData.stn,[GlobalValidator.required]],
+					formKategori:[initialData.kategori,[GlobalValidator.required]],
+				},{});
+				let form=this.modal.modal_4.form;
+				let formNamaValue=form.get("formNama");
+				let formSupplierValue=form.get("formSupplier");
+				let formQtyValue=form.get("formQty");
+				let formStnValue=form.get("formStn");
+				let formKategoriValue=form.get("formKategori");
+				this.activeModal='modal_4';
+			},
+			closeModal:()=>{
+				this.modal.modal_4.modalRef.close();
+				this.activeModal='';
+			},
+			initialData:{},
+			data:{},
+			form:{},
+			resetForm:(initialData?:any|undefined)=>{
+				try{
+					if(!initialData)initialData=this.modal.modal_4.initialData;
+					let form=this.modal.modal_4.form;
+					form.get("formNama").setValue(initialData.nama);
+					form.get("formSupplier").setValue(initialData.supplier);
+					form.get("formQty").setValue(initialData.qty);
+					form.get("formStn").setValue(initialData.stn);
+					form.get("formKategori").setValue(initialData.kategori);
+					return 
+				}catch(e){
+					alert('err')
+					return
+				}
+			},
+			submit:()=>{
+				let form=this.modal.modal_4.form;
+				form.markAllAsTouched()
+				form.updateValueAndValidity()
+				if(!!form.valid){
+					console.log('FORM IS VALID ');
+					console.log('form = >',form);
+					let reqVar={
+						nama:form.value.formNama,
+						supplier:form.value.formSupplier,
+						qty:form.value.formQty,
+						stn:form.value.formStn,
+						kategori:form.value.formKategori,
+					};
+					console.log('reqVar =',reqVar);
+					//console.log('reqVar :',this.rw(()=>this.globalService.postData(this.currentPage,[reqVar])))
+					
+				}else return
+			},
 			modalRef:undefined,
 			getStnFilterData:()=>[...new Set(this.stock.stock.daftar.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))],
 			getDatalist:(pointer:string)=>this.stock.stock.daftar.filterData[pointer],
 		},
 	};
-	get formQty() { return this.modal.modal_3.form.get('formQty'); }
+	get formNama() { return this.modal[this.activeModal].form.get('formNama'); }
+	get formSupplier() { return this.modal[this.activeModal].form.get('formSupplier'); }
+	get formQty() { return this.modal[this.activeModal].form.get('formQty'); }
+	get formStn() { return this.modal[this.activeModal].form.get('formStn'); }
+	get formKategori() { return this.modal[this.activeModal].form.get('formKategori'); }
+	get formCtn() { return this.modal[this.activeModal].form.get('formCtn'); }
 	/// \MODAL ///
 	
 	/// EXCEL ///
@@ -433,7 +558,6 @@ export class StockComponent {
 			console.log("grid Event => onGridReady : ");
 			this.gridApi=this.gridOptions.api;	
 			this.gridOptions.api?.setColumnDefs(this.stock.stock[this.activeView].colDef);
-			this.gridOptions.api?.setFilterModel(this.stock.stock[this.activeView].defaultFilterParam);
 			this.gridOptions.api?.showLoadingOverlay();
 		},
 		onFirstDataRendered:(event:any)=>{
@@ -582,8 +706,8 @@ export class StockComponent {
 		this.gridOptions.api.showLoadingOverlay();
 		return this.rw(()=> this.globalService.postEmbedData(dbName,data,embedName,id));
 	};
-	delete=(data:any)=>{
-		this.gridOptions.api.showLoadingOverlay();
+	delete=(data:any,embedName?:string|undefined)=>{
+		//this.gridOptions.api.showLoadingOverlay();
 		let temp:boolean=false;
 		console.log('data',data)
 		if(data.length===this.gridOptions.rowData.length){
@@ -595,7 +719,8 @@ export class StockComponent {
 			let idArr:any;
 			if(Array.isArray(data))idArr=data.map(item=>item._id);
 			let dbName=this.currentPage;
-			return this.rw(()=> this.globalService.deleteData(dbName,idArr));
+			
+			return this.rw(()=> this.globalService.deleteData(dbName,idArr,embedName,data[0]._idDaftar));
 		};
 	};
 	old_delete=(data:any)=>{

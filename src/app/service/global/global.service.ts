@@ -92,9 +92,9 @@ export class GlobalService {
 		return this.http.post<any>(url,data,{headers:this.headers})
 	};
 	
-	putData=(dbName:string,id:number,data:any={})=>{
+	putData=(dbName:string,id:number,data:Array<any>)=>{
 		let url=this.url+dbName+"/"+id;
-		return this.http.put(url,data);
+		return this.http.put(url,data,{headers:this.headers});
 	};
 	
 	wipeData=(dbName:string)=>{
@@ -104,8 +104,16 @@ export class GlobalService {
 		return this.http.delete(url,{headers:this.headers});
 	};
 	
-	deleteData=(dbName:string,id:any)=>{
-		let url=this.url+dbName;
+	deleteData=(dbName:string,id:Array<string>,embedName?:string|undefined,parentId?:string|undefined)=>{
+		if(!embedName || !parentId){
+			parentId='';
+			embedName='';
+		}else{
+			embedName='/'+embedName;
+			parentId='/'+parentId;
+		};
+		console.log("embedName,parentId",embedName,parentId);
+		let url=this.url+dbName+embedName+parentId;
 		return this.http.delete(url,{headers:this.headers,body:id});
 	};
 	
