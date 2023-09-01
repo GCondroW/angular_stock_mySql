@@ -53,20 +53,19 @@ export class StockComponent {
 			},
 			edit:{
 				gridOptions:{
-					onRowDoubleClicked:(event:any)=>{
+					onRowDoubleClicked:(data:any)=>{
 						let activeView=this.activeView;
-						let parentId=event.data._id;
-						
+						let parentId=data.data._id;					
 						if(activeView==='daftar')return this.modal.modal_4.openModal(parentId);
-						console.log("placeHolder edit operation event")
 					},
 				},
 			},
 			delete:{
 				gridOptions:{
 					onRowDoubleClicked:(event:any)=>{
-						console.log(this.gridOptions);
-						console.log("placeHolder delete operation event")		
+						let activeView=this.activeView;
+						if(activeView==='daftar')return this.delete([event.data]);
+						if(activeView==='transaksi')return this.delete(event.data,activeView);
 					},
 				},
 				selectedData:null,
@@ -117,6 +116,7 @@ export class StockComponent {
 			let alertArr:Array<any>=[];
 			let data:any=null;
 			let oldData:Array<any>=[];
+			let oldDataIndex:number=-1;
 			let deletedData:any;
 			let newData:any;
 			let temp:Array<any>=[];
@@ -165,8 +165,31 @@ export class StockComponent {
 					this.stock.set(oldData);
 					this.changeView(this.activeView);
 					break;
-				case 'delete':
+				case 'update':
 					data=arg1.data[0];
+					[data].map((item:any)=>{
+						alertArr.push({
+							nama:item.nama,
+							supplier:item.supplier,
+							kategori:item.kategori,
+						});
+					});
+					alert(GlobalVar.alert(alertArr,arg1.message));
+					this.getDbKey(arg1.dbKey);
+					oldData=this.stock.raw;
+					oldDataIndex=oldData.findIndex(item=>item._id===data._id);
+					Object.keys(data).map(pointer=>{
+						if(data[pointer]===oldData[oldDataIndex][pointer])return
+						oldData[oldDataIndex][pointer]=data[pointer];
+					})
+					console.log("oldData",oldData);
+					console.log("oldDataIndex",oldDataIndex);
+					console.log("data",data);
+					this.stock.set(oldData);
+					this.changeView(this.activeView);
+					break;
+				case 'delete':
+					data=arg1.data;
 					data.map((item:any)=>{
 						alertArr.push({
 							nama:item.nama,
@@ -196,7 +219,7 @@ export class StockComponent {
 					this.getDbKey(arg1.dbKey);
 					oldData=this.stock.raw;
 					let parentId=data._id;
-					let oldDataIndex=oldData.findIndex(item=>item._id===parentId);
+					oldDataIndex=oldData.findIndex(item=>item._id===parentId);
 					oldData[oldDataIndex].transaksi=data.transaksi;
 					console.log(data);
 					console.log(oldData);
@@ -463,6 +486,7 @@ export class StockComponent {
 					console.log('FORM IS VALID ');
 					console.log('form = >',form);
 					let reqVar={
+						_id:form.value.form_id,
 						nama:form.value.formNama,
 						supplier:form.value.formSupplier,
 						qty:form.value.formQty,
@@ -470,8 +494,7 @@ export class StockComponent {
 						kategori:form.value.formKategori,
 					};
 					console.log('reqVar =',reqVar);
-					//console.log('reqVar :',this.rw(()=>this.globalService.postData(this.currentPage,[reqVar])))
-					
+					console.log('reqVar :',this.rw(()=>this.globalService.putData(this.currentPage,form.value.form_id,[reqVar])))
 				}else return
 			},
 			modalRef:undefined,
@@ -710,6 +733,8 @@ export class StockComponent {
 		//this.gridOptions.api.showLoadingOverlay();
 		let temp:boolean=false;
 		console.log('data',data)
+		if(!Array.isArray(data))throw new Error ('Expected Array');
+		
 		if(data.length===this.gridOptions.rowData.length){
 			temp=confirm(GlobalVar.alert([],"Hapus Semua Data ?"));
 		}else{

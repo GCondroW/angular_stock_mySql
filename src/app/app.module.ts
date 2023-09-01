@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, ErrorHandler } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -26,6 +26,8 @@ import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 
 import { GlobalVar } from './globalVar'
 
+import { GlobalErrorHandlerService  } from './global-error-handler.service'
+
 const config: SocketIoConfig = { url: GlobalVar.dbServerUrl, options: {} };
 
 
@@ -51,7 +53,13 @@ const config: SocketIoConfig = { url: GlobalVar.dbServerUrl, options: {} };
 	ReactiveFormsModule,
 	NgbModule,
   ],
-  providers: [GlobalService],
+  providers: [
+	GlobalService,
+		{
+		provide:ErrorHandler,
+		useClass:GlobalErrorHandlerService ,
+		}
+	],
   bootstrap: [AppComponent]
 })
 

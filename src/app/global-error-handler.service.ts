@@ -14,7 +14,8 @@ export class GlobalErrorHandlerService implements ErrorHandler{
 		  console.error('Response body:', error.message);          	  
 	  } else {
 		  //A client-side or network error occurred.	          
-		  console.error('An error occurred:', error.message);          
+		  console.error('An error occurred:', error.message);     
+		  alert("Error\t:\n"+error.message);
 	  }     
 	}
 }
