@@ -3,6 +3,7 @@
 >
 	<nav id="navbarId" class="m-0 p-1 navbar sticky-top navbar-light bg-light"
 		[style.width]="tableContainerStyle.width" 
+		[style.min-width]="'50%'" 
 	>
 		<div class="container-fluid px-1">
 			<div class="d-flex">
@@ -72,6 +73,7 @@
 	<div id="gridTable"
 		[style.width]="tableContainerStyle.width" 
 		[style.height]="tableContainerStyle.height"
+		[style.min-width]="'50%'"
 	>	
 		<ng-container *ngIf="stock.raw;then dataTable; else emptyDataElement"></ng-container>
 	</div>		
@@ -109,6 +111,34 @@
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="delete(getAllAgGridRows())">Delete All</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.modal_3.openModal()">Tambah Data</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="console.log('debugThis : ',debugThis)"><-></button>
+		</div>
+	</div>
+	<hr>
+	<div class="container">
+		<h6>Kolom : </h6>
+		<div class="row mx-2">
+			<div 
+				*ngFor="let item of gridOptions.columnDefs"
+				class="form-check col-6 "
+			>
+				<input 
+					class="form-check-input" 
+					type="checkbox" 
+					[attr.for]="'inlineCheckbox'+item.field"
+					value={{!item.hide}}
+					[checked]="!item.hide"
+					(change)="
+						gridOptions.columnApi.setColumnVisible(item.field,!!item.hide);
+						item.hide=!item.hide;
+					"
+				>
+				<label 
+					class="form-check-label" 
+					[attr.for]="'inlineCheckbox'+item.field"
+				>
+					{{item.field}}
+				</label>
+			</div>
 		</div>
 	</div>
 </ng-template>
@@ -274,6 +304,7 @@
 			</div>
 		</div>
 	</div>
+
 </ng-template>
 
 <ng-template #modal_1 let-modal1>

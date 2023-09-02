@@ -14,14 +14,11 @@ import { GlobalValidator } from '../shared/formValidator';
 import { ColDef } from 'ag-grid-community';
 import { Socket } from 'ngx-socket-io';
 
-
 @Component({
   selector: 'app-stock',
   templateUrl: './stock.component.html',
   styleUrls: ['./stock.component.css']
 })
-
-
 
 export class StockComponent {
 	private globalService:GlobalService=inject(GlobalService);
@@ -29,12 +26,10 @@ export class StockComponent {
 	public socket:Socket=inject(Socket);
 	public currentPage=this.globalService.getCurrentPage(); // >>dbName
 	public downloadExcel = this.globalService.downloadExcel;
-	
 	public JSON=JSON;
 	public Object=Object;
 	public console=console;
 	public toUpperCase="".toUpperCase;
-	
 	public stock=new GlobalVar.stock([]);
 	public viewArr=Object.keys(this.stock.stock);
 	public activeView:any=this.viewArr[0];//public activeView=this.viewArr[1];
@@ -577,6 +572,7 @@ export class StockComponent {
 		rowSelection: 'single',
 		rowMultiSelectWithClick:true,
 		paginationPageSize:50,	
+		accentedSort:true,
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
 			this.gridApi=this.gridOptions.api;	
@@ -588,32 +584,46 @@ export class StockComponent {
 			this.adjustTableContainerSize()
 		},
 		onSelectionChanged:(event: any)=>{
-			console.log("selectedData :",this.gridOptions.api.getSelectedRows());
+
 		},
 		onCellEditingStarted:(event:any)=>{
-			console.log("grid Event => onCellEditingStarted : ");
+
 		},
 		onCellEditingStopped:(event:any)=>{
-			console.log("grid Event => onCellEditingStopped : ");
+
 		},
 		onPaginationChanged:(params:any)=>{
-			console.log("grid Event => paginationChanged : ");
+
 		},
 		onRowDataUpdated:(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
+			if(this.activeView==='daftar'){
+				this.gridOptions.columnApi.applyColumnState({
+					state: [{ colId: 'nama', sort: 'asc' }],
+					defaultState: { sort: null },
+				});
+			}else if(this.activeView==='transaksi'){
+				this.gridOptions.columnApi.applyColumnState({
+					state: [{ colId: 'tanggal', sort: 'desc' }],
+					defaultState: { sort: null },
+				});
+			}
 		},
 		onFilterChanged:(event:any)=>{
-			console.log("grid Event => onFilterChanged : ");
+
 		},
 		onColumnResized: (event:any) => {
-			console.log("grid Event => onColumnResized : ");
+
 		},
 		onModelUpdated: (event:any)=>{
-			console.log("grid Event => onModelUpdated : ");
 			this.adjustTableContainerSize()
 		},
 		onComponentStateChanged:(event:any)=>{
-			console.log("grid Event => onComponentStateChanged : ");
+
+		},
+		onColumnVisible:(event:any)=>{
+			console.log("grid Event => onColumnVisible : ");
+			this.adjustTableContainerSize()
 		},
 		onRowDoubleClicked:(event:any)=>{
 			console.log("grid Event => onRowDoubleClicked : ");
@@ -639,6 +649,7 @@ export class StockComponent {
 		let scrollBar=document.querySelectorAll('[Class=ag-body-vertical-scroll-viewport]')[0];
 		let scrollBarRect=scrollBar?.getBoundingClientRect();
 		let scrollBarRectWidth=scrollBarRect?.width;
+		scrollBarRectWidth=15
 		//////////////////////////////////////////////
 		if(!!innerTable){
 			let innerTableWidth=innerTable.getBoundingClientRect().width;
@@ -648,11 +659,10 @@ export class StockComponent {
 			console.log("innerTableWidth>=windowWidth",innerTableWidth,windowWidth)
 			if(innerTableWidth>=windowWidth){
 				width="auto";
-			}
-			else{
+			}else{
 				if(innerTableWidth===0) width='50%'
 				else width=(innerTableRectRight+scrollBarRectWidth)+"px";
-			}
+			};
 			let marginBottom:number=0;
 			let tempHeight=(window.innerHeight-containerRectTop+window.scrollY)+marginBottom;
 			height=22*Math.floor(tempHeight/22)+11;
@@ -662,7 +672,8 @@ export class StockComponent {
 			};
 			if(JSON.stringify(this.tableContainerStyle)===JSON.stringify(temp))return
 			this.tableContainerStyle=temp;
-			console.log("tableHeight",height);
+			console.log("innerTableRectRight",innerTableRectRight);
+			console.log("scrollBarRectWidth",scrollBarRectWidth);
 			console.log("tableWidth",width);
 			console.log("aaa0",this.gridOptions.paginationPageSize=(22*Math.floor((height-navbarHeight)/22)/22));
 		};		
@@ -672,7 +683,9 @@ export class StockComponent {
 		this.gridOptions.api?.deselectAll();
 		this.gridOptions.api?.setColumnDefs(this.stock.stock[view].colDef);
 		this.gridOptions.api?.setFilterModel(this.stock.stock[view].defaultFilterParam);
+
 		this.gridOptions.api?.hideOverlay();
+		
 	};
 	/// \AG-GRID ///
 	rw=(request:any)=>{
@@ -689,7 +702,7 @@ export class StockComponent {
 	getDbKey=(dbKey:string)=>{
 		console.log("dbKey : ",dbKey )
 		GlobalVar.dbKey=dbKey;
-		alert ("set db key "+JSON.stringify(GlobalVar.dbKey));
+		console.log("set db key "+JSON.stringify(GlobalVar.dbKey));
 		this.globalService.setHeaders("dbKey",dbKey);
 	};
 	get=(page:string)=>{

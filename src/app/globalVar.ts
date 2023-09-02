@@ -57,6 +57,8 @@ export const GlobalVar = {
 							if(item==="ctn")pushVar["editable"]=false;
 							if(item==="ctn")pushVar["type"]='numericColumn';
 							if(item==="nama")pushVar["width"]=300;
+							if(item==="nama")pushVar["sort"]='asc';
+							if(item==="nama")pushVar["comparator"]=this.customLowerCaseComparator;
 							if(item==="Qty/ Ctn")pushVar["width"]=100;
 							pushVar["autoHeight"]=true;		
 							pushVar["field"]=item;	
@@ -261,6 +263,13 @@ export const GlobalVar = {
 		private convertDate=(dateString:string)=>{
 			let temp=new Date(dateString).toLocaleDateString('id');
 			return temp;
+		};
+		private customLowerCaseComparator = (valueA:any, valueB:any) => {
+			if (typeof valueA === 'string') {
+				return valueA.toLowerCase().localeCompare(valueB.toLowerCase());
+			}
+
+			return (valueA > valueB? 1 : (valueA < valueB ? -1 : 0));
 		};
 	},
 	import:{
