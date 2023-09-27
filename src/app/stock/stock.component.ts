@@ -33,7 +33,6 @@ export class StockComponent {
 	public stock=new GlobalVar.stock([]);
 	public viewArr=Object.keys(this.stock.stock);
 	public activeView:any=this.viewArr[0];//public activeView=this.viewArr[1];
-	
 	//public operation:any={}
 	public operation:any={
 		mode:{
@@ -61,6 +60,7 @@ export class StockComponent {
 						let activeView=this.activeView;
 						if(activeView==='daftar')return this.delete([event.data]);
 						if(activeView==='transaksi')return this.delete(event.data,activeView);
+						return
 					},
 				},
 				selectedData:null,
@@ -68,6 +68,7 @@ export class StockComponent {
 					let activeView=this.activeView;
 					if(activeView==='daftar')return this.delete(data);
 					if(activeView==='transaksi')return this.delete(data,activeView);
+					return
 				},
 			},
 		},
@@ -93,144 +94,134 @@ export class StockComponent {
 	public dataIsReady:Boolean=false;
 	public navigationPages:any;
 	public debugThis:any='';
+	public lastRequest:any;
 	constructor(){
 		this.navigationPages=GlobalVar.pages;
 		this.operation.active=Object.keys(this.operation.mode)[0];
-		
 	};
 	ngOnInit(){
 		this.socket.emit("hello from client", 5, "6", { 7: Uint8Array.from([8]) });
+		this.socket.on("testSocket",(arg1:any)=>{
+			console.log("testSocket : ",arg1);
+		});
 		this.socket.on("__1", (arg1:{
 			data:any[],
 			request:string,
 			message:string,
 			dbKey:string,
 		}) => {
-			console.log('arg1 : ',arg1)
+			//console.log('arg1 : ',arg1)
 			let emitRequest=arg1.request;
 			let alertArr:Array<any>=[];
 			let data:any=null;
-			let oldData:Array<any>=[];
-			let oldDataIndex:number=-1;
-			let deletedData:any;
+			let oldData:Array<any>=this.stock.raw;
+			//let oldDataIndex:number=-1;
+			//let deletedData:any;
 			let newData:any;
-			let temp:Array<any>=[];
+			//let temp:Array<any>=[];
 			console.log("emitRequest=",emitRequest);
+			console.log("arg1=",arg1);
+			if(!emitRequest)this.get();else
+			this.getDbKey(arg1.dbKey);
+			data=arg1.data;
+			data.map((item:any)=>{
+				alertArr.push({
+					nama:item.nama,
+					supplier:item.supplier,
+					kategori:item.kategori,
+				});
+			});
+			alert(GlobalVar.alert(alertArr,arg1.message));
+			if(oldData.length<1)return this.refreshPage();
+			newData=data;
 			switch(emitRequest){
 				case 'add_few':
 					
 					break;
 				case 'add':
-					data=arg1.data;
-					data.map((item:any)=>{
-						alertArr.push({
-							nama:item.nama,
-							supplier:item.supplier,
-							kategori:item.kategori,
-						});
-					});
-					alert(GlobalVar.alert(alertArr,arg1.message));
-					this.getDbKey(arg1.dbKey);
-					oldData=this.stock.raw;
-					temp=oldData;
-					newData=data;
-					temp.push(...newData);
-					this.stock.set(temp);
-					this.changeView(this.activeView);
+					console.log('receive emit request "add" : ',arg1,
+					(()=>{
+						oldData.push(...newData);
+						this.updateData(oldData);
+					})());
 					break;
 				case 'add_transaksi':
-					data=arg1.data;
-					data.map((item:any)=>{
-						alertArr.push({
-							nama:item.nama,
-							supplier:item.supplier,
-							kategori:item.kategori,
-						});
-					});
-					alert(GlobalVar.alert(alertArr,arg1.message));
-					this.getDbKey(arg1.dbKey);
-					oldData=this.stock.raw;	
-					newData=data;
-					let index:any='';
-					newData.map((item:any)=>{
+					console.log('receive emit request "add_transaksi" : ',arg1,
+					(()=>{
+						let index:any='';
+						data.map((item:any)=>{
 						index=oldData.map(item2=>item2._id);
 						index=index.findIndex((item3:any)=>item3===item._id);
-						oldData[index].transaksi=item.transaksi;
-					})
-					this.stock.set(oldData);
-					this.changeView(this.activeView);
+							oldData[index].transaksi=item.transaksi;
+						});
+						this.updateData(oldData);
+					})());
 					break;
 				case 'update':
-					data=arg1.data[0];
-					[data].map((item:any)=>{
-						alertArr.push({
-							nama:item.nama,
-							supplier:item.supplier,
-							kategori:item.kategori,
+					console.log('receive emit request "update" : ',arg1,
+					(()=>{
+						let data=arg1.data[0];
+						[data].map((item:any)=>{
+							alertArr.push({
+								nama:item.nama,
+								supplier:item.supplier,
+								kategori:item.kategori,
+							});
 						});
-					});
-					alert(GlobalVar.alert(alertArr,arg1.message));
-					this.getDbKey(arg1.dbKey);
-					oldData=this.stock.raw;
-					oldDataIndex=oldData.findIndex(item=>item._id===data._id);
-					Object.keys(data).map(pointer=>{
-						if(data[pointer]===oldData[oldDataIndex][pointer])return
-						oldData[oldDataIndex][pointer]=data[pointer];
-					})
-					console.log("oldData",oldData);
-					console.log("oldDataIndex",oldDataIndex);
-					console.log("data",data);
-					this.stock.set(oldData);
-					this.changeView(this.activeView);
+						let oldDataIndex=oldData.findIndex(item=>item._id===data._id);
+						Object.keys(data).map(pointer=>{
+							if(data[pointer]===oldData[oldDataIndex][pointer])return
+							oldData[oldDataIndex][pointer]=data[pointer];
+						});
+						this.updateData(oldData);
+					})());
 					break;
 				case 'delete':
-					data=arg1.data;
-					data.map((item:any)=>{
-						alertArr.push({
-							nama:item.nama,
-							supplier:item.supplier,
-							kategori:item.kategori,
-						});
-					});
-					alert(GlobalVar.alert(alertArr,arg1.message));
-					this.getDbKey(arg1.dbKey);
-					oldData=this.stock.raw;
-					deletedData=data;
-					let oldDataId=oldData.map(item=>item._id);
-					let deletedDataId=deletedData.map((item:any)=>item._id);					
-					temp=oldData.filter((item:any)=>!deletedDataId.includes(item._id));
-					console.log('empty Delete',temp);
-					this.stock.set(temp);
-					this.changeView(this.activeView);
+					console.log('receive emit request "delete" : ',arg1,
+					(()=>{
+						let deletedData=data;
+						let oldDataId=oldData.map(item=>item._id);
+						let deletedDataId=deletedData.map((item:any)=>item._id);					
+						let temp=oldData.filter((item:any)=>!deletedDataId.includes(item._id));
+						console.log('empty Delete',temp);
+						this.updateData(temp)
+					})());
 					break;
 				case 'delete_embed':
-					data=arg1.data[0];
-					alertArr.push({
-						nama:data.nama,
-						supplier:data.supplier,
-						kategori:data.kategori,
-					});
-					alert(GlobalVar.alert(alertArr,arg1.message));
+					console.log('receive emit request "delete_embed" : ',arg1,
+					(()=>{
+						let data=arg1.data[0];
+						alertArr.push({
+							nama:data.nama,
+							supplier:data.supplier,
+							kategori:data.kategori,
+						});
+						let parentId=data._id;
+						let oldDataIndex=oldData.findIndex(item=>item._id===parentId);
+						oldData[oldDataIndex].transaksi=data.transaksi;
+						let temp=oldData;		
+						this.updateData(temp)
+					})());
+					break;
+				case 'update_key':
 					this.getDbKey(arg1.dbKey);
-					oldData=this.stock.raw;
-					let parentId=data._id;
-					oldDataIndex=oldData.findIndex(item=>item._id===parentId);
-					oldData[oldDataIndex].transaksi=data.transaksi;
-					console.log(data);
-					console.log(oldData);
-					console.log(oldDataIndex);
-					temp=oldData;
-					
-					this.stock.set(temp);
-					this.changeView(this.activeView);
+				break;
+				case 'init':
+					console.log('receive emit request "init" : ',arg1,
+					(()=>{
+						if(arg1.dbKey != this.dbKey || oldData.length<1){
+							this.getDbKey(arg1.dbKey);
+							this.refreshPage();
+						};
+					})());
 					break;
 				default :
+						
 				return
 			};	
 		});
 		this.debugThis=this;
-		this.get(this.currentPage);
-		
+		this.get();
 	};
 	
 	/// OFFCANVAS ///
@@ -376,7 +367,7 @@ export class StockComponent {
 					formNama:["",[GlobalValidator.required]],
 					formSupplier:["",[GlobalValidator.required]],
 					formQty:[0,[GlobalValidator.number,GlobalValidator.required,GlobalValidator.cantBeZero]],
-					formStn:["",[GlobalValidator.required]],
+					formStn:["",[GlobalValidator.required,GlobalValidator.string]],
 					formKategori:["",[GlobalValidator.required]],
 					formCtn:[0,[GlobalValidator.number,GlobalValidator.required]],
 				},{});
@@ -420,13 +411,18 @@ export class StockComponent {
 						kategori:form.value.formKategori,
 						ctn:form.value.formCtn,
 					};
-					console.log('reqVar :',this.rw(()=>this.globalService.postData(this.currentPage,[reqVar])))
-					
+					this.post([reqVar]);
 				}else return
 			},
 			modalRef:undefined,
-			getStnFilterData:()=>[...new Set(this.stock.stock.daftar.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))],
-			getDatalist:(pointer:string)=>this.stock.stock.daftar.filterData[pointer],
+			getStnFilterData:()=>{
+				if(this.stock.stock.daftar.filterData['Qty/ Ctn']===undefined)return [];
+				return [...new Set(this.stock.stock.daftar.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))];
+			},
+			getDatalist:(pointer:string)=>{
+				if(this.stock.stock.daftar.filterData[pointer]===undefined)return [];
+				return this.stock.stock.daftar.filterData[pointer];
+			},
 		},
 		modal_4:{
 			openModal:(parentId:string)=>{
@@ -440,7 +436,7 @@ export class StockComponent {
 					formNama:[initialData.nama,[GlobalValidator.required]],
 					formSupplier:[initialData.supplier,[GlobalValidator.required]],
 					formQty:[initialData.qty,[GlobalValidator.number,GlobalValidator.required,GlobalValidator.cantBeZero]],
-					formStn:[initialData.stn,[GlobalValidator.required]],
+					formStn:[initialData.stn,[GlobalValidator.required,GlobalValidator.string]],
 					formKategori:[initialData.kategori,[GlobalValidator.required]],
 				},{});
 				let form=this.modal.modal_4.form;
@@ -489,7 +485,7 @@ export class StockComponent {
 						kategori:form.value.formKategori,
 					};
 					console.log('reqVar =',reqVar);
-					console.log('reqVar :',this.rw(()=>this.globalService.putData(this.currentPage,form.value.form_id,[reqVar])))
+					console.log('reqVar :',this.put(form.value.form_id,[reqVar]));
 				}else return
 			},
 			modalRef:undefined,
@@ -511,7 +507,10 @@ export class StockComponent {
 			this.gridOptions.api?.showLoadingOverlay();
 			this.globalService.excelHandler(data).then(x=>{
 				console.log("Excel : ", x)
-				this.rw(()=>this.globalService.postData(dbName,x));
+				this.globalService.postExcel(dbName,x).subscribe(y=>{
+					console.log(y)
+					console.log(y.status)
+				})
 			});		
 		},
 		downloadExcel:this.globalService.downloadExcel,
@@ -581,6 +580,8 @@ export class StockComponent {
 		},
 		onFirstDataRendered:(event:any)=>{
 			console.log("grid Event => onFirstDataRendered : ");
+			console.log("HIDE LOADING : ",	this.gridOptions.api?.hideOverlay());
+			this.gridOptions.columnApi.autoSizeAllColumns();
 			this.adjustTableContainerSize()
 		},
 		onSelectionChanged:(event: any)=>{
@@ -616,13 +617,16 @@ export class StockComponent {
 
 		},
 		onModelUpdated: (event:any)=>{
+			this.gridOptions.columnApi.autoSizeAllColumns();
 			this.adjustTableContainerSize()
+			
 		},
 		onComponentStateChanged:(event:any)=>{
 
 		},
 		onColumnVisible:(event:any)=>{
 			console.log("grid Event => onColumnVisible : ");
+			this.gridOptions.columnApi.autoSizeAllColumns();
 			this.adjustTableContainerSize()
 		},
 		onRowDoubleClicked:(event:any)=>{
@@ -684,10 +688,12 @@ export class StockComponent {
 		this.gridOptions.api?.setColumnDefs(this.stock.stock[view].colDef);
 		this.gridOptions.api?.setFilterModel(this.stock.stock[view].defaultFilterParam);
 
-		this.gridOptions.api?.hideOverlay();
+	;
+		console.log("HIDE LOADING : ",	this.gridOptions.api?.hideOverlay());
 		
 	};
 	/// \AG-GRID ///
+	
 	rw=(request:any)=>{
 		console.log("Request",request);
 		return request().subscribe((x:any)=>{
@@ -700,82 +706,55 @@ export class StockComponent {
 		});
 	};
 	getDbKey=(dbKey:string)=>{
-		console.log("dbKey : ",dbKey )
 		GlobalVar.dbKey=dbKey;
 		console.log("set db key "+JSON.stringify(GlobalVar.dbKey));
 		this.globalService.setHeaders("dbKey",dbKey);
 	};
-	get=(page:string)=>{
-		this.gridOptions.api?.showLoadingOverlay();
-		return this.rw(()=>this.globalService.getData(page));
+	get=()=>{
+		console.log("SHOW LOADING : ",this.gridOptions.api?.showLoadingOverlay());
+		let dbName=this.currentPage;
+		return this.globalService.getData(dbName).subscribe(x=>{
+			this.updateData(x)
+			console.log("HIDE LOADING : ",	this.gridOptions.api?.hideOverlay());
+		});
+	};
+	
+	post=(data:Array<any>)=>{
+		this.globalService.postData(this.currentPage,data).subscribe(x=>console.log(x));
+	};
+	put=(id:number,data:Array<any>)=>{
+		let dbName=this.currentPage;
+		this.globalService.putData(dbName,id,data).subscribe(x=>console.log("do put, awaiting response..",{dbName:dbName,id:id,data:data}))
 	};
 	public updateData=(x:any)=>{
-		console.log(Array.isArray(x))	
-		console.log(x)
-		if(Array.isArray(x)){
-			let returnVal=this.stock.set(x);
-			this.changeView(this.activeView);
-			return returnVal;
-		}else{
-			try{
-				if(!!x.deletedCount) return console.log('delete');
-				if(!x.transaksi) return console.log("error, data : ",JSON.stringify(x));
-				let oldData=this.stock.raw;
-				let oldDataIndex=oldData.findIndex((item)=>item._id===x._id);
-				console.log("oldData",oldData);
-				console.log("temp",oldData.findIndex((item)=>item._id===x._id))
-				let temp;
-				temp=oldData;
-				temp[oldDataIndex].transaksi=x.transaksi;
-				console.log(oldData,x.transaksi);
-				let returnVal=this.stock.set(temp);
-				this.changeView(this.activeView);
-				console.log(this);
-				return returnVal;
-			}catch{(e:Error)=>{
-				console.log("ERR", e)
-				alert('error : '+e)
-			}};
-		};
+		console.log("UPDATE DATA",x);
+		let returnVal=this.stock.set(x);
+		this.changeView(this.activeView);
+		return returnVal;
 	};
 	postEmbed=(dbName:string,data:any,embedName:string|undefined,id:string|undefined)=>{
 		this.gridOptions.api.showLoadingOverlay();
-		return this.rw(()=> this.globalService.postEmbedData(dbName,data,embedName,id));
+		this.globalService.postEmbedData(dbName,data,embedName,id).subscribe(x=>console.log("do postEmbed, awaiting response..",dbName,data,embedName,id));
 	};
 	delete=(data:any,embedName?:string|undefined)=>{
-		//this.gridOptions.api.showLoadingOverlay();
+		this.gridOptions.api.showLoadingOverlay();
+		if(!Array.isArray(data))throw new Error ('Expected Array');	
+		this.gridOptions.api.showLoadingOverlay();
 		let temp:boolean=false;
-		console.log('data',data)
-		if(!Array.isArray(data))throw new Error ('Expected Array');
-		
+		let idArr:any;
+		if(Array.isArray(data))idArr=data.map(item=>item._id);
+		let dbName=this.currentPage;
 		if(data.length===this.gridOptions.rowData.length){
 			temp=confirm(GlobalVar.alert([],"Hapus Semua Data ?"));
 		}else{
 			temp=confirm(GlobalVar.alert(data,"Hapus Data ?"));
-		}
+		};
 		if(!!temp){
-			let idArr:any;
-			if(Array.isArray(data))idArr=data.map(item=>item._id);
-			let dbName=this.currentPage;
-			
-			return this.rw(()=> this.globalService.deleteData(dbName,idArr,embedName,data[0]._idDaftar));
+			this.globalService.deleteData(dbName,idArr,embedName,data[0]._idDaftar).subscribe(x=>console.log(x));
 		};
 	};
-	old_delete=(data:any)=>{
-		console.log("delete data :",data);
-		return this.rw(()=> this.globalService.deleteData(this.currentPage,data.map((item:any)=>item._id)));
-		/*
-		let temp=confirm("delete : "+id+" ?");
-		if(temp===true)return this.globalService.deleteData(page,id).subscribe(x=>{
-			this.refresh();
-		})
-		return
-		*/
-	};
-	public refresh=()=>{
-		console.log('refreshPlaceHolder');
-	};
-	public misc={
-
+	public refreshPage=()=>{
+		this.get();
+		this.gridOptions.api?.hideOverlay();
 	};
 }

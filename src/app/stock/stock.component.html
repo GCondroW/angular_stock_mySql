@@ -107,7 +107,7 @@
 	<div class="container-fluid" >
 		<div class="btn-group btn-group-sm" role="group">
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="_excel.downloadExcel(currentPage)">Download</button>
-			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="get(currentPage)">Refresh</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="get()">Refresh</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="delete(getAllAgGridRows())">Delete All</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.modal_3.openModal()">Tambah Data</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="console.log('debugThis : ',debugThis)"><-></button>
@@ -118,7 +118,7 @@
 		<h6>Kolom : </h6>
 		<div class="row mx-2">
 			<div 
-				*ngFor="let item of gridOptions.columnDefs"
+				*ngFor="let item of gridOptions?.columnDefs"
 				class="form-check col-6 "
 			>
 				<input 
@@ -564,6 +564,7 @@
 		[formGroup]="modal.modal_3.form" 
 		(ngSubmit)="modal.modal_3.submit()"
 		class="container-fluid"
+		autocomplete="off"
 	>
 		<div class="row mb-1">
 			<label for="l_10" class="col-sm-3 col-form-label col-form-label-sm">
@@ -603,7 +604,7 @@
 						"
 					>
 
-					<div ngbDropdown>
+					<div ngbDropdown *ngIf="modal.modal_3.getDatalist('supplier')[0]">
 						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
 						<div ngbDropdownMenu class="dropdown-menu">
 							<button 
@@ -665,12 +666,12 @@
 							!formStn.valid && (formStn.dirty || formStn.touched)
 						"
 					>
-					<div ngbDropdown>
+					<div ngbDropdown *ngIf="modal.modal_3?.getStnFilterData()[0]">
 						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
 						<div ngbDropdownMenu class="dropdown-menu">
 							<button 
 								ngbDropdownItem
-								*ngFor="let a of modal.modal_3.getStnFilterData()"
+								*ngFor="let a of modal.modal_3?.getStnFilterData()"
 								(click)="modal.modal_3.form.get('formStn').setValue(a)"
 								type="button"
 							>
@@ -761,6 +762,7 @@
 		[formGroup]="modal.modal_4.form" 
 		(ngSubmit)="modal.modal_4.submit()"
 		class="container-fluid"
+		autocomplete="off"
 	>
 		<div class="row mb-1">
 			<label for="l_10" class="col-sm-3 col-form-label col-form-label-sm">
@@ -772,6 +774,8 @@
 					type="text"
 					id="l_10"
 					class="form-control form-control-sm"
+					autocomplete="off"
+					name="nama"
 					formControlName="formNama"
 					[class.is-invalid]="
 						!formNama.valid && (formNama.dirty || formNama.touched)
@@ -793,6 +797,8 @@
 						type="text"
 						id="l_11"
 						class="form-control form-control-sm"
+						autocomplete="off"
+						name="supplier"
 						list="datalistOptions-inputSupplier"
 						formControlName="formSupplier"
 						[class.is-invalid]="
@@ -835,6 +841,8 @@
 					type="text"
 					id="l_12"
 					class="form-control form-control-sm"
+					autocomplete="off"
+					name="qty"
 					formControlName="formQty"
 					[class.is-invalid]="
 						!formQty.valid && (formQty.dirty || formQty.touched)
@@ -857,6 +865,8 @@
 						type="text"
 						id="l_13"
 						class="form-control form-control-sm"
+						autocomplete="off"
+						name="stn"
 						list="datalistOptions-inputStn"
 						formControlName="formStn"
 						[class.is-invalid]="

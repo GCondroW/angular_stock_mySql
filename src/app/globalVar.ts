@@ -53,13 +53,13 @@ export const GlobalVar = {
 							if(item==="kategori")pushVar["hide"]=true;
 							if(item==="ctn")pushVar["editable"]=false;
 							if(item==="ctn")pushVar["filter"]='agNumberColumnFilter';
-							if(item==="ctn")pushVar["width"]=100;
+							//if(item==="ctn")pushVar["width"]=100;
 							if(item==="ctn")pushVar["editable"]=false;
 							if(item==="ctn")pushVar["type"]='numericColumn';
-							if(item==="nama")pushVar["width"]=300;
+							//if(item==="nama")pushVar["width"]=300;
 							if(item==="nama")pushVar["sort"]='asc';
 							if(item==="nama")pushVar["comparator"]=this.customLowerCaseComparator;
-							if(item==="Qty/ Ctn")pushVar["width"]=100;
+							//if(item==="Qty/ Ctn")pushVar["width"]=100;
 							pushVar["autoHeight"]=true;		
 							pushVar["field"]=item;	
 							temp.push(pushVar)		
@@ -70,7 +70,7 @@ export const GlobalVar = {
 					let temp:Array<any>=[];
 					
 					data.map((itemData:any)=>{
-						let ctnValue=()=>{
+						/*let ctnValue=()=>{
 							let qty=0; 
 							itemData.transaksi.map((itemTransaksi:any)=>{
 								qty=qty+itemTransaksi.qty;
@@ -88,7 +88,7 @@ export const GlobalVar = {
 						});
 						delete itemData.transaksi;
 						delete itemData.qty;
-						delete itemData.stn;
+						delete itemData.stn;*/
 						temp.push(itemData)
 					})
 					this.stock.daftar.data=JSON.parse(JSON.stringify((temp)));
@@ -102,7 +102,7 @@ export const GlobalVar = {
 					);
 				},
 			},
-			transaksi:{
+			/*transaksi:{
 				data:[],
 				colDef:[],
 				header:[],
@@ -161,16 +161,16 @@ export const GlobalVar = {
 							let pushVar:any={};
 							if(item==="_id")pushVar["hide"]=true;//hiding _id column
 							if(item==="_idDaftar")pushVar["hide"]=true;//hiding _id column
-							if(item==="nama")pushVar["width"]=300;
-							if(item==="supplier")pushVar["width"]=100;
-							if(item==="kategori")pushVar["width"]=100;
-							if(item==="qty")pushVar["width"]=75;
+							//if(item==="nama")pushVar["width"]=300;
+							//if(item==="supplier")pushVar["width"]=100;
+							//if(item==="kategori")pushVar["width"]=100;
+							//if(item==="qty")pushVar["width"]=75;
 							if(item==="qty")pushVar["filter"]='agNumberColumnFilter';
 							if(item==="qty")pushVar["type"]='numericColumn';
-							if(item==="user")pushVar["width"]=100;
-							if(item==="tanggal")pushVar["width"]=100;
-							if(item==="jenis")pushVar["width"]=100;
-							if(item==="keterangan")pushVar["width"]=100;
+							//if(item==="user")pushVar["width"]=100;
+							//if(item==="tanggal")pushVar["width"]=100;
+							//if(item==="jenis")pushVar["width"]=100;
+							//if(item==="keterangan")pushVar["width"]=100;
 							pushVar["autoHeight"]=true;		
 							pushVar["field"]=item;	
 							temp.push(pushVar)		
@@ -203,7 +203,7 @@ export const GlobalVar = {
 					);
 					console.log(temp);
 				},
-			},
+			},*/
 		};
 		constructor(data:Array<any>){
 			this.raw=data;
@@ -279,7 +279,7 @@ export const GlobalVar = {
 		},
 		tableColumn:["Seri","Nama Barang","Qty/ C","Ctn","Kode"],
 	},
-	dbServerUrl:"http://127.0.0.1:3001/",
+	dbServerUrl:"http://127.0.0.1:3420/",
 	pagesObj:["import","daftar"],
 	consoleDump:async(x:Array<any>)=>{
 		console.log("\\/============================================ C O N S O L E  D U M P ============================================\\/");

@@ -72,14 +72,22 @@ export class GlobalService {
 		}else{
 			url=url+dbName+"/"+id;
 		}
+		console.log("url : ",url);
 		return this.http.get(url,{headers:this.headers});
+	};
+	
+	postExcel=(dbName:string,data:Array<any>)=>{
+		let url=this.url+dbName+"/excelupload";
+		let g=this.http.post(url,data,{headers:this.headers, observe:'response'});
+		return g;
 	};
 
 	postData=(dbName:string,data:Array<any>,embedName?:string|undefined,id?:string|undefined)=>{
 		let url=this.url+dbName;
 		if (!!embedName) url+='/'+embedName
 		if (!!id) url+='/'+id
-		return this.http.post(url,data,{headers:this.headers})
+		let g=this.http.post(url,data,{headers:this.headers, observe:'response'});
+		return g;
 	};
 	
 	old_postData=(dbName:string,data:any={})=>{
@@ -92,8 +100,8 @@ export class GlobalService {
 		return this.http.post<any>(url,data,{headers:this.headers})
 	};
 	
-	putData=(dbName:string,id:number,data:Array<any>)=>{
-		let url=this.url+dbName+"/"+id;
+	putData=(dbName:string,parentId:number,data:Array<any>)=>{
+		let url=this.url+dbName+"/"+parentId;
 		return this.http.put(url,data,{headers:this.headers});
 	};
 	
@@ -113,6 +121,7 @@ export class GlobalService {
 			parentId='/'+parentId;
 		};
 		console.log("embedName,parentId",embedName,parentId);
+		console.log("dbName,id",dbName,id);
 		let url=this.url+dbName+embedName+parentId;
 		return this.http.delete(url,{headers:this.headers,body:id});
 	};

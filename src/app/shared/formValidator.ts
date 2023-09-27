@@ -2,6 +2,7 @@ import { AbstractControl } from '@angular/forms';
 
 let regex={
 	number:'^[0-9]+$',
+	string:'[0-9]',
 };
 
 export function ValidateForm(control: AbstractControl) {
@@ -47,6 +48,14 @@ export let GlobalValidator={
 		let data=control.value;
 		let pattern=RegExp(regex.number);
 		if (!pattern.test(data))return{notNumber:true,message:"Hanya menerima input angka"};
+		return null;
+	},
+	string:(control: AbstractControl)=>{
+		let data=control.value;
+		let pattern=RegExp(regex.string);
+		console.log("pattern.test(data)",pattern.test(data));
+		console.log("data",data);
+		if (pattern.test(data))return{notString:true,message:"Tidak menerima input angka"};
 		return null;
 	},
 	required:(control: AbstractControl)=>{
