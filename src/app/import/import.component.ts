@@ -574,7 +574,7 @@ export class ImportComponent {
 		return
 	};
 	precisionGet=(page:string,id:number)=>{
-		return this.globalService.getData(page,id);
+		return this.globalService.getData(page,[id]);
 	};
 	deleteAll=(page:string)=>{
 		let temp=confirm("delete ALL : "+page+" ?");

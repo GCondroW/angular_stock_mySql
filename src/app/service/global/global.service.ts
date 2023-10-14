@@ -64,28 +64,30 @@ export class GlobalService {
 		return this.getCurrentUrl().split('/')[1];
 	};
 	
-	getData=(dbName:string,id?:number | undefined)=>{
-		let url=this.url;
+	getData=(dbName:string,id?:Array<number> | undefined)=>{
+		let url=this.url+dbName;
 		let result:any;
-		if(id===undefined){
-			url=url+dbName;
-		}else{
-			url=url+dbName+"/"+id;
-		}
+		if(!!id){
+			url+="?id=";
+			id.forEach(item=>url+=item+",")
+			url=url.slice(0,url.length-1);
+		};
 		console.log("url : ",url);
 		return this.http.get(url,{headers:this.headers});
 	};
 	
-	postExcel=(dbName:string,data:Array<any>)=>{
-		let url=this.url+dbName+"/excelupload";
+	postExcel=(url:string,data:Array<any>)=>{
+		//let url=this.url+"/excelupload";
 		let g=this.http.post(url,data,{headers:this.headers, observe:'response'});
 		return g;
+		
 	};
 
 	postData=(dbName:string,data:Array<any>,embedName?:string|undefined,id?:string|undefined)=>{
 		let url=this.url+dbName;
 		if (!!embedName) url+='/'+embedName
 		if (!!id) url+='/'+id
+		console.log(data);
 		let g=this.http.post(url,data,{headers:this.headers, observe:'response'});
 		return g;
 	};
@@ -120,10 +122,14 @@ export class GlobalService {
 			embedName='/'+embedName;
 			parentId='/'+parentId;
 		};
-		console.log("embedName,parentId",embedName,parentId);
-		console.log("dbName,id",dbName,id);
-		let url=this.url+dbName+embedName+parentId;
-		return this.http.delete(url,{headers:this.headers,body:id});
+		let url=this.url+dbName+embedName;
+		if(!!id){
+			url+="?id=";
+			id.forEach(item=>url+=item+",")
+			url=url.slice(0,url.length-1);
+		};
+		
+		return this.http.delete(url,{headers:this.headers});
 	};
 	
 	excelHandler=async(e:any)=>{

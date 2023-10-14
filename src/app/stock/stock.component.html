@@ -74,9 +74,16 @@
 		[style.width]="tableContainerStyle.width" 
 		[style.height]="tableContainerStyle.height"
 		[style.min-width]="'50%'"
-	>	
-		<ng-container *ngIf="stock.raw;then dataTable; else emptyDataElement"></ng-container>
+	>
+		<!-- <ng-container *ngIf="stock.raw;then dataTable; else emptyDataElement"></ng-container> -->
+		<app-data-table 
+			[gridOptions]="gridOptions"
+			[rowData]="stock.stock[activeView].data"
+			[defaultColDef]="defaultColDef"
+			[overlayNoRowsTemplate]="'<div>kosong..</div>'"
+		></app-data-table>
 	</div>		
+	<!-- 
 	<ng-template #dataTable>
 		<app-data-table 
 			[gridOptions]="gridOptions"
@@ -88,14 +95,15 @@
 	<ng-template #emptyDataElement>
 		<p>kosong..</p>
 	</ng-template>
+	-->
 </div>
 
 <ng-template #mainOffcanvasContent>
-	<div class="container-fluid">
+	<div class="container-fluid mb-1">
 		<app-navigation 
 			[pages]="navigationPages"
 		></app-navigation>
-		<div class="row mb-1">
+		<div class="row">
 			<div class="col">
 				<app-upload 
 					[currentPage]="currentPage"
@@ -103,12 +111,20 @@
 				></app-upload>
 			</div>
 		</div>
+		<div class="d-flex" >
+			<div class="ms-0 me-auto">
+				<p class="p-0 m-0">User : {{user.name}}</p>
+			</div>
+			<div class="ms-auto me-0">
+				<button type="button" class="py-0 px-1 m-0 btn btn-outline-secondary btn-sm" (click)="user.prompt()">Ganti User</button>
+			</div>
+		</div>
 	</div>
 	<div class="container-fluid" >
 		<div class="btn-group btn-group-sm" role="group">
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="_excel.downloadExcel(currentPage)">Download</button>
-			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="get()">Refresh</button>
-			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="delete(getAllAgGridRows())">Delete All</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="get(currentPage)">Refresh</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="delete(getAllAgGridRows(),'daftar')">Delete All</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.modal_3.openModal()">Tambah Data</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="console.log('debugThis : ',debugThis)"><-></button>
 		</div>
@@ -153,27 +169,29 @@
 			<div class="col-8">
 				<select class="form-select form-select-sm">
 					<option
-						(click)="filter.setFilter('ctn','','number','greaterThanOrEqual')"
-						[attr.selected]="this.filter.getCurrentFilter().ctn?.filter===''?'selected':null"
+						(click)="filter.setFilter('STOCK','','number','greaterThanOrEqual')"
+						[attr.selected]="this.filter.getCurrentFilter().STOCK?.filter===''?'selected':null"
 					>
 						Semua
 					</option>
 					<option
-						(click)="filter.setFilter('ctn',1,'number','greaterThanOrEqual')"
+						(click)="filter.setFilter('STOCK',1,'number','greaterThanOrEqual')"
 						[attr.selected]="
-							this.filter.getCurrentFilter().ctn?.filter===1
+							this.filter.getCurrentFilter().STOCK?.filter===1
 							&&
-							this.filter.getCurrentFilter().ctn?.type==='greaterThanOrEqual'
+							this.filter.getCurrentFilter().STOCK?.type==='greaterThanOrEqual'
 							?'selected':null"
 					>
+					
+					
 						Ada
 					</option>
 					<option
-						(click)="filter.setFilter('ctn',1,'number','lessThan')"
+						(click)="filter.setFilter('STOCK',1,'number','lessThan')"
 						[attr.selected]=
-							"this.filter.getCurrentFilter().ctn?.filter===1
+							"this.filter.getCurrentFilter().STOCK?.filter===1
 							&&
-							this.filter.getCurrentFilter().ctn?.type==='lessThan'
+							this.filter.getCurrentFilter().STOCK?.type==='lessThan'
 							?'selected':null"
 					>
 						Habis
@@ -192,7 +210,13 @@
 					>Semua</option>
 					<option 
 						*ngFor="let filterItem of stock.stock[activeView].filterData[header]"
-						[attr.selected]="this.filter.getCurrentFilter()[header]?.filter===filterItem?'selected':null"
+						[attr.selected]="
+							this.filter.getCurrentFilter()[header]?.filter===filterItem
+							&&
+							this.filter.getCurrentFilter()[header]?.filter!=undefined?
+							'selected'
+							:
+							null"
 						(click)="filter.setFilter(header,filterItem)"
 					>
 						{{filterItem}}
@@ -339,7 +363,7 @@
 			<div class="row">
 				<h4>Riwayat</h4>
 			</div>
-			<div class="row" *ngIf="stock.findById(modal.modal_1.data._id).transaksi as items">
+			<div class="row" *ngIf="modal.modal_1?.transactionData as items">
 				<app-dynamic-table
 					[data]="items"
 					[defaultColumnDefs]="modal.modal_1.innerTable.defaultColumnDefs"
@@ -604,12 +628,12 @@
 						"
 					>
 
-					<div ngbDropdown *ngIf="modal.modal_3.getDatalist('supplier')[0]">
+					<div ngbDropdown *ngIf="modal.modal_3.getDatalist('SUPPLIER')[0]">
 						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
 						<div ngbDropdownMenu class="dropdown-menu">
 							<button 
 								ngbDropdownItem
-								*ngFor="let a of modal.modal_3.getDatalist('supplier')"
+								*ngFor="let a of modal.modal_3.getDatalist('SUPPLIER')"
 								(click)="modal.modal_3.form.get('formSupplier').setValue(a)"
 								type="button"
 							>
@@ -619,7 +643,7 @@
 					</div>		
 					<datalist id="datalistOptions-inputSupplier">
 						<option 
-							*ngFor="let a of modal.modal_3.getDatalist('supplier')"
+							*ngFor="let a of modal.modal_3.getDatalist('SUPPLIER')"
 							value={{a}}
 						>
 					</datalist>
@@ -666,12 +690,12 @@
 							!formStn.valid && (formStn.dirty || formStn.touched)
 						"
 					>
-					<div ngbDropdown *ngIf="modal.modal_3?.getStnFilterData()[0]">
+					<div ngbDropdown *ngIf="modal.modal_3?.getDatalist('STN')[0]">
 						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
 						<div ngbDropdownMenu class="dropdown-menu">
 							<button 
 								ngbDropdownItem
-								*ngFor="let a of modal.modal_3?.getStnFilterData()"
+								*ngFor="let a of modal.modal_3?.getDatalist('STN')"
 								(click)="modal.modal_3.form.get('formStn').setValue(a)"
 								type="button"
 							>
@@ -681,7 +705,7 @@
 					</div>		
 					<datalist id="datalistOptions-inputStn">
 						<option 
-							*ngFor="let a of modal.modal_3.getStnFilterData()"
+							*ngFor="let a of modal.modal_3.getDatalist('STN')"
 							value={{a}}
 						>
 					</datalist>

@@ -15,7 +15,7 @@ export class DataTableComponent implements OnInit {
 	};
 	constructor(){
 	}
-	@Input() rowData:Array<any>=[];
+	@Input() rowData:Array<any>|null=null;
 	@Input() gridOptions:GridOptions<any>={};
 	@Input() defaultColDef:any;
 	//@Input() rowHeight:number=0;

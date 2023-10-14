@@ -1,6 +1,6 @@
 import { ColDef } from 'ag-grid-community';
 export const GlobalVar = {
-	dbKey:"",
+	dbKey:-1,
 	excelDb:{
 		data:{},
 		sheetNames:{},
@@ -19,25 +19,25 @@ export const GlobalVar = {
 				filterData:[],
 				maxCharLength:{},
 				defaultFilterParam:{
-					supplier:{
+					SUPPLIER:{
 						filterType: 'text',
 						type:'contains',
 						filter:"",
 					},
-					kategori:{
+					KATEGORI:{
 						filterType: 'text',
 						type:'contains',
-						filter:"",
+						filter:null,
 					},
-					ctn:{
+					STOCK:{
 						filterType: 'number',
 						type:'greaterThanOrEqual',
 						filter:1,
 					},
-					"Qty/ Ctn":{
+					STN:{
 						filterType: 'text',
 						type:'contains',
-						filter:"",
+						filter:null,
 					},
 				},
 				createView:(data:any)=>{
@@ -48,17 +48,16 @@ export const GlobalVar = {
 						temp=[];
 						tableColumn.map((item:string)=>{
 							let pushVar:any={};
-							if(item==="_id")pushVar["hide"]=true;//hiding _id column
-							if(item==="supplier")pushVar["hide"]=true;
-							if(item==="kategori")pushVar["hide"]=true;
-							if(item==="ctn")pushVar["editable"]=false;
-							if(item==="ctn")pushVar["filter"]='agNumberColumnFilter';
+							if(item==="ID_DAFTAR")pushVar["hide"]=true;//hiding _id column
+							if(item==="SUPPLIER")pushVar["hide"]=true;
+							if(item==="KATEGORI")pushVar["hide"]=true;
+							if(item==="STOCK")pushVar["editable"]=false;
+							if(item==="STOCK")pushVar["filter"]='agNumberColumnFilter';
 							//if(item==="ctn")pushVar["width"]=100;
-							if(item==="ctn")pushVar["editable"]=false;
-							if(item==="ctn")pushVar["type"]='numericColumn';
+							if(item==="STOCK")pushVar["type"]='numericColumn';
 							//if(item==="nama")pushVar["width"]=300;
-							if(item==="nama")pushVar["sort"]='asc';
-							if(item==="nama")pushVar["comparator"]=this.customLowerCaseComparator;
+							if(item==="NAMA")pushVar["sort"]='asc';
+							if(item==="NAMA")pushVar["comparator"]=this.customLowerCaseComparator;
 							//if(item==="Qty/ Ctn")pushVar["width"]=100;
 							pushVar["autoHeight"]=true;		
 							pushVar["field"]=item;	
@@ -68,7 +67,7 @@ export const GlobalVar = {
 						return temp;
 					};
 					let temp:Array<any>=[];
-					
+					console.log(data);
 					data.map((itemData:any)=>{
 						/*let ctnValue=()=>{
 							let qty=0; 
@@ -98,7 +97,7 @@ export const GlobalVar = {
 					if(!!temp[0])this.stock.daftar.header=Object.keys(temp[0]);
 					if(!!temp[0])
 					this.stock.daftar.filterData=this.generateFilterData(JSON.parse(JSON.stringify((temp))),
-						["_id","nama","ctn"]
+						["ID_DAFTAR","NAMA","STOCK","QTY"]
 					);
 				},
 			},
@@ -205,19 +204,35 @@ export const GlobalVar = {
 				},
 			},*/
 		};
-		constructor(data:Array<any>){
-			this.raw=data;
+		constructor(data?:Array<any>|null|undefined){
+			if(!data){
+				let localData=this.getLocalData();
+				if(!localData){
+					this.set([]);
+				}else{
+					this.set(localData);
+				}
+			}else{
+				this.set(data);
+			};
 		};
 		public findById=(id:string)=>{
 			return this.raw.find((item)=>item._id===id)
 		};
-		length=this.raw.length;
-		set=(data:Array<any>)=>{
+		public length=this.raw.length;
+		public set=(data:Array<any>)=>{
 			this.raw=data;
+			this.setLocalData(data);
 			Object.keys(this.stock).map(pointer=>{
 				this.stock[pointer].createView(JSON.parse(JSON.stringify((data))));
 			})
 		};
+		private getLocalData=()=>{
+			let temp=localStorage.getItem('raw');
+			if(!!temp)return JSON.parse(temp)
+			return null	
+		};
+		private setLocalData=(data:Array<any>)=>localStorage.setItem('raw',JSON.stringify(data));
 		private getMaxCharLength=(data:Array<any>)=>{
 			try{
 				let header=Object.keys(data[0]);
@@ -236,8 +251,9 @@ export const GlobalVar = {
 				return 0;
 			}
 		};
-		get=()=>this.raw;
+		public get=()=>this.raw;
 		public generateFilterData=(data:Array<any>,excludedCol:Array<any>)=>{
+			console.log("generteFilterData",data);
 			let temp:any={};
 			data.map(item=>{
 				excludedCol.map(excludedColItem=>{
@@ -258,6 +274,11 @@ export const GlobalVar = {
 				if(pointer!=="ctn") return temp[pointer].sort();
 				temp[pointer].sort((a:any, b:any) => (a - b));
 			});
+			Object.keys(temp).map(
+				item=>temp[item]=temp[item].filter(
+					(item2:any)=>item2!=''
+				)
+			);
 			return temp;
 		};
 		private convertDate=(dateString:string)=>{
@@ -270,6 +291,14 @@ export const GlobalVar = {
 			}
 
 			return (valueA > valueB? 1 : (valueA < valueB ? -1 : 0));
+		};
+		public deleteById=(id:Array<number>)=>{
+			console.log("ID", id);
+			let deletedDataId=id;
+			let oldData=this.raw;
+			let newAndUpdatedData=oldData.filter((item:any)=>!deletedDataId.includes(item.ID_DAFTAR));
+			console.log("newAndUpdatedData : ",newAndUpdatedData);
+			return newAndUpdatedData;
 		};
 	},
 	import:{
@@ -317,6 +346,25 @@ export const GlobalVar = {
 		};
 	},
 	
+	user:class user{
+		name:string='';
+		constructor(name?:string|null){
+			if(!name)name='Guest';
+			this.setName(name);
+		};
+		public setName=(name:string)=>{
+			this.name=name;
+			localStorage.setItem('name',name);
+		};
+		public getName=()=>localStorage.getItem('name');
+		public prompt=()=>{
+			let newName=window.prompt('ganti',this.name);
+			if(!!newName){
+				this.setName(newName);
+				alert("WELCOME => "+newName);
+			};
+		};
+	},
 	counter:class counter{
 		private startNumber:number;
 		private count:number;
