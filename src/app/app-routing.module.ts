@@ -5,8 +5,9 @@ import { StockComponent } from './stock/stock.component';
 import { ImportComponent } from './import/import.component';
 import { DaftarComponent } from './daftar/daftar.component';
 
+const defaultHomeRoutes=StockComponent;
 const dynamicRoutes: Routes = [
-	{path :"" , component : HomeComponent},
+	{path :"" , component : defaultHomeRoutes},
 	{path :"stock" , component : StockComponent},
 	{path :"import" , component : ImportComponent},
 	{path :"daftar" , component : DaftarComponent},
@@ -18,7 +19,6 @@ const dynamicRoutes: Routes = [
 })
 
 export class AppRoutingModule {
-	
 	addRoute=(route:any[])=>{
 		route.map((item)=>{
 			dynamicRoutes.push({
@@ -28,5 +28,4 @@ export class AppRoutingModule {
 		});
 	};
 	dynamicRoutes=dynamicRoutes;
-	
-}
+};

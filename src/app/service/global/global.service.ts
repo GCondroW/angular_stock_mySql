@@ -23,12 +23,14 @@ export class GlobalService {
 	private modalService:NgbModal=inject(NgbModal);
 	
 	private url = GlobalVar.dbServerUrl;
-	private dbKey = GlobalVar.dbKey;
+	private dbKey = localStorage.getItem('dbKey')||"-1";
 	private headers=new HttpHeaders();
 	
 	constructor() { 
-		 this.setHeaders('dbKey', this.dbKey.toString());
-		 console.log(this)
+		console.log("dbKey : ",this.dbKey);
+		this.setHeaders('dbKey',this.dbKey);
+		console.log(this)
+		
 	}
 	
 	_modal={
@@ -66,13 +68,16 @@ export class GlobalService {
 	
 	getData=(dbName:string,id?:Array<number> | undefined)=>{
 		let url=this.url+dbName;
-		let result:any;
 		if(!!id){
 			url+="?id=";
-			id.forEach(item=>url+=item+",")
+			id.forEach(item=>url+=item+",");
 			url=url.slice(0,url.length-1);
 		};
-		console.log("url : ",url);
+		return this.http.get(url,{headers:this.headers});
+	};
+	
+	getDbKey=()=>{
+		let url=this.url+'key';
 		return this.http.get(url,{headers:this.headers});
 	};
 	
@@ -85,7 +90,6 @@ export class GlobalService {
 
 	postData=(dbName:string,data:Array<any>,embedName?:string|undefined,id?:string|undefined)=>{
 		let url=this.url+dbName;
-		if (!!embedName) url+='/'+embedName
 		if (!!id) url+='/'+id
 		console.log(data);
 		let g=this.http.post(url,data,{headers:this.headers, observe:'response'});

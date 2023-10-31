@@ -1,4 +1,4 @@
-import { Component,OnInit,inject, Input, ViewChild } from '@angular/core';
+import { Component,OnInit,Injectable,inject, Input, ViewChild } from '@angular/core';
 import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { UploadComponent } from '../misc/upload/upload.component';
@@ -29,19 +29,39 @@ export class StockComponent {
 	public JSON=JSON;
 	public Object=Object;
 	public console=console;
-	public toUpperCase="".toUpperCase;
-	public stock=new GlobalVar.stock();
-	public user=new GlobalVar.user(localStorage.getItem('name'));
-	public viewArr=Object.keys(this.stock.stock);
-	public activeView:any=this.viewArr[0];//public activeView=this.viewArr[1];
-	//public operation:any={}
+	public stock=new GlobalVar.stockData();
+	public user=new GlobalVar.user(
+		localStorage.getItem('name'),
+		localStorage.getItem('id'),
+		Number(localStorage.getItem('dbKey')),
+		localStorage.getItem('tableData'),
+	);
+	private localOptions=JSON.parse(localStorage.getItem('options')||'{}');
+	private localTableOptions=
+		this.localOptions.tableOptions?
+		{tableOptions:this.localOptions.tableOptions}
+		:
+		{tableOptions:GlobalVar.defaultColumnDefs};
+	private localActiveViewOptions=
+		this.localOptions.activeView?
+		{activeView:this.localOptions.activeView}
+		:
+		{activeView:Object.keys(this.stock.daftar)[0]};
+	public options=new GlobalVar.options(Object.assign(this.localTableOptions,this.localActiveViewOptions));
+	public activeView:any="";
+	private fb : FormBuilder = inject(FormBuilder);
+	public navigationPages:any;
+	public debugThis:any='';
+	public lastRequest:any;
+	public temp:any=[];
 	public operation:any={
 		mode:{
 			view:{
 				gridOptions:{
 					onRowDoubleClicked:(event:any)=>{
 						let activeView=this.activeView;
-						if(activeView==='daftar')return this.modal.modal_1.openModal(event.data);
+						console.log(event.data)
+						if(activeView==='stock')return this.modal.modal_1.openModal(event.data);
 						if(activeView==='transaksi')return alert(GlobalVar.alert(event.data));
 					},
 				},
@@ -51,7 +71,7 @@ export class StockComponent {
 					onRowDoubleClicked:(data:any)=>{
 						let activeView=this.activeView;
 						let parentId=data.data._id;					
-						if(activeView==='daftar')return this.modal.modal_4.openModal(parentId);
+						if(activeView==='stock')return this.modal.modal_4.openModal(parentId);
 					},
 				},
 			},
@@ -60,7 +80,7 @@ export class StockComponent {
 					onRowDoubleClicked:(event:any)=>{
 						let activeView=this.activeView;
 						console.log(event.data);
-						if(activeView==='daftar')return this.delete([event.data],'daftar');
+						if(activeView==='stock')return this.delete([event.data],'daftar');
 						//if(activeView==='transaksi')return this.delete(event.data,activeView);
 						return
 					},
@@ -68,7 +88,7 @@ export class StockComponent {
 				selectedData:null,
 				deleteFunction:(data:any)=>{
 					let activeView=this.activeView;
-					if(activeView==='daftar')return this.delete(data,'daftar');
+					if(activeView==='stock')return this.delete(data,'daftar');
 					//if(activeView==='transaksi')return this.delete(data,activeView);
 					return
 				},
@@ -77,7 +97,6 @@ export class StockComponent {
 		active:'view',
 		changeOperation:(name:string)=>{
 			this.operation.active=name
-
 		},
 		updateGridOptions:()=>{
 			console.log('updateGridOptions , gridOptions');
@@ -90,38 +109,61 @@ export class StockComponent {
 			*/
 		},
 	};
-	
-	private fb : FormBuilder = inject(FormBuilder);
-	public dataIsReady:Boolean=false;
-	public navigationPages:any;
-	public debugThis:any='';
-	public lastRequest:any;
 	constructor(){
 		this.navigationPages=GlobalVar.pages;
 		this.operation.active=Object.keys(this.operation.mode)[0];
+		this.activeView=this.options.data.activeView
+			||
+			this.options.setOptions(this.activeView,"activeView");
+		console.log("this.options",this.options)
+		console.log("this.options.data.tableOptions",this.options.data.tableOptions)
+		console.log("localStorage",localStorage.getItem('options'))
+		//this.tableOptions=this.options.data.tableOptions
+		//   ||
+		//	this.options.setOptions("tableOptions");
+		/*if(options.data.activeView){
+			this.activeView=options.data.activeView;
+		}else options.setOptions({activeView:this.activeView});*/
 	};
+	
 	ngOnInit(){
-		//console.log("this socket",this.socket)
-		
 		this.socket.on("debug",(arg1:any)=>{
 			console.log("debug : ",arg1);
 		});
-		this.socket.on("login",(arg1:any,arg2:any)=>{
-			console.log("login : ",arg1);
-			arg2({status:"ok"});
-		});
 		this.socket.on("connect", () => {
 			console.log("socket connected, socket : ");
-			this.socket.emit("login",this.dbKey,(response:any)=>console.log(response));
+			let clientData={
+				name:this.user.name,
+				userId:this.user.id,
+				dbKey:this.user.dbKey,
+			};
+			this.socket.emit("login",clientData,(response:any)=>{
+
+				if(!!response.success&&!!this.user.getTableData(this.activeView)){
+					console.log("LOGIN SUCCESS = > ",response);
+					this.updateData(this.user.getTableData(this.activeView));
+				}else{
+					console.log("LOGIN FAILED = > ",response);
+					this.setDbKey(response.dbKey);
+					console.log("response.dbKey",response.dbKey)
+					this.globalService.getData(this.activeView).subscribe((x:any)=>{
+						console.log("TESTX => ",x);
+						console.log("activeView => ",this.activeView);
+						x.data.map((item:any)=>item.STOCK=Number(item.STOCK));
+						let temp=this.user.setTableData(this.user.getDbKey(),x.data,this.activeView);
+						console.log("activeView2 => ",this.activeView);
+						this.updateData(temp);
+					});
+				};
+			});
 		});
 		this.socket.on("delete",(emittedData:any)=>{
 			console.log("EMIT RECEIVED: DELETE =>",emittedData);
 			let message=emittedData.message;
 			let deletedDataId=emittedData.deletedDataId;
-			let oldData=this.stock.raw;
+			let oldData=this.user.getTableData(this.activeView);
 			let alertArr:Array<any>=[];
-			let deletedData = oldData.filter((item)=>deletedDataId.includes(item.ID_DAFTAR));
-			console.log(deletedData);
+			let deletedData = oldData.filter((item:any)=>deletedDataId.includes(item.ID_DAFTAR));
 			deletedData.map((item:any)=>{
 				alertArr.push({
 					id:item.ID_DAFTAR,
@@ -129,8 +171,10 @@ export class StockComponent {
 					Supplier:item.SUPPLIER,
 				});
 			});
+			this.user.setTableData(emittedData.dbKey,this.user.deleteById(deletedDataId,this.activeView),this.activeView);
+			this.setDbKey(emittedData.dbKey);
+			this.updateData(this.user.getTableData(this.activeView));
 			alert(GlobalVar.alert(alertArr,message));
-			this.updateData(this.stock.deleteById(deletedDataId));
 		});
 		this.socket.on("get",(emittedData:any)=>{
 			alert('get emit');
@@ -141,6 +185,7 @@ export class StockComponent {
 			console.log("EMIT RECEIVED: INIT =>",emittedData);
 			let data=emittedData.data;
 			let message=emittedData.message;
+			let dbKey=emittedData.dbKey;
 			let alertArr:Array<any>=[];
 			data.map((item:any)=>{
 				alertArr.push({
@@ -149,14 +194,17 @@ export class StockComponent {
 					Supplier:item.SUPPLIER,
 				});
 			});
+			this.user.setTableData(emittedData.dbKey,data,this.activeView);
+			this.setDbKey(emittedData.dbKey);
 			alert(GlobalVar.alert(alertArr,message));
-			this.updateData(data);
+			this.updateData(this.user.getTableData(this.activeView));
 		});
 		this.socket.on("post",(emittedData:any)=>{
 			console.log("EMIT RECEIVED: POST =>",emittedData);
 			let data=emittedData.data;
 			let message=emittedData.message;
-			let oldData=this.stock.raw;
+			let dbKey=emittedData.dbKey;
+			let oldData=this.user.getTableData(this.activeView);
 			let alertArr:Array<any>=[];
 			data.map((item:any)=>{
 				alertArr.push({
@@ -165,10 +213,47 @@ export class StockComponent {
 					Supplier:item.SUPPLIER,
 				});
 			});
-			alert(GlobalVar.alert(alertArr,message));
+			
 			let newAndUpdatedData=oldData;
 			newAndUpdatedData.push(...data);
-			this.updateData(newAndUpdatedData);
+			this.setDbKey(dbKey);
+			this.user.setTableData(dbKey,newAndUpdatedData,this.activeView);
+			this.updateData(this.user.getTableData(this.activeView));
+			alert(GlobalVar.alert(alertArr,message));
+		});
+		this.socket.on("transaksi",(emittedData:any)=>{
+			console.log("EMIT RECEIVED: TRANSAKSI =>",emittedData);
+			console.log("this.user.getTableData('transaksi')",this.user.getTableData('transaksi'));
+			let data=emittedData.data;
+			let message=emittedData.message;
+			let dbKey=emittedData.dbKey;
+			let oldDataTransaksi=this.user.getTableData('transaksi')||[];
+			let oldDataStock=this.user.getTableData('stock')||[];
+			this.setDbKey(dbKey);
+			if(oldDataTransaksi.length>0){
+				data.map((item:any)=>{
+					oldDataTransaksi.push(item);
+				});
+				this.user.setTableData(dbKey,oldDataTransaksi,'transaksi');
+			};
+			if(oldDataStock.length>0){
+				let newAndUpdatedData=oldDataStock;
+				data.map((item:any)=>{
+					let updatedDataIndex=oldDataStock.findIndex((item2:any)=>item2.ID_DAFTAR===item.ID_DAFTAR);
+					newAndUpdatedData[updatedDataIndex].STOCK+=item.JUMLAH;
+				});
+				this.user.setTableData(dbKey,newAndUpdatedData,'stock');
+			};
+			let alertArr:Array<any>=[];
+			data.map((item:any)=>{
+				alertArr.push({
+					id:item.ID_DAFTAR,
+					Nama:item.NAMA,
+					Supplier:item.SUPPLIER,
+				});
+			});
+			this.updateData(this.user.getTableData(this.activeView));
+			alert(GlobalVar.alert(alertArr,message));
 		});
 		/*this.socket.on("__1", (arg1:{
 			data:any[],
@@ -187,7 +272,7 @@ export class StockComponent {
 			//let temp:Array<any>=[];
 			console.log("emitRequest=",emitRequest);
 			console.log("arg1=",arg1);
-			if(!emitRequest)this.get(this.currentPage);else
+			if(!emitRequest)this.get(this.activeView);else
 			this.getDbKey(arg1.dbKey);
 			data=arg1.data;
 			data.map((item:any)=>{
@@ -287,7 +372,7 @@ export class StockComponent {
 			};	
 		});*/
 		this.debugThis=this;
-		//this.get(this.currentPage);
+		//this.get(this.activeView);
 	};
 	
 	/// OFFCANVAS ///
@@ -312,17 +397,20 @@ export class StockComponent {
 	public modal:any={
 		modal_1:{
 			openModal:(modalData:any)=>{
+				console.log("debug : ",this);
 				this.modal.modal_1.data=modalData;
 				this.modal.modal_1.modalRef=this.modalService.open(this.modal_1);
-				this.globalService.getData('stock/transaksi',[modalData.ID_DAFTAR]).subscribe(x=>this.modal.modal_1.transactionData=x);
+				this.globalService.getData('transaksi',[modalData.ID_DAFTAR]).subscribe(
+					
+					(x:any)=>this.modal.modal_1.transactionData=x.data);
+					
 			},
 			closeModal:()=>{
-			
 				this.modal.modal_1.modalRef.close();
 			},
 			transactionData:[],
 			getTransactionData:(id:Array<number>)=>{
-				return this.globalService.getData('transaksi',id).subscribe(x=>x);
+				return ;
 			},
 			data:{},
 			modalRef:undefined,
@@ -331,8 +419,8 @@ export class StockComponent {
 					ID_TRANSAKSI:{
 						headerName:'Id',
 					},
-					PERUBAHAN:{
-						headerName:'Perubahan',
+					JUMLAH:{
+						headerName:'Jumlah',
 					},
 					JENIS:{
 						headerName:'Jenis',
@@ -347,9 +435,19 @@ export class StockComponent {
 					USER:{
 						headerName:'User',
 					},
-					ID_DAFTAR:{
+					NAMA:{
 						hidden:true,
 					},
+					KATEGORI:{
+						hidden:true,
+					},
+					SUPPLIER:{
+						hidden:true,
+					},	
+					ID_DAFTAR:{
+						hidden:true,
+					},							
+					
 				},
 			},
 		},
@@ -358,9 +456,9 @@ export class StockComponent {
 				
 				this.modal.modal_2.data=modalData;
 				this.modal.modal_2.form=this.fb.group({
-					_id:modalData._id,
+					id:modalData.ID_DAFTAR,
 					update:[0,[Validators.required,StockValidators.update]],
-					final:[modalData.ctn,[Validators.required,StockValidators.final]],
+					final:[modalData.STOCK,[Validators.required,StockValidators.final]],
 					jenis:["-"],
 					keterangan:["-"],
 				},
@@ -389,8 +487,12 @@ export class StockComponent {
 					else{
 						alreadyOnce=true;
 						this.modal.modal_2.isInteracted=true
-						let temp=modalData.ctn+x
+						let temp=modalData.STOCK+x
 						formFinalValue.setValue(temp);
+						console.log("x",x);
+						console.log("typeof X",typeof(x));
+						console.log("STOCK",temp);
+						console.log("typeof STOOCK",typeof(modalData.STOCK));
 						console.log('Valid?', this.modal.modal_2.isValid('update'));
 						f_1(formUpdateValue.value);
 					}
@@ -401,8 +503,12 @@ export class StockComponent {
 					else{
 						alreadyOnce=true;
 						this.modal.modal_2.isInteracted=true
-						let temp=x-modalData.ctn;
+						let temp=x-(modalData.STOCK);
 						formUpdateValue.setValue(temp);
+						console.log("x",x);
+						console.log("typeof X",typeof(x));
+						console.log("STOCK",temp);
+						console.log("typeof STOOCK",typeof(modalData.STOCK));
 						console.log('Valid?', this.modal.modal_2.isValid('final'));
 						f_1(formUpdateValue.value);
 					}
@@ -429,12 +535,15 @@ export class StockComponent {
 			modalRef:undefined,
 			newTransactionSubmit:()=>{
 				let data={
-					_id:this.modal.modal_2.form.value._id,
-					value:this.modal.modal_2.form.value.update,
-					jenis:this.modal.modal_2.form.value.jenis,
-					keterangan:this.modal.modal_2.form.value.keterangan,
+					ID_DAFTAR:this.modal.modal_2.form.value.id,
+					JUMLAH:this.modal.modal_2.form.value.update,
+					JENIS:this.modal.modal_2.form.value.jenis,
+					KETERANGAN:this.modal.modal_2.form.value.keterangan,
 				};
-				this.postEmbed(this.currentPage,data,"transaksi",data._id);
+				//this.postEmbed(this.activeView,data,"transaksi",data._id);
+				this.globalService.postData("transaksi",[data]).subscribe(x=>{
+
+				});
 				this.modal.modal_2.closeModal();
 			},
 		},
@@ -493,7 +602,7 @@ export class StockComponent {
 					console.log(
 						"POST",
 						this.globalService.postData(
-							this.currentPage,
+							this.activeView,
 							[reqVar]
 						).subscribe((x:any)=>{
 						if(!!x.body?.success)return this.modal.modal_3.closeModal();
@@ -503,12 +612,12 @@ export class StockComponent {
 			},
 			modalRef:undefined,
 			getStnFilterData:()=>{
-				if(this.stock.stock.daftar.filterData['Qty/ Ctn']===undefined)return [];
-				return [...new Set(this.stock.stock.daftar.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))];
+				if(this.stock.daftar.stock.filterData['Qty/ Ctn']===undefined)return [];
+				return [...new Set(this.stock.daftar.stock.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))];
 			},
 			getDatalist:(pointer:string)=>{
-				if(this.stock.stock.daftar.filterData[pointer]===undefined)return [];
-				return this.stock.stock.daftar.filterData[pointer];
+				if(this.stock.daftar.stock.filterData[pointer]===undefined)return [];
+				return this.stock.daftar.stock.filterData[pointer];
 			},
 		},
 		modal_4:{
@@ -576,8 +685,8 @@ export class StockComponent {
 				}else return
 			},
 			modalRef:undefined,
-			getStnFilterData:()=>[...new Set(this.stock.stock.daftar.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))],
-			getDatalist:(pointer:string)=>this.stock.stock.daftar.filterData[pointer],
+			getStnFilterData:()=>[...new Set(this.stock.daftar.daftar.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))],
+			getDatalist:(pointer:string)=>this.stock.daftar.daftar.filterData[pointer],
 		},
 	};
 	get formNama() { return this.modal[this.activeModal].form.get('formNama'); }
@@ -623,14 +732,14 @@ export class StockComponent {
 	};
 	public filter:any={
 		getCurrentFilter:()=>this.gridOptions.api.getFilterModel(),
-		getDefaultFilterParam:()=>this.stock.stock[this.activeView].defaultFilterParam,
+		getDefaultFilterParam:()=>this.stock.daftar[this.activeView].defaultFilterParam,
 		setFilter:(header:any,filter:any,filterType?:string,type?:string)=>{
 			console.log('header',header);
 			console.log('filter',filter);
 			console.log('filterType',filterType);
 			console.log('type',type);
 			let filterInstance = this.gridOptions.api.getFilterInstance(header); 
-			let defaultFilterParam=this.stock.stock[this.activeView].defaultFilterParam;
+			let defaultFilterParam=this.stock.daftar[this.activeView].defaultFilterParam;
 			let temp1:any={};
 			temp1['filter']=filter;
 			if(!filterType){
@@ -664,8 +773,8 @@ export class StockComponent {
 		accentedSort:true,
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
-			this.gridApi=this.gridOptions.api;	
-			this.gridOptions.api?.setColumnDefs(this.stock.stock[this.activeView].colDef);
+			//this.gridApi=this.gridOptions.api;	
+			//this.gridOptions.api?.setColumnDefs(this.stock.daftar[this.activeView].colDef);
 			//console.log("HIDE LOADING : ",this.gridOptions.api?.hideOverlay());
 			//this.gridOptions.api?.showLoadingOverlay();
 		},
@@ -689,6 +798,7 @@ export class StockComponent {
 		},
 		onRowDataUpdated:(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
+			/*
 			if(this.activeView==='daftar'){
 				this.gridOptions.columnApi.applyColumnState({
 					state: [{ colId: 'nama', sort: 'asc' }],
@@ -699,7 +809,7 @@ export class StockComponent {
 					state: [{ colId: 'tanggal', sort: 'desc' }],
 					defaultState: { sort: null },
 				});
-			}
+			}*/
 		},
 		onFilterChanged:(event:any)=>{
 
@@ -774,10 +884,14 @@ export class StockComponent {
 		};		
 	};
 	public changeView=(view:string)=>{
-		this.activeView=view;
+		console.log("===>changeView ",view);
+		console.log("this.stock.daftar[view].colDef ",this.stock.daftar[view].colDef);
+		if(this.activeView!==view)this.activeView=view;
+		
+		
 		this.gridOptions.api?.deselectAll();
-		this.gridOptions.api?.setColumnDefs(this.stock.stock[view].colDef);
-		this.gridOptions.api?.setFilterModel(this.stock.stock[view].defaultFilterParam);
+		this.gridOptions.api?.setColumnDefs(this.stock.daftar[view].colDef);
+		this.gridOptions.api?.setFilterModel(this.stock.daftar[view].defaultFilterParam);
 
 	;
 		//console.log("HIDE LOADING : ",	this.gridOptions.api?.hideOverlay());
@@ -785,6 +899,50 @@ export class StockComponent {
 	};
 	/// \AG-GRID ///
 	
+	checkDbParity=()=>{
+		console.log(" == Check DB Parity == ");
+		try{
+			let tableName=this.activeView;
+			
+			let tableData=this.user.getTableData(tableName)
+			console.log("tableData => ",tableData);
+			if(!tableData||tableData.length<1)return false;
+			return this.globalService.getDbKey().subscribe((x:any)=>{
+				let clientKey=this.user.getDbKey();
+				let dbKey=x.value;
+				console.log("dbKey => ",clientKey!==dbKey,clientKey,dbKey);
+				if (clientKey!==dbKey)return false;
+				return true;
+			})
+		}catch(e){
+			console.log("dbCheckParity Error =>",e);
+			return false;
+		};
+	};
+	setView=(viewName:string)=>{
+		console.log("SET_VIEW => ",viewName,this.options.setOptions(viewName,"activeView"));
+		this.activeView=viewName;
+		
+		console.log("this.user.getTableData(this.activeView)",this.user.getTableData(this.activeView));
+		if (!this.checkDbParity()){
+			this.globalService.getData(viewName).subscribe((x:any)=>{
+				console.log(x);
+				this.user.setTableData(x.dbKey,x.data,viewName);
+				this.stock.set(this.user.getTableData(viewName),viewName,this.options.data.tableOptions);
+				this.gridOptions.api?.deselectAll();
+				this.gridOptions.api?.setColumnDefs(this.stock.daftar[viewName].colDef);
+				this.gridOptions.api?.setFilterModel(this.stock.daftar[viewName].defaultFilterParam);
+				//this.updateData(this.user.getTableData(viewName));
+			});
+		}else {
+			let temp=this.user.getTableData(viewName);
+			this.stock.set(temp,viewName,this.options.data.tableOptions);
+			this.gridOptions.api?.deselectAll();
+			this.gridOptions.api?.setColumnDefs(this.stock.daftar[viewName].colDef);
+			this.gridOptions.api?.setFilterModel(this.stock.daftar[viewName].defaultFilterParam);
+			//this.updateData(this.user.getTableData(viewName));
+		};
+	};
 	rw=(request:any)=>{
 		console.log("Request",request);
 		return request().subscribe((x:any)=>{
@@ -796,6 +954,11 @@ export class StockComponent {
 			}else this.updateData(x);
 		});
 	};
+	setDbKey=(dbKey:number)=>{
+		let temp=this.user.setDbKey(dbKey);
+		console.log("set db key ", temp);
+		this.globalService.setHeaders("dbKey",temp.toString());
+	};
 	getDbKey=(dbKey:number)=>{
 		GlobalVar.dbKey=dbKey;
 		console.log("set db key "+JSON.stringify(GlobalVar.dbKey));
@@ -803,11 +966,12 @@ export class StockComponent {
 	};
 	get=(dbName:string,id?:Array<number> | undefined)=>{
 		//console.log("SHOW LOADING : ",this.gridOptions.api?.showLoadingOverlay());
-		//let dbName=this.currentPage;
+		//let dbName=this.activeView;
 		this.globalService.getData(dbName,id).subscribe({
-			next:(x)=>{
+			next:(x:any)=>{
 				console.log("GET_NEXT");
-				return this.updateData(x);
+				let data=x.data;
+				return this.updateData(this.user.setTableData(this.user.getDbKey(),data,this.activeView));
 			},
 			complete:()=>{
 				console.log("GET_COMPLETE");
@@ -818,8 +982,8 @@ export class StockComponent {
 	post=(data:Array<any>)=>{
 		let temp=this.gridOptions.rowData;
 		this.gridOptions.rowData=null;
-		//this.globalService.postData(this.currentPage,data).subscribe(x=>console.log("SUBSCRIBE",x));
-		this.globalService.postData(this.currentPage,data).subscribe(x=>{
+		//this.globalService.postData(this.activeView,data).subscribe(x=>console.log("SUBSCRIBE",x));
+		this.globalService.postData(this.activeView,data).subscribe(x=>{
 			console.log("POST_NEXT => ",x);
 			this.gridOptions.rowData=temp;
 			return x;
@@ -827,12 +991,12 @@ export class StockComponent {
 		});
 	};
 	put=(id:number,data:Array<any>)=>{
-		let dbName=this.currentPage;
+		let dbName=this.activeView;
 		this.globalService.putData(dbName,id,data).subscribe(x=>console.log("do put, awaiting response..",{dbName:dbName,id:id,data:data}))
 	};
-	public updateData=(x:any)=>{
+	public updateData=async(x:any)=>{
 		console.log("UPDATE DATA",x);
-		let returnVal=this.stock.set(x);
+		let returnVal=this.stock.set(x,this.activeView,this.options.data.tableOptions);
 		this.changeView(this.activeView);
 		return returnVal;
 	};
@@ -845,7 +1009,7 @@ export class StockComponent {
 		let confirmed:boolean=false;
 		let idArr:any;
 		if(Array.isArray(data))idArr=data.map(item=>item.ID_DAFTAR);
-		if(!dbName)dbName=this.currentPage;
+		if(!dbName)dbName=this.activeView;
 		if(data.length===this.gridOptions.rowData.length){
 			confirmed=confirm(GlobalVar.alert([],"Hapus Semua Data ?"));
 		}else{
@@ -867,14 +1031,33 @@ export class StockComponent {
 				},
 				error:(e) => {
 					alert(GlobalVar.alert([{name:e.name},{message:e.message}],e.statusText));
-					this.refreshPage();
+					//this.refreshPage();
 				},
 			});
 		};
 	};
-		  
+	public misc={
+		showHiddenColumn:(columnName:string,value:boolean)=>{
+			console.log("columnName",columnName);
+			console.log("value",value);
+			let tableOptions=this.options.data.tableOptions;
+			console.log(tableOptions)
+			tableOptions[this.activeView].columnDefs.find((item:any)=>item.field===columnName).hide=value;
+			console.log('tableOptions',tableOptions);
+			this.options.setOptions(tableOptions,'tableOptions');
+
+		},
+		toUpperCase:(x:string)=>{
+			//console.trace("testtx =>",x);
+			//console.log("this.activeView =>",this.activeView);
+			let temp="";
+			if(!x)return "";
+			temp=x.toUpperCase();
+			return temp;
+		},
+	};
 	public refreshPage=()=>{
-		this.get(this.currentPage);
+		this.get(this.activeView);
 		this.gridOptions.api?.hideOverlay();
 		this.gridOptions.api?.deselectAll;
 	};

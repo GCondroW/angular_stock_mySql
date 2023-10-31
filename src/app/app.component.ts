@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { GlobalService } from './service/global/global.service';
 import { GlobalVar } from './globalVar';
 import { AppRoutingModule } from './app-routing.module';
 
@@ -10,7 +9,6 @@ import { AppRoutingModule } from './app-routing.module';
 })
 
 export class AppComponent {
-	globalService : GlobalService = inject(GlobalService);
 	appRoutingModule : AppRoutingModule = inject(AppRoutingModule);
 	dynamicRoutes=this.appRoutingModule.dynamicRoutes;
 	constructor(){

@@ -13,23 +13,24 @@
 				>=</button>
 				<div ngbDropdown class="float-start ms-1">
 					<button ngbDropdownToggle class="btn btn-secondary btn-sm dropdown-toggle" type="button">
-						{{activeView.toUpperCase()}}
+						{{activeView|titlecase}}
 					</button>
 					<div ngbDropdownMenu class="dropdown-menu">
 						<button 
 							ngbDropdownItem
-							*ngFor="let a of viewArr"
-							(click)="changeView(a)"
+							*ngFor="let a of Object.keys(stock.daftar)"
+							(click)="setView(a)"
 							type="button"
 						>
-							{{a.toUpperCase()}}
+							{{a|titlecase}}
 						</button>
 					</div>
 				</div>		
 				<!-- OPERATION MODE -->
 				<div ngbDropdown class="float-start ms-1"> 
 					<button ngbDropdownToggle class="btn  btn-secondary btn-sm dropdown-toggle" type="button">
-						{{operation.active.toUpperCase()}}
+						{{operation.active|titlecase}}
+						<!--{{misc.toUpperCase(operation.active)}}-->
 					</button>
 					<div ngbDropdownMenu class="dropdown-menu">
 						<button 
@@ -38,7 +39,7 @@
 							(click)="operation.changeOperation(operationPointer)"
 							type="button"
 						>
-							{{operationPointer.toUpperCase()}}
+							{{operationPointer|titlecase}}
 						</button>
 					</div>
 				</div>				
@@ -47,9 +48,8 @@
 					*ngIf="gridOptions.api?.getSelectedRows().length>0 && operation.active==='delete'"
 					(click)="console.log('delete :',operation.mode.delete.deleteFunction(gridOptions.api.getSelectedRows()))"
 				>
-					delete
+					Delete
 				</button>
-				
 			</div>			
 			<div class="d-flex">
 				<input 
@@ -66,7 +66,6 @@
 				>
 					Filter
 				</button>
-
 			</div>
 		</div>
 	</nav>
@@ -78,7 +77,7 @@
 		<!-- <ng-container *ngIf="stock.raw;then dataTable; else emptyDataElement"></ng-container> -->
 		<app-data-table 
 			[gridOptions]="gridOptions"
-			[rowData]="stock.stock[activeView].data"
+			[rowData]="stock.daftar[activeView].data"
 			[defaultColDef]="defaultColDef"
 			[overlayNoRowsTemplate]="'<div>kosong..</div>'"
 		></app-data-table>
@@ -87,7 +86,7 @@
 	<ng-template #dataTable>
 		<app-data-table 
 			[gridOptions]="gridOptions"
-			[rowData]="stock.stock[activeView].data"
+			[rowData]="stock.daftar[activeView].data"
 			[defaultColDef]="defaultColDef"
 			[overlayNoRowsTemplate]="'<div>kosong..</div>'"
 		></app-data-table>
@@ -106,7 +105,7 @@
 		<div class="row">
 			<div class="col">
 				<app-upload 
-					[currentPage]="currentPage"
+					[currentPage]="activeView"
 					[uploadHandler]="_excel.postExcel"
 				></app-upload>
 			</div>
@@ -144,15 +143,19 @@
 					value={{!item.hide}}
 					[checked]="!item.hide"
 					(change)="
+						
 						gridOptions.columnApi.setColumnVisible(item.field,!!item.hide);
-						item.hide=!item.hide;
+						console.log('item.field',item.field);
+						console.log('item.hide',!item.hide);
+						misc.showHiddenColumn(item.field,!item.hide);
+						
 					"
 				>
 				<label 
 					class="form-check-label" 
 					[attr.for]="'inlineCheckbox'+item.field"
 				>
-					{{item.field}}
+					{{item.field|titlecase}}
 				</label>
 			</div>
 		</div>
@@ -160,7 +163,7 @@
 </ng-template>
 
 <ng-template #filterOffcanvassContent>
-	<div *ngIf="activeView==='daftar'" class="container-fluid">
+	<div *ngIf="activeView==='stock'" class="container-fluid">
 		<h3>Filter</h3>
 		<button (click)="gridApi.setFilterModel(filter.getDefaultFilterParam())">Reset</button>
 		<hr>
@@ -200,8 +203,8 @@
 			</div>
 		</div>	
 		<hr>
-		<div class="row mb-1" *ngFor="let header of Object.keys(stock.stock[activeView].filterData)">
-			<label class="col-4" for="sort">{{header}} : </label>
+		<div class="row mb-1" *ngFor="let header of Object.keys(stock.daftar[activeView].filterData)">
+			<label class="col-4" for="sort">{{header|titlecase}} : </label>
 			<div class="col-8">
 				<select class="form-select form-select-sm" name="sort" id="sort" aria-label="Small select example">
 					<option
@@ -209,7 +212,7 @@
 						(click)="filter.setFilter(header,'')"
 					>Semua</option>
 					<option 
-						*ngFor="let filterItem of stock.stock[activeView].filterData[header]"
+						*ngFor="let filterItem of stock.daftar[activeView].filterData[header]"
 						[attr.selected]="
 							this.filter.getCurrentFilter()[header]?.filter===filterItem
 							&&
@@ -309,8 +312,8 @@
 			</div>
 		</div>
 		<hr>
-		<div class="row mb-1" *ngFor="let header of Object.keys(stock.stock[activeView].filterData)">
-			<label class="col-4" for="sort">{{header}} : </label>
+		<div class="row mb-1" *ngFor="let header of Object.keys(stock.daftar[activeView].filterData)">
+			<label class="col-4" for="sort">{{header|titlecase}} : </label>
 			<div class="col-8">
 				<select class="form-select form-select-sm" name="sort" id="sort" aria-label="Small select example">
 					<option
@@ -318,7 +321,7 @@
 						(click)="filter.setFilter(header,'')"
 					>Semua</option>
 					<option 
-						*ngFor="let filterItem of stock.stock[activeView].filterData[header]"
+						*ngFor="let filterItem of stock.daftar[activeView].filterData[header]"
 						[attr.selected]="this.filter.getCurrentFilter()[header]?.filter===filterItem?'selected':null"
 						(click)="filter.setFilter(header,filterItem)"
 					>
@@ -341,18 +344,21 @@
 </ng-template>
 <ng-template #modalBody1>
 	<div>
-		<div class="container">
+		<div class="container-fluid">
+
 			<div *ngFor="let item of Object.keys(modal.modal_1.data)" class="row">
-				<label for="{{item+'Id'}}" class="col-sm-4 col-form-label col-form-label-sm">
+			
+				<label for="{{item+'Id'}}" 
+					class="col-sm-3 col-form-label col-form-label-sm">
 					{{item}}
 				</label>
-				<div class="col-sm-8">
+				<div class="col-sm-9">
 					<input 
 						style="{border:none;}" 
 						type="text" 
 						id="{{item+'Id'}}"
 						readonly
-						class="form-control-plaintext" 
+						class="form-control form-control-plaintext form-control-sm" 
 						value="{{': '+modal.modal_1.data[item]}}"
 					>
 				</div>
@@ -400,7 +406,7 @@
 						id="l_1"
 						readonly
 						class="form-control-plaintext form-control-sm" 
-						value="{{': '+modal.modal_2.data.nama}}"
+						value="{{': '+modal.modal_2.data.NAMA}}"
 					>
 				</div>
 			</div>
@@ -412,11 +418,11 @@
 					<div class="col-8">
 						<input 
 							style="{border:none;}" 
-							type="text" 
+							type="text"
 							id="l_2"
 							readonly
 							class="form-control-plaintext form-control-sm" 
-							value="{{': '+modal.modal_2.data.supplier}}"
+							value="{{': '+modal.modal_2.data.SUPPLIER}}"
 						>
 					</div>
 				</div>
@@ -433,7 +439,7 @@
 							id="l_3"
 							readonly
 							class="form-control-plaintext form-control-sm" 
-							value="{{': '+modal.modal_2.data.kategori}}"
+							value="{{': '+modal.modal_2.data.KATEGORI}}"
 						>
 					</div>
 				</div>
@@ -450,7 +456,7 @@
 							id="l_4"
 							readonly
 							class="form-control-plaintext form-control-sm" 
-							value="{{': '+modal.modal_2.data['Qty/ Ctn']}}"
+							value="{{': '+modal.modal_2.data.QTY+' / '+modal.modal_2.data.STN}}"
 						>
 					</div>
 				</div>
@@ -470,7 +476,7 @@
 							id="l_5"
 							readonly
 							class="form-control-plaintext form-control-sm" 
-							value="{{' : '+modal.modal_2.data.ctn}}"
+							value="{{' : '+modal.modal_2.data.STOCK}}"
 						>
 					</div>
 				</div>
