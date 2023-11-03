@@ -88,11 +88,22 @@ export class GlobalService {
 		
 	};
 
-	postData=(dbName:string,data:Array<any>,embedName?:string|undefined,id?:string|undefined)=>{
+	postData=(dbName:string,data:Array<any>)=>{
 		let url=this.url+dbName;
-		if (!!id) url+='/'+id
 		console.log(data);
 		let g=this.http.post(url,data,{headers:this.headers, observe:'response'});
+		return g;
+	};
+		
+	/*putData=(dbName:string,parentId:number,data:Array<any>)=>{
+		let url=this.url+dbName+"/"+parentId;
+		return this.http.put(url,data,{headers:this.headers});
+	};*/
+	
+	putData=(dbName:string,data:Array<any>)=>{
+		let url=this.url+dbName;
+		console.log(data);
+		let g=this.http.put(url,data,{headers:this.headers, observe:'response'});
 		return g;
 	};
 	
@@ -104,11 +115,6 @@ export class GlobalService {
 	postEmbedData=(dbName:string,data:any={},embedName:string|undefined,id:string|undefined)=>{
 		let url=this.url+dbName+"/"+embedName+"/"+id;
 		return this.http.post<any>(url,data,{headers:this.headers})
-	};
-	
-	putData=(dbName:string,parentId:number,data:Array<any>)=>{
-		let url=this.url+dbName+"/"+parentId;
-		return this.http.put(url,data,{headers:this.headers});
 	};
 	
 	wipeData=(dbName:string)=>{

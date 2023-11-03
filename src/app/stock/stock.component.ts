@@ -70,7 +70,8 @@ export class StockComponent {
 				gridOptions:{
 					onRowDoubleClicked:(data:any)=>{
 						let activeView=this.activeView;
-						let parentId=data.data._id;					
+						//console.log("data",data);
+						let parentId=data.data.ID_DAFTAR;		
 						if(activeView==='stock')return this.modal.modal_4.openModal(parentId);
 					},
 				},
@@ -100,13 +101,6 @@ export class StockComponent {
 		},
 		updateGridOptions:()=>{
 			console.log('updateGridOptions , gridOptions');
-			/*
-			let gridOptions=this.operation.mode[this.operation.active].gridOptions;
-			Object.keys(gridOptions).map(pointer=>{
-				this.gridOptions[pointer]=gridOptions[pointer];
-				console.log('grid Options pointer :',pointer);
-			})
-			*/
 		},
 	};
 	constructor(){
@@ -115,15 +109,8 @@ export class StockComponent {
 		this.activeView=this.options.data.activeView
 			||
 			this.options.setOptions(this.activeView,"activeView");
-		console.log("this.options",this.options)
-		console.log("this.options.data.tableOptions",this.options.data.tableOptions)
-		console.log("localStorage",localStorage.getItem('options'))
-		//this.tableOptions=this.options.data.tableOptions
-		//   ||
-		//	this.options.setOptions("tableOptions");
-		/*if(options.data.activeView){
-			this.activeView=options.data.activeView;
-		}else options.setOptions({activeView:this.activeView});*/
+		
+		this.globalService.setHeaders("user",this.user.name);
 	};
 	
 	ngOnInit(){
@@ -138,22 +125,14 @@ export class StockComponent {
 				dbKey:this.user.dbKey,
 			};
 			this.socket.emit("login",clientData,(response:any)=>{
-
 				if(!!response.success&&!!this.user.getTableData(this.activeView)){
 					console.log("LOGIN SUCCESS = > ",response);
 					this.updateData(this.user.getTableData(this.activeView));
 				}else{
 					console.log("LOGIN FAILED = > ",response);
-					this.setDbKey(response.dbKey);
 					console.log("response.dbKey",response.dbKey)
-					this.globalService.getData(this.activeView).subscribe((x:any)=>{
-						console.log("TESTX => ",x);
-						console.log("activeView => ",this.activeView);
-						x.data.map((item:any)=>item.STOCK=Number(item.STOCK));
-						let temp=this.user.setTableData(this.user.getDbKey(),x.data,this.activeView);
-						console.log("activeView2 => ",this.activeView);
-						this.updateData(temp);
-					});
+					this.setDbKey(response.dbKey);
+					this.getPage();
 				};
 			});
 		});
@@ -199,6 +178,30 @@ export class StockComponent {
 			alert(GlobalVar.alert(alertArr,message));
 			this.updateData(this.user.getTableData(this.activeView));
 		});
+		this.socket.on("put",(emittedData:any)=>{
+			console.log("EMIT RECEIVED: PUY =>",emittedData);
+			let data=emittedData.data;
+			let message=emittedData.message;
+			let dbKey=emittedData.dbKey;
+			let oldData=this.user.getTableData(this.activeView);
+			let alertArr:Array<any>=[];
+			data.map((item:any)=>{
+				alertArr.push({
+					id:item.ID_DAFTAR,
+					Nama:item.NAMA,
+					Supplier:item.SUPPLIER,
+				});
+			});
+			data.map((item:any)=>{
+				let id=oldData.findIndex((x:any)=>x.ID_DAFTAR===item.ID_DAFTAR);
+				oldData[id]=item;
+			});
+			let newAndUpdatedData=oldData;
+			this.setDbKey(dbKey);
+			this.user.setTableData(dbKey,newAndUpdatedData,this.activeView);
+			this.updateData(this.user.getTableData(this.activeView));
+			alert(GlobalVar.alert(alertArr,message));
+		});
 		this.socket.on("post",(emittedData:any)=>{
 			console.log("EMIT RECEIVED: POST =>",emittedData);
 			let data=emittedData.data;
@@ -213,7 +216,6 @@ export class StockComponent {
 					Supplier:item.SUPPLIER,
 				});
 			});
-			
 			let newAndUpdatedData=oldData;
 			newAndUpdatedData.push(...data);
 			this.setDbKey(dbKey);
@@ -255,124 +257,7 @@ export class StockComponent {
 			this.updateData(this.user.getTableData(this.activeView));
 			alert(GlobalVar.alert(alertArr,message));
 		});
-		/*this.socket.on("__1", (arg1:{
-			data:any[],
-			request:string,
-			message:string,
-			dbKey:string,
-		}) => {
-			//console.log('arg1 : ',arg1)
-			let emitRequest=arg1.request;
-			let alertArr:Array<any>=[];
-			let data:any=null;
-			let oldData:Array<any>=this.stock.raw;
-			//let oldDataIndex:number=-1;
-			//let deletedData:any;
-			let newData:any;
-			//let temp:Array<any>=[];
-			console.log("emitRequest=",emitRequest);
-			console.log("arg1=",arg1);
-			if(!emitRequest)this.get(this.activeView);else
-			this.getDbKey(arg1.dbKey);
-			data=arg1.data;
-			data.map((item:any)=>{
-				alertArr.push({
-					nama:item.nama,
-					supplier:item.supplier,
-					kategori:item.kategori,
-				});
-			});
-			alert(GlobalVar.alert(alertArr,arg1.message));
-			if(oldData.length<1)return this.refreshPage();
-			newData=data;
-			switch(emitRequest){
-				case 'add_few':
-					
-					break;
-				case 'add':
-					console.log('receive emit request "add" : ',arg1,
-					(()=>{
-						oldData.push(...newData);
-						this.updateData(oldData);
-					})());
-					break;
-				case 'add_transaksi':
-					console.log('receive emit request "add_transaksi" : ',arg1,
-					(()=>{
-						let index:any='';
-						data.map((item:any)=>{
-						index=oldData.map(item2=>item2._id);
-						index=index.findIndex((item3:any)=>item3===item._id);
-							oldData[index].transaksi=item.transaksi;
-						});
-						this.updateData(oldData);
-					})());
-					break;
-				case 'update':
-					console.log('receive emit request "update" : ',arg1,
-					(()=>{
-						let data=arg1.data[0];
-						[data].map((item:any)=>{
-							alertArr.push({
-								nama:item.nama,
-								supplier:item.supplier,
-								kategori:item.kategori,
-							});
-						});
-						let oldDataIndex=oldData.findIndex(item=>item._id===data._id);
-						Object.keys(data).map(pointer=>{
-							if(data[pointer]===oldData[oldDataIndex][pointer])return
-							oldData[oldDataIndex][pointer]=data[pointer];
-						});
-						this.updateData(oldData);
-					})());
-					break;
-				case 'delete':
-					console.log('receive emit request "delete" : ',arg1,
-					(()=>{
-						let deletedData=data;
-						let oldDataId=oldData.map(item=>item._id);
-						let deletedDataId=deletedData.map((item:any)=>item._id);					
-						let temp=oldData.filter((item:any)=>!deletedDataId.includes(item._id));
-						console.log('empty Delete',temp);
-						this.updateData(temp)
-					})());
-					break;
-				case 'delete_embed':
-					console.log('receive emit request "delete_embed" : ',arg1,
-					(()=>{
-						let data=arg1.data[0];
-						alertArr.push({
-							nama:data.nama,
-							supplier:data.supplier,
-							kategori:data.kategori,
-						});
-						let parentId=data._id;
-						let oldDataIndex=oldData.findIndex(item=>item._id===parentId);
-						oldData[oldDataIndex].transaksi=data.transaksi;
-						let temp=oldData;		
-						this.updateData(temp)
-					})());
-					break;
-				case 'update_key':
-					this.getDbKey(arg1.dbKey);
-				break;
-				case 'init':
-					console.log('receive emit request "init" : ',arg1,
-					(()=>{
-						if(arg1.dbKey != this.dbKey || oldData.length<1){
-							this.getDbKey(arg1.dbKey);
-							this.refreshPage();
-						};
-					})());
-					break;
-				default :
-						
-				return
-			};	
-		});*/
 		this.debugThis=this;
-		//this.get(this.activeView);
 	};
 	
 	/// OFFCANVAS ///
@@ -622,19 +507,25 @@ export class StockComponent {
 		},
 		modal_4:{
 			openModal:(parentId:string)=>{
-				console.log(this.modal.modal_4)
-				let parentData=this.stock.raw.find((item:any)=>item._id===parentId);
+				//console.log(this.modal.modal_4)
 				this.modal.modal_4.modalRef=this.modalService.open(this.modal_4);
+				
+				let tableData=this.user.getTableData(this.activeView);
+				let parentData=tableData.find((item:any)=>item.ID_DAFTAR===parentId);
 				this.modal.modal_4.initialData=parentData;
 				let initialData=parentData;
+				console.log("initialData",initialData);
 				this.modal.modal_4.form=this.fb.group({
-					form_id:[initialData._id],
-					formNama:[initialData.nama,[GlobalValidator.required]],
-					formSupplier:[initialData.supplier,[GlobalValidator.required]],
-					formQty:[initialData.qty,[GlobalValidator.number,GlobalValidator.required,GlobalValidator.cantBeZero]],
-					formStn:[initialData.stn,[GlobalValidator.required,GlobalValidator.string]],
-					formKategori:[initialData.kategori,[GlobalValidator.required]],
+					form_id:[initialData.ID_DAFTAR],
+					formNama:[initialData.NAMA,[GlobalValidator.required]],
+					formSupplier:[initialData.SUPPLIER,[GlobalValidator.required]],
+					formQty:[initialData.QTY,[GlobalValidator.number,GlobalValidator.required,GlobalValidator.cantBeZero]],
+					formStn:[initialData.STN,[GlobalValidator.required,GlobalValidator.string]],
+					formKategori:[initialData.KATEGORI,[GlobalValidator.required]],
 				},{});
+				console.log("parentId",parentId);
+				console.log("tableData",tableData);
+				console.log("parentData",parentData);
 				let form=this.modal.modal_4.form;
 				let formNamaValue=form.get("formNama");
 				let formSupplierValue=form.get("formSupplier");
@@ -642,6 +533,7 @@ export class StockComponent {
 				let formStnValue=form.get("formStn");
 				let formKategoriValue=form.get("formKategori");
 				this.activeModal='modal_4';
+				
 			},
 			closeModal:()=>{
 				this.modal.modal_4.modalRef.close();
@@ -654,11 +546,11 @@ export class StockComponent {
 				try{
 					if(!initialData)initialData=this.modal.modal_4.initialData;
 					let form=this.modal.modal_4.form;
-					form.get("formNama").setValue(initialData.nama);
-					form.get("formSupplier").setValue(initialData.supplier);
-					form.get("formQty").setValue(initialData.qty);
-					form.get("formStn").setValue(initialData.stn);
-					form.get("formKategori").setValue(initialData.kategori);
+					form.get("formNama").setValue(initialData.NAMA);
+					form.get("formSupplier").setValue(initialData.SUPPLIER);
+					form.get("formQty").setValue(initialData.QTY);
+					form.get("formStn").setValue(initialData.STN);
+					form.get("formKategori").setValue(initialData.KATEGORI);
 					return 
 				}catch(e){
 					alert('err')
@@ -673,7 +565,7 @@ export class StockComponent {
 					console.log('FORM IS VALID ');
 					console.log('form = >',form);
 					let reqVar={
-						_id:form.value.form_id,
+						id_daftar:form.value.form_id,
 						nama:form.value.formNama,
 						supplier:form.value.formSupplier,
 						qty:form.value.formQty,
@@ -681,12 +573,19 @@ export class StockComponent {
 						kategori:form.value.formKategori,
 					};
 					console.log('reqVar =',reqVar);
-					console.log('reqVar :',this.put(form.value.form_id,[reqVar]));
+					console.log('reqVar :',
+						this.globalService.putData(this.activeView,[reqVar]).subscribe(x=>{
+							console.log({reqVar:x})
+						})
+					);
 				}else return
 			},
 			modalRef:undefined,
-			getStnFilterData:()=>[...new Set(this.stock.daftar.daftar.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))],
-			getDatalist:(pointer:string)=>this.stock.daftar.daftar.filterData[pointer],
+			getStnFilterData:()=>{
+				if(this.stock.daftar.stock.filterData['Qty/ Ctn']===undefined)return [];
+				return [...new Set(this.stock.daftar.stock.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))];
+			},
+			getDatalist:(pointer:string)=>this.stock.daftar.stock.filterData[pointer.toUpperCase()],
 		},
 	};
 	get formNama() { return this.modal[this.activeModal].form.get('formNama'); }
@@ -900,29 +799,32 @@ export class StockComponent {
 	/// \AG-GRID ///
 	
 	checkDbParity=()=>{
-		console.log(" == Check DB Parity == ");
+		console.log("checkDbParity=()=> Start");
 		try{
 			let tableName=this.activeView;
-			
 			let tableData=this.user.getTableData(tableName)
-			console.log("tableData => ",tableData);
+			console.log("checkDbParity=()=> tableData : ",tableData);
 			if(!tableData||tableData.length<1)return false;
 			return this.globalService.getDbKey().subscribe((x:any)=>{
 				let clientKey=this.user.getDbKey();
 				let dbKey=x.value;
-				console.log("dbKey => ",clientKey!==dbKey,clientKey,dbKey);
-				if (clientKey!==dbKey)return false;
-				return true;
+				console.log("checkDbParity=()=> dbKey : ",clientKey===dbKey,clientKey,dbKey);
+				if (clientKey===dbKey){
+					console.log("checkDbParity=()=> dbCheckParity Success");
+					return true;
+				}else {
+					console.log("checkDbParity=()=> dbCheckParity Failed");
+					return false;
+				};
 			})
 		}catch(e){
-			console.log("dbCheckParity Error =>",e);
+			console.log("checkDbParity=()=> dbCheckParity Error : ",e);
 			return false;
 		};
 	};
 	setView=(viewName:string)=>{
 		console.log("SET_VIEW => ",viewName,this.options.setOptions(viewName,"activeView"));
 		this.activeView=viewName;
-		
 		console.log("this.user.getTableData(this.activeView)",this.user.getTableData(this.activeView));
 		if (!this.checkDbParity()){
 			this.globalService.getData(viewName).subscribe((x:any)=>{
@@ -943,41 +845,10 @@ export class StockComponent {
 			//this.updateData(this.user.getTableData(viewName));
 		};
 	};
-	rw=(request:any)=>{
-		console.log("Request",request);
-		return request().subscribe((x:any)=>{
-			if (!!x.ERR) return alert(x.ERR.message);
-			if (!!x.dbKey){
-				let dbKey=x.dbKey.toString();
-				this.getDbKey(dbKey);
-				return this.rw(()=>request());
-			}else this.updateData(x);
-		});
-	};
 	setDbKey=(dbKey:number)=>{
 		let temp=this.user.setDbKey(dbKey);
 		console.log("set db key ", temp);
 		this.globalService.setHeaders("dbKey",temp.toString());
-	};
-	getDbKey=(dbKey:number)=>{
-		GlobalVar.dbKey=dbKey;
-		console.log("set db key "+JSON.stringify(GlobalVar.dbKey));
-		this.globalService.setHeaders("dbKey",dbKey.toString());
-	};
-	get=(dbName:string,id?:Array<number> | undefined)=>{
-		//console.log("SHOW LOADING : ",this.gridOptions.api?.showLoadingOverlay());
-		//let dbName=this.activeView;
-		this.globalService.getData(dbName,id).subscribe({
-			next:(x:any)=>{
-				console.log("GET_NEXT");
-				let data=x.data;
-				return this.updateData(this.user.setTableData(this.user.getDbKey(),data,this.activeView));
-			},
-			complete:()=>{
-				console.log("GET_COMPLETE");
-				//console.log("HIDE LOADING : ",this.gridOptions.api?.hideOverlay());
-			},
-		});
 	};
 	post=(data:Array<any>)=>{
 		let temp=this.gridOptions.rowData;
@@ -989,10 +860,6 @@ export class StockComponent {
 			return x;
 
 		});
-	};
-	put=(id:number,data:Array<any>)=>{
-		let dbName=this.activeView;
-		this.globalService.putData(dbName,id,data).subscribe(x=>console.log("do put, awaiting response..",{dbName:dbName,id:id,data:data}))
 	};
 	public updateData=async(x:any)=>{
 		console.log("UPDATE DATA",x);
@@ -1048,17 +915,31 @@ export class StockComponent {
 
 		},
 		toUpperCase:(x:string)=>{
-			//console.trace("testtx =>",x);
-			//console.log("this.activeView =>",this.activeView);
 			let temp="";
 			if(!x)return "";
 			temp=x.toUpperCase();
 			return temp;
 		},
+		prompt:(text:string)=>{
+			//if(this.user.prompt)true
+		}
+	};
+	private getPage=()=>{
+		this.globalService.getData(this.activeView).subscribe((x:any)=>{
+			x.data.map((item:any)=>item.STOCK=Number(item.STOCK));
+			let temp=this.user.setTableData(this.user.getDbKey(),x.data,this.activeView);
+			this.updateData(temp);
+		});
 	};
 	public refreshPage=()=>{
-		this.get(this.activeView);
-		this.gridOptions.api?.hideOverlay();
-		this.gridOptions.api?.deselectAll;
+		if(this.checkDbParity()){
+			this.getPage();
+		}else{
+			this.globalService.getData('key').subscribe((x:any)=>{
+				this.setDbKey(x.value);
+				this.getPage();
+			});
+		};
+
 	};
 }

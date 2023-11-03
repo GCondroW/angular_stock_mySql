@@ -596,6 +596,7 @@ export class ImportComponent {
 		let rowNode=this.gridOptions.api.getRowNode(this.selectedRowId);
 		let temp=confirm("update : "+JSON.stringify(oldData)+" => "+JSON.stringify(newData));
 		if(temp===true){
+			/*
 			this.globalService.putData(page,id,data).subscribe(x=>{
 				if(!!this.errorHandler(x))return
 				let data:any=x;
@@ -603,6 +604,7 @@ export class ImportComponent {
 				rowNode.updateData(this.tableDataHandler([data])[0]);
 				return
 			});
+			*/
 		}else {
 			rowNode.setData(oldData);
 		}
@@ -658,4 +660,3 @@ export class ImportComponent {
 		return temp;
 	}
 }
-

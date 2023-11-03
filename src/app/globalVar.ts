@@ -185,7 +185,7 @@ export const GlobalVar = {
 					delete item[excludedColItem];
 				});
 			});
-			let dataColumn=Object.keys(data[0]);
+			let dataColumn=Object.keys(data[0] || {});
 			dataColumn.map(pointer=>{
 				temp[pointer]=[];
 			});
@@ -317,6 +317,7 @@ export const GlobalVar = {
 		public setName=(name:string)=>{
 			this.name=name;
 			localStorage.setItem('name',name);
+			return this.name;
 		};
 		public setDbKey=(dbKey:number)=>{
 			this.dbKey=dbKey;
@@ -332,7 +333,6 @@ export const GlobalVar = {
 			let tempArr:any=[];
 			tempArr[dbKey]=data;
 			tempObj[tableName]=tempArr;
-			this.setDbKey(dbKey);
 			localStorage.setItem('tableData',JSON.stringify(tempObj));
 			return data;
 		};
@@ -357,9 +357,10 @@ export const GlobalVar = {
 		public prompt=()=>{
 			let newName=window.prompt('ganti',this.name);
 			if(!!newName){
-				this.setName(newName);
-				alert("WELCOME => "+newName);
+				alert("WELCOME => "+this.setName(newName));
+				return true;
 			};
+			return false;
 		};
 		public deleteById=(id:Array<number>,tableName:string)=>{
 			console.log("ID", id);

@@ -122,7 +122,7 @@
 	<div class="container-fluid" >
 		<div class="btn-group btn-group-sm" role="group">
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="_excel.downloadExcel(currentPage)">Download</button>
-			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="get(currentPage)">Refresh</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refreshPage()">Refresh</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="delete(getAllAgGridRows(),'daftar')">Delete All</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.modal_3.openModal()">Tambah Data</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="console.log('debugThis : ',debugThis)"><-></button>
@@ -633,10 +633,9 @@
 							!formSupplier.valid && (formSupplier.dirty || formSupplier.touched)
 						"
 					>
-
 					<div ngbDropdown *ngIf="modal.modal_3.getDatalist('SUPPLIER')[0]">
 						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
-						<div ngbDropdownMenu class="dropdown-menu">
+						<div ngbDropdownMenu class="dropdown-menu dropdown-menu-end">
 							<button 
 								ngbDropdownItem
 								*ngFor="let a of modal.modal_3.getDatalist('SUPPLIER')"
@@ -663,7 +662,7 @@
 			<label for="l_12" class="col-sm-3 col-form-label col-form-label-sm">
 				Qty/ Ctn
 			</label>
-			<div class="col-4">
+			<div class="col-5">
 				<input
 					onclick="this.select()" 
 					type="text"
@@ -683,7 +682,7 @@
 			<label for="l_13" class="col-sm-3 col-form-label col-form-label-sm">
 				Satuan
 			</label>
-			<div class="col-4">
+			<div class="col-5">
 				<div class="input-group">
 					<input
 						onclick="this.select()" 
@@ -725,7 +724,7 @@
 			<label for="l_14" class="col-sm-3 col-form-label col-form-label-sm">
 				Kategori
 			</label>
-			<div class="col-4">
+			<div class="col-5">
 				<select 
 					class="form-select form-sm" 
 					aria-label="Default select example"
@@ -747,7 +746,7 @@
 			<label for="l_15" class="col-sm-3 col-form-label col-form-label-sm">
 				Ctn
 			</label>
-			<div class="col-4">
+			<div class="col-5">
 				<input
 					onclick="this.select()" 
 					type="text"
@@ -908,7 +907,7 @@
 						<div ngbDropdownMenu class="dropdown-menu">
 							<button 
 								ngbDropdownItem
-								*ngFor="let a of modal.modal_4.getStnFilterData()"
+								*ngFor="let a of modal.modal_4.getDatalist('stn')"
 								(click)="modal.modal_4.form.get('formStn').setValue(a)"
 								type="button"
 							>
