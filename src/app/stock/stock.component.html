@@ -79,8 +79,9 @@
 			[gridOptions]="gridOptions"
 			[rowData]="stock.daftar[activeView].data"
 			[defaultColDef]="defaultColDef"
-			[overlayNoRowsTemplate]="'<div>kosong..</div>'"
+			
 		></app-data-table>
+		<!-- [overlayNoRowsTemplate]="'<div>kosong..</div>'" -->
 	</div>		
 	<!-- 
 	<ng-template #dataTable>
@@ -592,7 +593,7 @@
 <ng-template #modalBody3>
 	<form
 		[formGroup]="modal.modal_3.form" 
-		(ngSubmit)="modal.modal_3.submit()"
+		(ngSubmit)="misc.loadingWrapper(modal.modal_3.submit)"
 		class="container-fluid"
 		autocomplete="off"
 	>
@@ -789,7 +790,7 @@
 <ng-template #modalBody4>
 	<form
 		[formGroup]="modal.modal_4.form" 
-		(ngSubmit)="modal.modal_4.submit()"
+		(ngSubmit)="misc.loadingWrapper(modal.modal_4.submit)"
 		class="container-fluid"
 		autocomplete="off"
 	>

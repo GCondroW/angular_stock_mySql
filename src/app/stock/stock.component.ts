@@ -179,7 +179,7 @@ export class StockComponent {
 			this.updateData(this.user.getTableData(this.activeView));
 		});
 		this.socket.on("put",(emittedData:any)=>{
-			console.log("EMIT RECEIVED: PUY =>",emittedData);
+			console.log("EMIT RECEIVED: PUT =>",emittedData);
 			let data=emittedData.data;
 			let message=emittedData.message;
 			let dbKey=emittedData.dbKey;
@@ -193,8 +193,12 @@ export class StockComponent {
 				});
 			});
 			data.map((item:any)=>{
+				
 				let id=oldData.findIndex((x:any)=>x.ID_DAFTAR===item.ID_DAFTAR);
+				console.log("id",id)
+				console.log("before",oldData[id],oldData)
 				oldData[id]=item;
+				console.log("after",oldData[id],oldData)
 			});
 			let newAndUpdatedData=oldData;
 			this.setDbKey(dbKey);
@@ -470,6 +474,7 @@ export class StockComponent {
 			data:{},
 			form:{},
 			submit:()=>{
+				this.gridOptions.rowData=null;
 				let form=this.modal.modal_3.form;
 				form.markAllAsTouched()
 				form.updateValueAndValidity()
@@ -484,15 +489,13 @@ export class StockComponent {
 						KATEGORI:form.value.formKategori,
 						CTN:form.value.formCtn,
 					};
-					console.log(
-						"POST",
-						this.globalService.postData(
+					this.globalService.postData(
 							this.activeView,
 							[reqVar]
 						).subscribe((x:any)=>{
 						if(!!x.body?.success)return this.modal.modal_3.closeModal();
 						return alert(x);
-					}));
+					});
 				}else return
 			},
 			modalRef:undefined,
@@ -513,6 +516,7 @@ export class StockComponent {
 				let tableData=this.user.getTableData(this.activeView);
 				let parentData=tableData.find((item:any)=>item.ID_DAFTAR===parentId);
 				this.modal.modal_4.initialData=parentData;
+				if(!!this.modal.modal_4.initialData.STOCK)delete(this.modal.modal_4.initialData.STOCK);
 				let initialData=parentData;
 				console.log("initialData",initialData);
 				this.modal.modal_4.form=this.fb.group({
@@ -559,23 +563,28 @@ export class StockComponent {
 			},
 			submit:()=>{
 				let form=this.modal.modal_4.form;
+				let initialData=this.modal.modal_4.initialData;
+				//initialData
 				form.markAllAsTouched()
 				form.updateValueAndValidity()
 				if(!!form.valid){
 					console.log('FORM IS VALID ');
 					console.log('form = >',form);
 					let reqVar={
-						id_daftar:form.value.form_id,
-						nama:form.value.formNama,
-						supplier:form.value.formSupplier,
-						qty:form.value.formQty,
-						stn:form.value.formStn,
-						kategori:form.value.formKategori,
+						ID_DAFTAR:form.value.form_id,
+						NAMA:form.value.formNama,
+						SUPPLIER:form.value.formSupplier,
+						QTY:form.value.formQty,
+						STN:form.value.formStn,
+						KATEGORI:form.value.formKategori,
 					};
+					console.log('initialData ',this.modal.modal_4.initialData);
 					console.log('reqVar =',reqVar);
+					if(JSON.stringify(initialData)===JSON.stringify(reqVar))return alert("Data Tidak Berubah");
 					console.log('reqVar :',
 						this.globalService.putData(this.activeView,[reqVar]).subscribe(x=>{
-							console.log({reqVar:x})
+							console.log({reqVar:x});
+							this.modal.modal_4.closeModal();
 						})
 					);
 				}else return
@@ -884,23 +893,29 @@ export class StockComponent {
 		};
 		if(!!confirmed){
 			//this.gridOptions.api.showLoadingOverlay();
-			let temp=this.gridOptions.rowData;
-			this.gridOptions.rowData=null;
-			this.globalService.deleteData('stock/'+dbName,idArr,embedName,data[0]._idDaftar).subscribe({
-				next:(x)=>{
-					console.log("DELETE_NEXT")
-					
-				},
-				complete:()=>{
-					console.log("DELETE_COMPLETE");
-					this.gridOptions.rowData=temp;
-					//console.log("HIDE LOADING : ",this.gridApi?.hideOverlay());
-				},
-				error:(e) => {
-					alert(GlobalVar.alert([{name:e.name},{message:e.message}],e.statusText));
-					//this.refreshPage();
-				},
-			});
+			
+			this.misc.loadingWrapper(
+				()=>{
+					let temp=this.gridOptions.rowData;
+					this.gridOptions.rowData=null;
+					this.globalService.deleteData('stock/'+dbName,idArr,embedName,data[0]._idDaftar).subscribe({
+						next:(x)=>{
+							console.log("DELETE_NEXT")
+							
+						},
+						complete:()=>{
+							console.log("DELETE_COMPLETE");
+							this.gridOptions.rowData=temp;
+							//console.log("HIDE LOADING : ",this.gridApi?.hideOverlay());
+						},
+						error:(e) => {
+							alert(GlobalVar.alert([{name:e.name},{message:e.message}],e.statusText));
+							//this.refreshPage();
+						},
+					});
+				}
+			);
+			
 		};
 	};
 	public misc={
@@ -922,7 +937,14 @@ export class StockComponent {
 		},
 		prompt:(text:string)=>{
 			//if(this.user.prompt)true
-		}
+		},
+		loadingWrapper:async(_f:any,_var?:any)=>{
+			console.log("loadingWrapper _var",_var);
+			this.gridOptions.api.showLoadingOverlay();
+			//this.gridOptions.api.setRowData(null);
+			if(!!_var)return await _f(_var);
+			return await _f();
+		},
 	};
 	private getPage=()=>{
 		this.globalService.getData(this.activeView).subscribe((x:any)=>{
