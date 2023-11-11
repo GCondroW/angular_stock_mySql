@@ -59,10 +59,16 @@ export class StockComponent {
 			view:{
 				gridOptions:{
 					onRowDoubleClicked:(event:any)=>{
-						let activeView=this.activeView;
-						console.log(event.data)
-						if(activeView==='stock')return this.modal.modal_1.openModal(event.data);
-						if(activeView==='transaksi')return alert(GlobalVar.alert(event.data));
+						if(this.activeView==='stock'){
+							console.log("event.data",event.data);
+							let index=this.user.tableData.stock[this.user.dbKey].findIndex((item:any)=>event.data.ID_DAFTAR===item.ID_DAFTAR)
+							console.log("stock data");
+							let modalData=this.user.tableData.stock[this.user.dbKey][index];
+							console.log("index",index);
+							console.log("modalData",modalData);
+							this.modal.modal_1.openModal(modalData);
+						};
+						if(this.activeView==='transaksi')return alert(GlobalVar.alert(event.data));
 					},
 				},
 			},
@@ -106,193 +112,369 @@ export class StockComponent {
 	constructor(){
 		this.navigationPages=GlobalVar.pages;
 		this.operation.active=Object.keys(this.operation.mode)[0];
-		this.activeView=this.options.data.activeView
-			||
-			this.options.setOptions(this.activeView,"activeView");
+		let defaultActiveViewValue='stock';
+		if(defaultActiveViewValue){
+			this.activeView=defaultActiveViewValue;
+		}else{
+			this.activeView=this.options.data.activeView
+				||
+				this.options.setOptions(this.activeView,"activeView");
+		};
 		
 		this.globalService.setHeaders("user",this.user.name);
 	};
 	
 	ngOnInit(){
+		let switchFallbackFunct=()=>{
+			console.log('SWITCH_EXCEPTION_ERROR')
+			this.refreshPage();
+		};
 		this.socket.on("debug",(arg1:any)=>{
 			console.log("debug : ",arg1);
 		});
 		this.socket.on("connect", () => {
-			console.log("socket connected, socket : ");
-			let clientData={
-				name:this.user.name,
-				userId:this.user.id,
-				dbKey:this.user.dbKey,
-			};
-			this.socket.emit("login",clientData,(response:any)=>{
-				if(!!response.success&&!!this.user.getTableData(this.activeView)){
-					console.log("LOGIN SUCCESS = > ",response);
-					this.updateData(this.user.getTableData(this.activeView));
-				}else{
-					console.log("LOGIN FAILED = > ",response);
-					console.log("response.dbKey",response.dbKey)
-					this.setDbKey(response.dbKey);
-					this.getPage();
-				};
-			});
+			this.misc.loadingWrapper(
+				()=>{
+					console.log("socket connected, socket : ");
+					let clientData={
+						name:this.user.name,
+						userId:this.user.id,
+						dbKey:this.user.getDbKey(),
+					};
+					this.socket.emit("login",clientData,(response:any)=>{
+						if(!!response.success&&!!this.user.getTableData(this.activeView)){
+							console.log("LOGIN SUCCESS = > ",response);
+							this.updateData(this.user.getTableData(this.activeView));
+						}else{
+							console.log("LOGIN FAILED = > ",response);
+							console.log("response.dbKey",response.dbKey)
+							this.refreshPage();
+						};
+					});
+				},this.gridOptions
+			);
+		});
+		this.socket.on("login", () => {
+			//console.log("socket connected, socket : ");
+			this.misc.loadingWrapper(
+				()=>{
+					console.log("EMIT RECEIVED: LOGIN");
+					let clientData={
+						name:this.user.name,
+						userId:this.user.id,
+						dbKey:this.user.getDbKey(),
+					};
+					this.socket.emit("login",clientData,(response:any)=>{
+						if(!!response.success&&!!this.user.getTableData(this.activeView)){
+							console.log("LOGIN SUCCESS = > ",response);
+							this.updateData(this.user.getTableData(this.activeView));
+						}else{
+							console.log("LOGIN FAILED = > ",response);
+							console.log("response.dbKey",response.dbKey)
+							this.refreshPage();
+						};
+					});
+				},this.gridOptions
+			);
 		});
 		this.socket.on("delete",(emittedData:any)=>{
-			console.log("EMIT RECEIVED: DELETE =>",emittedData);
-			let message=emittedData.message;
-			let deletedDataId=emittedData.deletedDataId;
-			let oldData=this.user.getTableData(this.activeView);
-			let alertArr:Array<any>=[];
-			let deletedData = oldData.filter((item:any)=>deletedDataId.includes(item.ID_DAFTAR));
-			deletedData.map((item:any)=>{
-				alertArr.push({
-					id:item.ID_DAFTAR,
-					Nama:item.NAMA,
-					Supplier:item.SUPPLIER,
-				});
-			});
-			this.user.setTableData(emittedData.dbKey,this.user.deleteById(deletedDataId,this.activeView),this.activeView);
-			this.setDbKey(emittedData.dbKey);
-			this.updateData(this.user.getTableData(this.activeView));
-			alert(GlobalVar.alert(alertArr,message));
+			this.misc.loadingWrapper(
+				()=>{
+					console.log("EMIT RECEIVED: DELETE =>",emittedData);
+					console.log("AT =>",this.activeView);
+					
+					let message=emittedData.message;
+					let deletedDataId=emittedData.deletedDataId;
+					
+					switch(this.activeView){
+						case 'stock':
+							let oldData=this.user.getTableData(this.activeView);
+							let alertArr:Array<any>=[];
+							let deletedData = oldData.filter((item:any)=>deletedDataId.includes(item.ID_DAFTAR));
+							deletedData.map((item:any)=>{
+								alertArr.push({
+									id:item.ID_DAFTAR,
+									Nama:item.NAMA,
+									Supplier:item.SUPPLIER,
+								});
+							});
+							this.user.setTableData(emittedData.dbKey,this.user.deleteById(deletedDataId,this.activeView),this.activeView);
+							this.setDbKey(emittedData.dbKey);
+							this.updateData(this.user.getTableData(this.activeView));
+							alert(GlobalVar.alert(alertArr,message));
+							break;
+
+						default :
+							switchFallbackFunct();
+					}
+				},this.gridOptions
+			);
 		});
 		this.socket.on("get",(emittedData:any)=>{
 			alert('get emit');
 			console.log("emittedData : ",emittedData);
-			console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
 		});
 		this.socket.on("init",(emittedData:any)=>{
-			console.log("EMIT RECEIVED: INIT =>",emittedData);
-			let data=emittedData.data;
-			let message=emittedData.message;
-			let dbKey=emittedData.dbKey;
-			let alertArr:Array<any>=[];
-			data.map((item:any)=>{
-				alertArr.push({
-					id:item.ID_DAFTAR,
-					Nama:item.NAMA,
-					Supplier:item.SUPPLIER,
-				});
-			});
-			this.user.setTableData(emittedData.dbKey,data,this.activeView);
-			this.setDbKey(emittedData.dbKey);
-			alert(GlobalVar.alert(alertArr,message));
-			this.updateData(this.user.getTableData(this.activeView));
+			this.misc.loadingWrapper(
+				()=>{
+					console.log("EMIT RECEIVED: INIT =>",emittedData);
+					let data=emittedData.data;
+					let message=emittedData.message;
+					let dbKey=emittedData.dbKey;
+					let alertArr:Array<any>=[];
+					
+					switch(this.activeView){
+						case 'stock':	
+							data.map((item:any)=>{
+								alertArr.push({
+									id:item.ID_DAFTAR,
+									Nama:item.NAMA,
+									Supplier:item.SUPPLIER,
+								});
+							});
+							this.user.setTableData(emittedData.dbKey,data,this.activeView);
+							this.setDbKey(emittedData.dbKey);
+							alert(GlobalVar.alert(alertArr,message));
+							this.updateData(this.user.getTableData(this.activeView));
+							break;
+						default:
+							switchFallbackFunct();
+					};
+				},this.gridOptions
+			)
 		});
 		this.socket.on("put",(emittedData:any)=>{
-			console.log("EMIT RECEIVED: PUT =>",emittedData);
-			let data=emittedData.data;
-			let message=emittedData.message;
-			let dbKey=emittedData.dbKey;
-			let oldData=this.user.getTableData(this.activeView);
-			let alertArr:Array<any>=[];
-			data.map((item:any)=>{
-				alertArr.push({
-					id:item.ID_DAFTAR,
-					Nama:item.NAMA,
-					Supplier:item.SUPPLIER,
-				});
-			});
-			data.map((item:any)=>{
-				
-				let id=oldData.findIndex((x:any)=>x.ID_DAFTAR===item.ID_DAFTAR);
-				console.log("id",id)
-				console.log("before",oldData[id],oldData)
-				oldData[id]=item;
-				console.log("after",oldData[id],oldData)
-			});
-			let newAndUpdatedData=oldData;
-			this.setDbKey(dbKey);
-			this.user.setTableData(dbKey,newAndUpdatedData,this.activeView);
-			this.updateData(this.user.getTableData(this.activeView));
-			alert(GlobalVar.alert(alertArr,message));
+			this.misc.loadingWrapper(
+				()=>{
+					console.log("EMIT RECEIVED: PUT =>",emittedData);
+					let data=emittedData.data;
+					let message=emittedData.message;
+					let dbKey=emittedData.dbKey;
+					let alertArr:Array<any>=[];
+					switch(this.activeView){
+						case 'stock':
+							let oldData=this.user.getTableData(this.activeView);
+							data.map((item:any)=>{
+								alertArr.push({
+									id:item.ID_DAFTAR,
+									Nama:item.NAMA,
+									Supplier:item.SUPPLIER,
+								});
+							});
+							data.map((item:any)=>{
+								
+								let id=oldData.findIndex((x:any)=>x.ID_DAFTAR===item.ID_DAFTAR);
+								console.log("id",id)
+								console.log("before",oldData[id],oldData)
+								oldData[id]=item;
+								console.log("after",oldData[id],oldData)
+							});
+							let newAndUpdatedData=oldData;
+							this.setDbKey(dbKey);
+							this.user.setTableData(dbKey,newAndUpdatedData,this.activeView);
+							this.updateData(this.user.getTableData(this.activeView));
+							alert(GlobalVar.alert(alertArr,message));
+							break;
+						default:
+							switchFallbackFunct();
+					};
+				},this.gridOptions
+			);
 		});
 		this.socket.on("post",(emittedData:any)=>{
-			console.log("EMIT RECEIVED: POST =>",emittedData);
-			let data=emittedData.data;
-			let message=emittedData.message;
-			let dbKey=emittedData.dbKey;
-			let oldData=this.user.getTableData(this.activeView);
-			let alertArr:Array<any>=[];
-			data.map((item:any)=>{
-				alertArr.push({
-					id:item.ID_DAFTAR,
-					Nama:item.NAMA,
-					Supplier:item.SUPPLIER,
-				});
-			});
-			let newAndUpdatedData=oldData;
-			newAndUpdatedData.push(...data);
-			this.setDbKey(dbKey);
-			this.user.setTableData(dbKey,newAndUpdatedData,this.activeView);
-			this.updateData(this.user.getTableData(this.activeView));
-			alert(GlobalVar.alert(alertArr,message));
+			this.misc.loadingWrapper(
+				()=>{
+					console.log("EMIT RECEIVED: POST =>",emittedData);
+					let data=emittedData.data;
+					let message=emittedData.message;
+					let dbKey=emittedData.dbKey;
+					let alertArr:Array<any>=[];
+					switch(this.activeView){
+						case 'stock':
+							let oldData=this.user.getTableData(this.activeView);
+							data.map((item:any)=>{
+								alertArr.push({
+									id:item.ID_DAFTAR,
+									Nama:item.NAMA,
+									Supplier:item.SUPPLIER,
+								});
+							});
+							let newAndUpdatedData=oldData;
+							newAndUpdatedData.push(...data);
+							this.setDbKey(dbKey);
+							this.user.setTableData(dbKey,newAndUpdatedData,this.activeView);
+							this.updateData(this.user.getTableData(this.activeView));
+							alert(GlobalVar.alert(alertArr,message));
+							break;
+						default:
+							switchFallbackFunct();
+					};
+				},this.gridOptions	
+			);
 		});
 		this.socket.on("transaksi",(emittedData:any)=>{
-			console.log("EMIT RECEIVED: TRANSAKSI =>",emittedData);
-			console.log("this.user.getTableData('transaksi')",this.user.getTableData('transaksi'));
-			let data=emittedData.data;
-			let message=emittedData.message;
-			let dbKey=emittedData.dbKey;
-			let oldDataTransaksi=this.user.getTableData('transaksi')||[];
-			let oldDataStock=this.user.getTableData('stock')||[];
-			this.setDbKey(dbKey);
-			if(oldDataTransaksi.length>0){
-				data.map((item:any)=>{
-					oldDataTransaksi.push(item);
-				});
-				this.user.setTableData(dbKey,oldDataTransaksi,'transaksi');
-			};
-			if(oldDataStock.length>0){
-				let newAndUpdatedData=oldDataStock;
-				data.map((item:any)=>{
-					let updatedDataIndex=oldDataStock.findIndex((item2:any)=>item2.ID_DAFTAR===item.ID_DAFTAR);
-					newAndUpdatedData[updatedDataIndex].STOCK+=item.JUMLAH;
-				});
-				this.user.setTableData(dbKey,newAndUpdatedData,'stock');
-			};
-			let alertArr:Array<any>=[];
-			data.map((item:any)=>{
-				alertArr.push({
-					id:item.ID_DAFTAR,
-					Nama:item.NAMA,
-					Supplier:item.SUPPLIER,
-				});
-			});
-			this.updateData(this.user.getTableData(this.activeView));
-			alert(GlobalVar.alert(alertArr,message));
+			this.misc.loadingWrapper(
+				()=>{
+					console.log("EMIT RECEIVED: TRANSAKSI =>",emittedData);
+					console.log("this.user.getTableData('transaksi')",this.user.getTableData('transaksi'));
+					let data=emittedData.data;
+					let message=emittedData.message;
+					let dbKey=emittedData.dbKey;
+					let alertArr:Array<any>=[];
+					switch(this.activeView){
+						case 'stock':			
+							let oldDataTransaksi=this.user.getTableData('transaksi')||[];
+							let oldDataStock=this.user.getTableData('stock')||[];
+							this.setDbKey(dbKey);
+							if(oldDataTransaksi.length>0){
+								data.map((item:any)=>{
+									oldDataTransaksi.push(item);
+								});
+								this.user.setTableData(dbKey,oldDataTransaksi,'transaksi');
+							};
+							if(oldDataStock.length>0){
+								let newAndUpdatedData=oldDataStock;
+								data.map((item:any)=>{
+									let updatedDataIndex=oldDataStock.findIndex((item2:any)=>item2.ID_DAFTAR===item.ID_DAFTAR);
+									newAndUpdatedData[updatedDataIndex].STOCK+=item.JUMLAH;
+								});
+								this.user.setTableData(dbKey,newAndUpdatedData,'stock');
+							};
+							
+							data.map((item:any)=>{
+								alertArr.push({
+									id:item.ID_DAFTAR,
+									Nama:item.NAMA,
+									Supplier:item.SUPPLIER,
+								});
+							});
+							this.updateData(this.user.getTableData(this.activeView));
+							alert(GlobalVar.alert(alertArr,message));
+							break;
+						default:
+							switchFallbackFunct();
+					};
+				},this.gridOptions
+			);	
 		});
 		this.debugThis=this;
 	};
 	
 	/// OFFCANVAS ///
 	private offcanvasService:NgbOffcanvas=inject(NgbOffcanvas);
+	private offCanvasInstance:any;
 	public _offCanvas={
-		open:(content:any)=>this.offcanvasService.open(content),
+		open:(content:any)=>this.offCanvasInstance=this.offcanvasService.open(content),
 	};
 	/// \OFFCANVAS ///
 	
-	/// USER ///
-
-
-	/// \USER ///
-	
 	/// MODAL ///
 	public modalService:NgbModal=inject(NgbModal);
-	@ViewChild('modal_1') modal_1!:DynamicModalComponent;//modal daftar
+	@ViewChild('modal_1') modal_1!:DynamicModalComponent;//modal stock
 	@ViewChild('modal_2') modal_2!:DynamicModalComponent;//modal transaksi
-	@ViewChild('modal_3') modal_3!:DynamicModalComponent;//modal add daftar
-	@ViewChild('modal_4') modal_4!:DynamicModalComponent;//modal edit daftar
+	@ViewChild('modal_3') modal_3!:DynamicModalComponent;//modal add stock
+	@ViewChild('modal_4') modal_4!:DynamicModalComponent;//modal edit stock
 	public activeModal:string='';
 	public modal:any={
 		modal_1:{
 			openModal:(modalData:any)=>{
-				console.log("debug : ",this);
+				this.modal.modal_1.isLoading=true;
 				this.modal.modal_1.data=modalData;
 				this.modal.modal_1.modalRef=this.modalService.open(this.modal_1);
+				this.modal.modal_1.updateTransactionData(modalData);
+				
+			},
+			isLoading:true,
+			updateTransactionData:(modalData:any)=>{
 				this.globalService.getData('transaksi',[modalData.ID_DAFTAR]).subscribe(
-					
-					(x:any)=>this.modal.modal_1.transactionData=x.data);
-					
+					(x:any)=>{
+						//this.modal.modal_1.transactionData=x.data;
+						x.data.map((item:any)=>{
+							item.TANGGAL=this.misc.convertDate(item.TANGGAL);
+						});
+						this.modal.modal_1.grid.gridOptions.api.setRowData(x.data);
+						this.modal.modal_1.grid.gridOptions.api?.setColumnDefs(
+							this.modal.modal_1.grid.columnDefs.map(
+								(item:any)=>
+									Object.assign(item,this.modal.modal_1.grid.defaultColumnDefs)
+							) 
+						);
+						
+					}
+				);
+			},
+			grid:{
+				gridOptions:{
+					pagination: true,
+					paginationPageSize:5,	
+					accentedSort:true,
+					onGridReady:(params:any)=>{
+						console.log("grid Event => onGridReady : ");
+						this.modal.modal_1.isLoading=false;
+					},
+					onModelUpdated: (event:any)=>{
+						console.log("grid Event => onModelUpdated : ");
+					},
+					onRowDataUpdated:(event:any)=>{
+						console.log("grid Event => onRowDataUpdated : ");
+						
+					},
+					onFirstDataRendered:(event:any)=>{
+						console.log("grid Event => onFirstDataRendered : ");
+						this.modal.modal_1.grid.gridOptions.columnApi.autoSizeAllColumns();
+					},
+					onColumnVisible:(event:any)=>{
+						console.log("grid Event => onColumnVisible : ");
+					},
+				},
+				defaultColumnDefs:{
+					resizable:false,
+					sortable: false,
+					filter: false,
+					editable:false,
+				},
+				columnDefs:[
+					{
+						field:'ID_TRANSAKSI',
+						headerName:'Id',
+					},
+					{
+						field:'JUMLAH',
+						headerName:'Jumlah',
+					},
+					{
+						field:'TANGGAL',
+						headerName:'Tanggal',
+					},	
+					{
+						field:'USER',
+						headerName:'User',
+					},		
+					{
+						field:'JENIS',
+						headerName:'Jenis',
+					},
+					{
+						field:'KETERANGAN',
+						headerName:'Keterangan',
+					},			
+					{
+						field:'ID_DAFTAR',
+						hide:true,
+					},
+					{
+						field:'SUPPLIER',
+						hide:true,
+					},
+					{
+						field:'NAMA',
+						hide:true,
+					},
+					{
+						field:'KATEGORI',
+						hide:true,
+					},
+				],
 			},
 			closeModal:()=>{
 				this.modal.modal_1.modalRef.close();
@@ -300,6 +482,10 @@ export class StockComponent {
 			transactionData:[],
 			getTransactionData:(id:Array<number>)=>{
 				return ;
+			},
+			deleteFunct:(data:any)=>{
+				this.delete([data],'stock');
+				this.modal.modal_1.closeModal();
 			},
 			data:{},
 			modalRef:undefined,
@@ -439,7 +625,7 @@ export class StockComponent {
 		modal_3:{
 			openModal:()=>{
 				this.modal.modal_3.modalRef=this.modalService.open(this.modal_3);
-				
+				this.modal.modal_3.isReadyToSubmit=true;
 				this.modal.modal_3.form=this.fb.group({
 					formNama:["",[GlobalValidator.required]],
 					formSupplier:["",[GlobalValidator.required]],
@@ -467,6 +653,7 @@ export class StockComponent {
 				this.activeModal='modal_3';
 				
 			},
+			isReadyToSubmit:true,
 			closeModal:()=>{
 				this.modal.modal_3.modalRef.close();
 				this.activeModal='';
@@ -474,7 +661,9 @@ export class StockComponent {
 			data:{},
 			form:{},
 			submit:()=>{
-				this.gridOptions.rowData=null;
+				if(this.modal.modal_3.isReadyToSubmit===false)return console.log("IS_NOT_READY_EXCEPTION ")
+				this.modal.modal_3.isReadyToSubmit=false;
+				//this.gridOptions.rowData=null;
 				let form=this.modal.modal_3.form;
 				form.markAllAsTouched()
 				form.updateValueAndValidity()
@@ -490,11 +679,16 @@ export class StockComponent {
 						CTN:form.value.formCtn,
 					};
 					this.globalService.postData(
-							this.activeView,
+							'stock',
 							[reqVar]
 						).subscribe((x:any)=>{
-						if(!!x.body?.success)return this.modal.modal_3.closeModal();
-						return alert(x);
+							if(!!x.body?.success){
+								this.modal.modal_3.closeModal();
+								if(!!this.offCanvasInstance)this.offCanvasInstance.close();
+							}else{
+								this.modal.modal_3.isReadyToSubmit=true;
+								return alert(x);
+							};
 					});
 				}else return
 			},
@@ -509,12 +703,12 @@ export class StockComponent {
 			},
 		},
 		modal_4:{
-			openModal:(parentId:string)=>{
+			openModal:(parentData:any)=>{
 				//console.log(this.modal.modal_4)
 				this.modal.modal_4.modalRef=this.modalService.open(this.modal_4);
-				
-				let tableData=this.user.getTableData(this.activeView);
-				let parentData=tableData.find((item:any)=>item.ID_DAFTAR===parentId);
+				this.modal.modal_4.isReadyToSubmit=true;
+				let tableData=this.user.getTableData('stock');
+				parentData=tableData.find((item:any)=>item.ID_DAFTAR===parentData.ID_DAFTAR);
 				this.modal.modal_4.initialData=parentData;
 				if(!!this.modal.modal_4.initialData.STOCK)delete(this.modal.modal_4.initialData.STOCK);
 				let initialData=parentData;
@@ -527,7 +721,7 @@ export class StockComponent {
 					formStn:[initialData.STN,[GlobalValidator.required,GlobalValidator.string]],
 					formKategori:[initialData.KATEGORI,[GlobalValidator.required]],
 				},{});
-				console.log("parentId",parentId);
+				//console.log("parentId",parentId);
 				console.log("tableData",tableData);
 				console.log("parentData",parentData);
 				let form=this.modal.modal_4.form;
@@ -544,6 +738,7 @@ export class StockComponent {
 				this.activeModal='';
 			},
 			initialData:{},
+			isReadyToSubmit:true,
 			data:{},
 			form:{},
 			resetForm:(initialData?:any|undefined)=>{
@@ -562,6 +757,8 @@ export class StockComponent {
 				}
 			},
 			submit:()=>{
+				if(this.modal.modal_4.isReadyToSubmit===false)return console.log("IS_NOT_READY_EXCEPTION ")
+				this.modal.modal_4.isReadyToSubmit=false;
 				let form=this.modal.modal_4.form;
 				let initialData=this.modal.modal_4.initialData;
 				//initialData
@@ -580,14 +777,16 @@ export class StockComponent {
 					};
 					console.log('initialData ',this.modal.modal_4.initialData);
 					console.log('reqVar =',reqVar);
-					if(JSON.stringify(initialData)===JSON.stringify(reqVar))return alert("Data Tidak Berubah");
-					console.log('reqVar :',
-						this.globalService.putData(this.activeView,[reqVar]).subscribe(x=>{
-							console.log({reqVar:x});
-							this.modal.modal_4.closeModal();
-						})
-					);
-				}else return
+					if(JSON.stringify(initialData)===JSON.stringify(reqVar)){
+						alert("Data Tidak Berubah");
+						this.modal.modal_4.isReadyToSubmit=true;
+					}else
+					this.globalService.putData('stock',[reqVar]).subscribe(x=>{
+						console.log("MODAL_4 => ",x);
+						//this.modal.modal_1.closeModal();
+						this.modal.modal_4.closeModal();
+					});
+				}else this.modal.modal_4.isReadyToSubmit=true;
 			},
 			modalRef:undefined,
 			getStnFilterData:()=>{
@@ -807,52 +1006,10 @@ export class StockComponent {
 	};
 	/// \AG-GRID ///
 	
-	checkDbParity=()=>{
-		console.log("checkDbParity=()=> Start");
-		try{
-			let tableName=this.activeView;
-			let tableData=this.user.getTableData(tableName)
-			console.log("checkDbParity=()=> tableData : ",tableData);
-			if(!tableData||tableData.length<1)return false;
-			return this.globalService.getDbKey().subscribe((x:any)=>{
-				let clientKey=this.user.getDbKey();
-				let dbKey=x.value;
-				console.log("checkDbParity=()=> dbKey : ",clientKey===dbKey,clientKey,dbKey);
-				if (clientKey===dbKey){
-					console.log("checkDbParity=()=> dbCheckParity Success");
-					return true;
-				}else {
-					console.log("checkDbParity=()=> dbCheckParity Failed");
-					return false;
-				};
-			})
-		}catch(e){
-			console.log("checkDbParity=()=> dbCheckParity Error : ",e);
-			return false;
-		};
-	};
 	setView=(viewName:string)=>{
 		console.log("SET_VIEW => ",viewName,this.options.setOptions(viewName,"activeView"));
 		this.activeView=viewName;
-		console.log("this.user.getTableData(this.activeView)",this.user.getTableData(this.activeView));
-		if (!this.checkDbParity()){
-			this.globalService.getData(viewName).subscribe((x:any)=>{
-				console.log(x);
-				this.user.setTableData(x.dbKey,x.data,viewName);
-				this.stock.set(this.user.getTableData(viewName),viewName,this.options.data.tableOptions);
-				this.gridOptions.api?.deselectAll();
-				this.gridOptions.api?.setColumnDefs(this.stock.daftar[viewName].colDef);
-				this.gridOptions.api?.setFilterModel(this.stock.daftar[viewName].defaultFilterParam);
-				//this.updateData(this.user.getTableData(viewName));
-			});
-		}else {
-			let temp=this.user.getTableData(viewName);
-			this.stock.set(temp,viewName,this.options.data.tableOptions);
-			this.gridOptions.api?.deselectAll();
-			this.gridOptions.api?.setColumnDefs(this.stock.daftar[viewName].colDef);
-			this.gridOptions.api?.setFilterModel(this.stock.daftar[viewName].defaultFilterParam);
-			//this.updateData(this.user.getTableData(viewName));
-		};
+		this.refreshPage();
 	};
 	setDbKey=(dbKey:number)=>{
 		let temp=this.user.setDbKey(dbKey);
@@ -879,8 +1036,37 @@ export class StockComponent {
 	postEmbed=(dbName:string,data:any,embedName:string|undefined,id:string|undefined)=>{
 		this.globalService.postEmbedData(dbName,data,embedName,id).subscribe(x=>console.log("do postEmbed, awaiting response..",dbName,data,embedName,id));
 	};
-	delete=(data:any,dbName?:string,embedName?:string|undefined)=>{
-
+	delete=(data:any,dbName:string)=>{
+		if(!Array.isArray(data))throw new Error ('Expected Array');	
+		let confirmed:boolean=false;
+		let idArr:any;
+		if(Array.isArray(data))idArr=data.map(item=>item.ID_DAFTAR);
+		//if(!dbName)dbName=this.activeView;
+		if(data.length===this.gridOptions.rowData.length){
+			confirmed=confirm(GlobalVar.alert([],"Hapus Semua Data ?"));
+		}else{
+			confirmed=confirm(GlobalVar.alert(data,"Hapus Data ?"));
+		};
+		if(!!confirmed){
+			this.misc.loadingWrapper(
+				()=>{
+					let temp=this.gridOptions.rowData;
+					this.globalService.deleteData(dbName,idArr).subscribe({
+						next:(x)=>{
+							console.log("DELETE_NEXT");
+						},
+						complete:()=>{
+							console.log("DELETE_COMPLETE");
+						},
+						error:(e) => {
+							alert(GlobalVar.alert([{name:e.name},{message:e.message}],e.statusText));
+						},
+					});
+				},this.gridOptions
+			);
+		};
+	};
+	old_delete=(data:any,dbName?:string,embedName?:string|undefined)=>{
 		if(!Array.isArray(data))throw new Error ('Expected Array');	
 		let confirmed:boolean=false;
 		let idArr:any;
@@ -893,7 +1079,7 @@ export class StockComponent {
 		};
 		if(!!confirmed){
 			//this.gridOptions.api.showLoadingOverlay();
-			
+			/*
 			this.misc.loadingWrapper(
 				()=>{
 					let temp=this.gridOptions.rowData;
@@ -915,7 +1101,7 @@ export class StockComponent {
 					});
 				}
 			);
-			
+			*/
 		};
 	};
 	public misc={
@@ -938,12 +1124,17 @@ export class StockComponent {
 		prompt:(text:string)=>{
 			//if(this.user.prompt)true
 		},
-		loadingWrapper:async(_f:any,_var?:any)=>{
+		loadingWrapper:async(_f:any,gridOptions:any,_var?:any)=>{
 			console.log("loadingWrapper _var",_var);
-			this.gridOptions.api.showLoadingOverlay();
+			gridOptions.api.showLoadingOverlay();
 			//this.gridOptions.api.setRowData(null);
 			if(!!_var)return await _f(_var);
 			return await _f();
+		},
+		closeAllModals:()=>console.log(this.offcanvasService),
+		convertDate:(dateString:string)=>{
+			let temp=new Date(dateString).toLocaleString('id');
+			return temp;
 		},
 	};
 	private getPage=()=>{
@@ -954,14 +1145,52 @@ export class StockComponent {
 		});
 	};
 	public refreshPage=()=>{
-		if(this.checkDbParity()){
+		console.log("checkDbParity=()=> Start");
+		try{
+			let tableName=this.activeView;
+			let tableData=this.user.getTableData(tableName)
+			let returnedVar;
+			console.log("checkDbParity=()=> tableData : ",tableData);
+			if(!tableData||tableData.length<1){
+				this.globalService.getDbKey().subscribe((x:any)=>{
+					console.log("checkDbParity=()=> dbCheckParity Failed");
+					this.setDbKey(x.value);
+					this.getPage();
+				});
+			}else{
+				this.globalService.getDbKey().subscribe((x:any)=>{
+					let clientKey=this.user.getDbKey();
+					let dbKey=x.value;
+					console.log("checkDbParity=()=> dbKey : ",clientKey===dbKey,clientKey,dbKey);
+					if (clientKey===dbKey){
+						console.log("checkDbParity=()=> dbCheckParity Success");
+						this.getPage();
+					}else {
+						console.log("checkDbParity=()=> dbCheckParity Failed");
+						this.setDbKey(x.value);
+						this.getPage();
+					};
+				});
+			};
+		}catch(e){
+			console.log("checkDbParity=()=> dbCheckParity Error : ",e);
+		};
+	};
+	/*
+	public old_refreshPage=()=>{
+		let temp=this.checkDbParity();
+		console.log("parity temp =<",temp);
+		if(temp){
+			console.log("refreshPage true")
 			this.getPage();
 		}else{
-			this.globalService.getData('key').subscribe((x:any)=>{
+			console.log("refreshPage false")
+			this.globalService.getDbKey().subscribe((x:any)=>{
+				console.log("x.value,this.user.getDbKey()",x.value,this.user.getDbKey())
 				this.setDbKey(x.value);
 				this.getPage();
 			});
 		};
-
 	};
+	*/
 }

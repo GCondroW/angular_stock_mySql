@@ -334,6 +334,7 @@ export const GlobalVar = {
 			tempArr[dbKey]=data;
 			tempObj[tableName]=tempArr;
 			localStorage.setItem('tableData',JSON.stringify(tempObj));
+			this.tableData=tempObj;
 			return data;
 		};
 		pushTableData=(dbKey:number,data:Array<any>,tableName:string)=>{

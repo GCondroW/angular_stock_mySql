@@ -5,8 +5,6 @@ import { Router } from '@angular/router';
 import { read, utils, writeFile } from "xlsx";
 import { GlobalErrorHandlerService } from '../../global-error-handler.service';
 import { DynamicModalComponent } from '../../misc/dynamic-modal/dynamic-modal.component';
-import { LowSync } from 'lowdb'
-import { JSONFileSync } from 'lowdb/node'
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -78,6 +76,7 @@ export class GlobalService {
 	
 	getDbKey=()=>{
 		let url=this.url+'key';
+		
 		return this.http.get(url,{headers:this.headers});
 	};
 	
@@ -124,7 +123,17 @@ export class GlobalService {
 		return this.http.delete(url,{headers:this.headers});
 	};
 	
-	deleteData=(dbName:string,id:Array<string>,embedName?:string|undefined,parentId?:string|undefined)=>{
+	deleteData=(dbName:string,id:Array<string>)=>{
+		let url=this.url+dbName;
+		if(!!id){
+			url+="?id=";
+			id.forEach(item=>url+=item+",")
+			url=url.slice(0,url.length-1);
+		};
+		return this.http.delete(url,{headers:this.headers});
+	};
+	
+	old_deleteData=(dbName:string,id:Array<string>,embedName?:string|undefined,parentId?:string|undefined)=>{
 		if(!embedName || !parentId){
 			parentId='';
 			embedName='';

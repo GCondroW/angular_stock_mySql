@@ -11,7 +11,7 @@ import { DynamicModalComponent } from '../dynamic-modal/dynamic-modal.component'
 export class DataTableComponent implements OnInit {
 	ngOnInit(){
 		//window.addEventListener('resize',()=>this.adjustContainerSize(), true);
-		console.log(this);
+		console.log("data-table.component => ",this);
 	};
 	constructor(){
 	}

@@ -79,7 +79,6 @@
 			[gridOptions]="gridOptions"
 			[rowData]="stock.daftar[activeView].data"
 			[defaultColDef]="defaultColDef"
-			
 		></app-data-table>
 		<!-- [overlayNoRowsTemplate]="'<div>kosong..</div>'" -->
 	</div>		
@@ -370,18 +369,28 @@
 			<div class="row">
 				<h4>Riwayat</h4>
 			</div>
-			<div class="row" *ngIf="modal.modal_1?.transactionData as items">
-				<app-dynamic-table
-					[data]="items"
-					[defaultColumnDefs]="modal.modal_1.innerTable.defaultColumnDefs"
-				>
-				</app-dynamic-table>
+			<div class="my-3 d-flex justify-content-center" *ngIf="modal.modal_1.isLoading">
+				<div class="spinner-border" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+			</div>
+			<div class="row" 
+				[hidden]="!!modal.modal_1.isLoading"
+				[style.height]="'200px'"
+			>
+				<app-data-table 
+					
+					[gridOptions]="modal.modal_1.grid.gridOptions"
+					[rowData]="null"
+				></app-data-table>
 			</div>
 		</div>
 	</div>
 </ng-template>
 <ng-template #modalFooter1>
+	<button type="button" class="btn btn-danger me-auto" (click)="modal.modal_1.deleteFunct(modal.modal_1.data)">Hapus</button>
 	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_2.openModal(modal.modal_1.data)">Baru</button>
+	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_4.openModal(modal.modal_1.data)">Edit</button>
 	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_1.closeModal()">Close</button>
 </ng-template>
 
@@ -593,7 +602,7 @@
 <ng-template #modalBody3>
 	<form
 		[formGroup]="modal.modal_3.form" 
-		(ngSubmit)="misc.loadingWrapper(modal.modal_3.submit)"
+		(ngSubmit)="misc.loadingWrapper(modal.modal_3.submit,gridOptions)"
 		class="container-fluid"
 		autocomplete="off"
 	>
@@ -771,6 +780,7 @@
 	<button type="button" class="btn btn-outline-dark" (click)="console.log(modal.modal_3.getDatalist('supplier'))">1</button>
 	<button 
 		type="button" 
+		[disabled]="!modal.modal_3.form.valid||!modal.modal_3.isReadyToSubmit"
 		class="btn btn-outline-dark" 
 		onclick="(()=>document.getElementById('submitButtonId').click())()"
 	>
@@ -790,7 +800,7 @@
 <ng-template #modalBody4>
 	<form
 		[formGroup]="modal.modal_4.form" 
-		(ngSubmit)="misc.loadingWrapper(modal.modal_4.submit)"
+		(ngSubmit)="misc.loadingWrapper(modal.modal_4.submit,gridOptions)"
 		class="container-fluid"
 		autocomplete="off"
 	>
@@ -964,6 +974,7 @@
 	<button 
 		type="button" 
 		class="btn btn-outline-dark" 
+		[disabled]="!modal.modal_4.form.valid||!modal.modal_4.isReadyToSubmit"
 		onclick="(()=>document.getElementById('submitButtonId').click())()"
 	>
 		Submit
