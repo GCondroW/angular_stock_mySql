@@ -47,7 +47,12 @@ export class StockComponent {
 		{activeView:this.localOptions.activeView}
 		:
 		{activeView:Object.keys(this.stock.daftar)[0]};
-	public options=new GlobalVar.options(Object.assign(this.localTableOptions,this.localActiveViewOptions));
+	private corsConfig=
+		this.localOptions.corsConfig?
+		{corsConfig:this.localOptions.corsConfig}
+		:
+		{corsConfig:GlobalVar.config.defaultValue.cors};
+	public options=new GlobalVar.options(Object.assign(this.localTableOptions,Object.assign(this.localActiveViewOptions,this.corsConfig)));
 	public activeView:any="";
 	private fb : FormBuilder = inject(FormBuilder);
 	public navigationPages:any;
@@ -110,6 +115,7 @@ export class StockComponent {
 		},
 	};
 	constructor(){
+	
 		this.navigationPages=GlobalVar.pages;
 		this.operation.active=Object.keys(this.operation.mode)[0];
 		let defaultActiveViewValue='stock';
@@ -359,7 +365,24 @@ export class StockComponent {
 		});
 		this.debugThis=this;
 	};
-	
+	/// APIURL ///
+	public apiUrl={
+		value:this.options.data.corsConfig.url,
+		inputValue:"",
+		eventHandler:(event:any)=>this.apiUrl.inputValue=event.target.value,
+		flush:()=>this.apiUrl.inputValue="",
+		set:(event:any)=>{
+			if (!this.apiUrl.inputValue||this.apiUrl.inputValue===this.apiUrl.value)return alert ("error")
+			let temp=this.options.data.corsConfig;
+			temp.url=this.apiUrl.inputValue;
+			this.options.setOptions(temp,'corsConfig');
+			
+			alert("Success, Api Url = "+this.apiUrl.inputValue);
+			window.location.reload()
+			
+		},
+	};
+	/// \APIURL ///
 	/// OFFCANVAS ///
 	private offcanvasService:NgbOffcanvas=inject(NgbOffcanvas);
 	private offCanvasInstance:any;
@@ -367,7 +390,6 @@ export class StockComponent {
 		open:(content:any)=>this.offCanvasInstance=this.offcanvasService.open(content),
 	};
 	/// \OFFCANVAS ///
-	
 	/// MODAL ///
 	public modalService:NgbModal=inject(NgbModal);
 	@ViewChild('modal_1') modal_1!:DynamicModalComponent;//modal stock
@@ -1135,6 +1157,9 @@ export class StockComponent {
 		convertDate:(dateString:string)=>{
 			let temp=new Date(dateString).toLocaleString('id');
 			return temp;
+		},
+		checkAdm:()=>{
+			return !!GlobalVar.config.adm.find(item=>item===this.user.name);
 		},
 	};
 	private getPage=()=>{

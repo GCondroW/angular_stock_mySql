@@ -19,16 +19,15 @@ export class GlobalService {
 
 	private globalErrorHandlerService: GlobalErrorHandlerService = inject(GlobalErrorHandlerService);
 	private modalService:NgbModal=inject(NgbModal);
-	
-	private url = GlobalVar.dbServerUrl;
+	private options=JSON.parse(localStorage.getItem('options')||"{}");
+	private corsConfig=this.options.corsConfig||GlobalVar.config.defaultValue.cors;
+	private url = this.corsConfig.url;
 	private dbKey = localStorage.getItem('dbKey')||"-1";
 	private headers=new HttpHeaders();
 	
 	constructor() { 
-		console.log("dbKey : ",this.dbKey);
-		this.setHeaders('dbKey',this.dbKey);
-		console.log(this)
-		
+		this.setHeaders('dbKey',this.dbKey.toString());
+		//this.setHeaders('Access-Control-Allow-Origin',this.apiUrl.toString());
 	}
 	
 	_modal={
@@ -66,6 +65,7 @@ export class GlobalService {
 	
 	getData=(dbName:string,id?:Array<number> | undefined)=>{
 		let url=this.url+dbName;
+		console.log("url :",url);
 		if(!!id){
 			url+="?id=";
 			id.forEach(item=>url+=item+",");
@@ -76,7 +76,7 @@ export class GlobalService {
 	
 	getDbKey=()=>{
 		let url=this.url+'key';
-		
+		console.log("url :",url);
 		return this.http.get(url,{headers:this.headers});
 	};
 	

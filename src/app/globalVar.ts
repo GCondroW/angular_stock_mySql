@@ -1,5 +1,8 @@
 import { ColDef } from 'ag-grid-community';
 export const GlobalVar = {
+	_var:{
+		socketConfig:"",
+	},
 	dbKey:-1,
 	userId:-1,
 	excelDb:{
@@ -8,6 +11,16 @@ export const GlobalVar = {
 		tableNames:{},
 	},
 	pages:{},
+	config:{
+		cors:"",
+		adm:["guest42","a89",",./`"],
+		defaultValue:{
+			cors:{
+				url:"http://127.0.0.1:3420/",
+				options:{withCredentials: true},
+			},
+		},
+	},
 	stockData:class stockData{
 		raw:Array<any>=[];
 		maxCharLength:any={};
@@ -424,6 +437,31 @@ export const GlobalVar = {
 			return this.count;
 		};
 	},
+	
+	socketConfig:class socketConfig{
+		private defaultValue:{
+			url:string,
+			options:{
+				withCredentials:boolean
+			},
+		}={
+			url:"http://127.0.0.1:3420/",
+			options:{
+				withCredentials:true,
+			},
+		};
+		public url:string=JSON.parse(JSON.stringify(this.defaultValue.url));
+		public options:{
+			withCredentials:boolean
+		}=JSON.parse(JSON.stringify(this.defaultValue.options));
+		constructor(){
+			console.log("socketConfig","initiated",this);
+		};
+		public setUrl=(url:string)=>{
+			return this.url=url;
+		};
+	},
+	
 	defaultColumnDefs:{
 		stock:{
 			excludedTableColumn:["ID_DAFTAR","NAMA","QTY","STOCK"],

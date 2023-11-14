@@ -160,8 +160,14 @@
 			</div>
 		</div>
 	</div>
+	<div *ngIf="misc.checkAdm()" class="container">
+		<hr>
+		<label>Api Url</label>
+		<input placeholder={{apiUrl.value}} (input)="apiUrl.eventHandler($event)">
+		<button (click)="apiUrl.set(apiUrl.inputValue)">Button</button>
+		<p>{{apiUrl.inputValue}}</p>
+	</div>
 </ng-template>
-
 <ng-template #filterOffcanvassContent>
 	<div *ngIf="activeView==='stock'" class="container-fluid">
 		<h3>Filter</h3>

@@ -28,8 +28,13 @@ import { GlobalVar } from './globalVar'
 
 import { GlobalErrorHandlerService  } from './global-error-handler.service'
 
-const config: SocketIoConfig = { url: GlobalVar.dbServerUrl, options: {} };
-
+const corsOptions={
+	withCredentials: true,
+};
+const options=JSON.parse(localStorage.getItem('options')||"{}");
+const corsConfig=options.corsConfig||GlobalVar.config.defaultValue.cors;
+console.log("corsConfig",corsConfig);
+const config: SocketIoConfig = { url: corsConfig.url, options:corsConfig.options };
 
 @NgModule({
   declarations: [
@@ -62,5 +67,4 @@ const config: SocketIoConfig = { url: GlobalVar.dbServerUrl, options: {} };
 	],
   bootstrap: [AppComponent]
 })
-
-export class AppModule { }
+export class AppModule {}
