@@ -832,8 +832,8 @@ export class StockComponent {
 		postExcel:(dbName:string,data:any)=>{
 			this.gridOptions.api?.showLoadingOverlay();
 			this.globalService.excelHandler(data).then(x=>{
-				console.log("Excel : ", x)
-				this.globalService.postExcel(GlobalVar.dbServerUrl+"stock/excelupload",x).subscribe(y=>{
+				let url=this.options.data.corsConfig.url;
+				this.globalService.postExcel(url+"/stock/excelupload",x).subscribe(y=>{
 					console.log(y)
 					console.log(y.status)
 				})
