@@ -166,6 +166,8 @@
 		<input placeholder={{apiUrl.value}} (input)="apiUrl.eventHandler($event)">
 		<button (click)="apiUrl.set(apiUrl.inputValue)">Button</button>
 		<p>{{apiUrl.inputValue}}</p>
+		<label>Version : </label>
+		<span>{{version}}</span>
 	</div>
 </ng-template>
 <ng-template #filterOffcanvassContent>

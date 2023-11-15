@@ -21,6 +21,7 @@ import { Socket } from 'ngx-socket-io';
 })
 
 export class StockComponent {
+	public version:string="0.013"
 	private globalService:GlobalService=inject(GlobalService);
 	private dbKey=GlobalVar.dbKey;
 	public socket:Socket=inject(Socket);
