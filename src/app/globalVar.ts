@@ -32,28 +32,7 @@ export const GlobalVar = {
 				header:[],
 				filterData:[],
 				maxCharLength:{},
-				defaultFilterParam:{
-					SUPPLIER:{
-						filterType: 'text',
-						type:'contains',
-						filter:"",
-					},
-					KATEGORI:{
-						filterType: 'text',
-						type:'contains',
-						filter:null,
-					},
-					STOCK:{
-						filterType: 'number',
-						type:'greaterThanOrEqual',
-						filter:1,
-					},
-					STN:{
-						filterType: 'text',
-						type:'contains',
-						filter:null,
-					},
-				},
+				defaultFilterParams:{},
 				createView:(data:any,options:any)=>{
 					let temp:Array<any>=[];
 					console.log(data);
@@ -78,48 +57,7 @@ export const GlobalVar = {
 				header:[],
 				filterData:[],
 				maxCharLength:{},
-				defaultFilterParam:{
-					NAMA:{
-						filterType: 'text',
-						type:'contains',
-						filter:"",
-					},
-					SUPPLIER:{
-						filterType: 'text',
-						type:'contains',
-						filter:"",
-					},
-					KATEGORI:{
-						filterType: 'text',
-						type:'contains',
-						filter:"",
-					},
-					JUMLAH:{
-						filterType: 'number',
-						type:'notEqual',
-						filter:0,
-					},
-					USER:{
-						filterType: 'text',
-						type:'contains',
-						filter:"",
-					},
-					TANGGAL:{
-						filterType: 'text',
-						type:'contains',
-						filter:"",
-					},
-					JENIS:{
-						filterType: 'text',
-						type:'notContains',
-						filter:"",
-					},	
-					KETERANGAN:{
-						filterType: 'text',
-						type:'contains',
-						filter:"",
-					},					
-				},
+				defaultFilterParams:{},
 				createView:(data:any,options:any)=>{
 					data.map((item:any)=>{
 						item.TANGGAL=this.convertDate(item.TANGGAL);
@@ -164,6 +102,10 @@ export const GlobalVar = {
 			/*Object.keys(this.stock).map(pointer=>{
 				this.stock[pointer].createView(JSON.parse(JSON.stringify((data))));
 			})*/
+		};
+		public setFilterParams=(filterObj:any,dbName:string)=>{
+			this.daftar[dbName].defaultFilterParams=filterObj;
+			console.log("this.daftar[dbName].defaultFilterParams",this.daftar[dbName].defaultFilterParams);
 		};
 		private getLocalData=()=>{
 			let temp=localStorage.getItem('raw');
@@ -465,6 +407,28 @@ export const GlobalVar = {
 	defaultColumnDefs:{
 		stock:{
 			excludedTableColumn:["ID_DAFTAR","NAMA","QTY","STOCK"],
+			defaultFilterParams:{
+				SUPPLIER:{
+					filterType: 'text',
+					type:'contains',
+					filter:"",
+				},
+				KATEGORI:{
+					filterType: 'text',
+					type:'contains',
+					filter:null,
+				},
+				STOCK:{
+					filterType: 'number',
+					type:'greaterThanOrEqual',
+					filter:1,
+				},
+				STN:{
+					filterType: 'text',
+					type:'contains',
+					filter:null,
+				},
+			},
 			columnDefs:[
 				{
 					field: "ID_DAFTAR",
@@ -504,6 +468,48 @@ export const GlobalVar = {
 		},
 		transaksi:{
 			excludedTableColumn:["ID_TRANSAKSI","ID_DAFTAR","NAMA","JUMLAH"],
+			defaultFilterParams:{
+				NAMA:{
+					filterType: 'text',
+					type:'contains',
+					filter:"",
+				},
+				SUPPLIER:{
+					filterType: 'text',
+					type:'contains',
+					filter:"",
+				},
+				KATEGORI:{
+					filterType: 'text',
+					type:'contains',
+					filter:"",
+				},
+				JUMLAH:{
+					filterType: 'number',
+					type:'notEqual',
+					filter:0,
+				},
+				USER:{
+					filterType: 'text',
+					type:'contains',
+					filter:"",
+				},
+				TANGGAL:{
+					filterType: 'text',
+					type:'contains',
+					filter:"",
+				},
+				JENIS:{
+					filterType: 'text',
+					type:'notContains',
+					filter:"",
+				},	
+				KETERANGAN:{
+					filterType: 'text',
+					type:'contains',
+					filter:"",
+				},					
+			},
 			columnDefs:[
 				{
 					field: "ID_TRANSAKSI",

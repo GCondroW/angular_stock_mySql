@@ -173,7 +173,7 @@
 <ng-template #filterOffcanvassContent>
 	<div *ngIf="activeView==='stock'" class="container-fluid">
 		<h3>Filter</h3>
-		<button (click)="gridApi.setFilterModel(filter.getDefaultFilterParam())">Reset</button>
+		<button (click)="gridOptions.api.setFilterModel(filter.getDefaultFilterParam())">Reset</button>
 		<hr>
 		<div class="row mb-1">
 			<label class="col-4">Stock : </label>

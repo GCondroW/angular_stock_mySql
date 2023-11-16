@@ -21,7 +21,7 @@ import { Socket } from 'ngx-socket-io';
 })
 
 export class StockComponent {
-	public version:string="0.013"
+	public version:string="0.015"
 	private globalService:GlobalService=inject(GlobalService);
 	private dbKey=GlobalVar.dbKey;
 	public socket:Socket=inject(Socket);
@@ -116,7 +116,6 @@ export class StockComponent {
 		},
 	};
 	constructor(){
-	
 		this.navigationPages=GlobalVar.pages;
 		this.operation.active=Object.keys(this.operation.mode)[0];
 		let defaultActiveViewValue='stock';
@@ -127,7 +126,13 @@ export class StockComponent {
 				||
 				this.options.setOptions(this.activeView,"activeView");
 		};
-		
+		let localDefaultFilterObj=this.localOptions.filterParams;
+		console.log("localDefaultFilterObj",localDefaultFilterObj)
+		this.misc.setFilterParams(
+			localDefaultFilterObj?
+			localDefaultFilterObj:
+			this.misc.getDefaultFilterObj()
+		);
 		this.globalService.setHeaders("user",this.user.name);
 	};
 	
@@ -862,28 +867,33 @@ export class StockComponent {
 	};
 	public filter:any={
 		getCurrentFilter:()=>this.gridOptions.api.getFilterModel(),
-		getDefaultFilterParam:()=>this.stock.daftar[this.activeView].defaultFilterParam,
+		getDefaultFilterParam:()=>this.stock.daftar[this.activeView].defaultFilterParams,
 		setFilter:(header:any,filter:any,filterType?:string,type?:string)=>{
 			console.log('header',header);
 			console.log('filter',filter);
 			console.log('filterType',filterType);
 			console.log('type',type);
 			let filterInstance = this.gridOptions.api.getFilterInstance(header); 
-			let defaultFilterParam=this.stock.daftar[this.activeView].defaultFilterParam;
+			let defaultFilterParams=this.stock.daftar[this.activeView].defaultFilterParams;
 			let temp1:any={};
 			temp1['filter']=filter;
 			if(!filterType){
 				if(filterInstance.filterType) return temp1['filterType']=filterInstance.filterType;
-				temp1['filterType']=defaultFilterParam[header].filterType;
+				temp1['filterType']=defaultFilterParams[header].filterType;
 			} else {
 				temp1['filterType']=filterType;
 			};
 			if(!type){
 				if(filterInstance.type) return temp1['type']=filterInstance.type;
-				temp1['type']=defaultFilterParam[header].type;
+				temp1['type']=defaultFilterParams[header].type;
 			} else {
 				temp1['type']=type;
 			};
+			
+			let filterParams=this.options.data.filterParams;
+			console.log("FILTERPARAMS : ",filterParams);
+			filterParams[this.activeView][header]=temp1;
+			this.misc.setFilterParams(filterParams);
 			filterInstance.setModel(temp1);
 			this.gridOptions.api.onFilterChanged();
 		},
@@ -1013,20 +1023,6 @@ export class StockComponent {
 			console.log("aaa0",this.gridOptions.paginationPageSize=(22*Math.floor((height-navbarHeight)/22)/22));
 		};		
 	};
-	public changeView=(view:string)=>{
-		console.log("===>changeView ",view);
-		console.log("this.stock.daftar[view].colDef ",this.stock.daftar[view].colDef);
-		if(this.activeView!==view)this.activeView=view;
-		
-		
-		this.gridOptions.api?.deselectAll();
-		this.gridOptions.api?.setColumnDefs(this.stock.daftar[view].colDef);
-		this.gridOptions.api?.setFilterModel(this.stock.daftar[view].defaultFilterParam);
-
-	;
-		//console.log("HIDE LOADING : ",	this.gridOptions.api?.hideOverlay());
-		
-	};
 	/// \AG-GRID ///
 	
 	setView=(viewName:string)=>{
@@ -1049,12 +1045,6 @@ export class StockComponent {
 			return x;
 
 		});
-	};
-	public updateData=async(x:any)=>{
-		console.log("UPDATE DATA",x);
-		let returnVal=this.stock.set(x,this.activeView,this.options.data.tableOptions);
-		this.changeView(this.activeView);
-		return returnVal;
 	};
 	postEmbed=(dbName:string,data:any,embedName:string|undefined,id:string|undefined)=>{
 		this.globalService.postEmbedData(dbName,data,embedName,id).subscribe(x=>console.log("do postEmbed, awaiting response..",dbName,data,embedName,id));
@@ -1162,6 +1152,37 @@ export class StockComponent {
 		checkAdm:()=>{
 			return !!GlobalVar.config.adm.find(item=>item===this.user.name);
 		},
+		setFilterParams:(filterObj:any)=>{
+			Object.keys(filterObj).map(pointer=>{
+				this.stock.setFilterParams(filterObj[pointer],pointer);
+			});
+			this.options.setOptions(filterObj,"filterParams");
+		},
+		getDefaultFilterObj:()=>{
+			let returnedVar:any={};
+			Object.entries(GlobalVar.defaultColumnDefs).map((item:any)=>{
+				let pointer=item[0];
+				let data=item[1].defaultFilterParams;
+				returnedVar[pointer]=data;
+				console.log("returnedVar[pointer]=data;",returnedVar[pointer]=data)
+			})
+			return returnedVar;
+		},
+	};
+	public changeView=(view:string)=>{
+		console.log("===>changeView ",view);
+		console.log("this.stock.daftar[view].colDef ",this.stock.daftar[view].colDef);
+		if(this.activeView!==view)this.activeView=view;
+		this.gridOptions.api?.deselectAll();
+		this.gridOptions.api?.setColumnDefs(this.stock.daftar[view].colDef);
+		console.log("this.stock.daftar[view].defaultFilterParam ",this.stock.daftar[view].defaultFilterParams);
+		this.gridOptions.api?.setFilterModel(this.stock.daftar[view].defaultFilterParams);
+	};
+	public updateData=async(x:any)=>{
+		console.log("UPDATE DATA",x);
+		let returnVal=this.stock.set(x,this.activeView,this.options.data.tableOptions);
+		this.changeView(this.activeView);
+		return returnVal;
 	};
 	private getPage=()=>{
 		this.globalService.getData(this.activeView).subscribe((x:any)=>{
@@ -1171,6 +1192,37 @@ export class StockComponent {
 		});
 	};
 	public refreshPage=()=>{
+		console.log("checkDbParity=()=> Start");
+		try{
+			let tableName=this.activeView;
+			let tableData=this.user.getTableData(tableName)
+			console.log("checkDbParity=()=> tableData : ",tableData);
+			if(!tableData||tableData.length<1){
+				this.globalService.getDbKey().subscribe((x:any)=>{
+					console.log("checkDbParity=()=> dbCheckParity Failed");
+					this.setDbKey(x.value);
+					this.getPage();
+				});
+			}else{
+				this.globalService.getDbKey().subscribe((x:any)=>{
+					let clientKey=this.user.getDbKey();
+					let dbKey=x.value;
+					console.log("checkDbParity=()=> dbKey : ",clientKey===dbKey,clientKey,dbKey);
+					if (clientKey===dbKey){
+						console.log("checkDbParity=()=> dbCheckParity Success");
+						this.getPage();
+					}else {
+						console.log("checkDbParity=()=> dbCheckParity Failed");
+						this.setDbKey(x.value);
+						this.getPage();
+					};
+				});
+			};
+		}catch(e){
+			console.log("checkDbParity=()=> dbCheckParity Error : ",e);
+		};
+	};
+	public old_refreshPage=()=>{
 		console.log("checkDbParity=()=> Start");
 		try{
 			let tableName=this.activeView;
