@@ -406,13 +406,13 @@ export class StockComponent {
 	public modal:any={
 		modal_1:{
 			openModal:(modalData:any)=>{
-				this.modal.modal_1.isLoading=true;
+				//this.modal.modal_1.isLoading=true;
 				this.modal.modal_1.data=modalData;
 				this.modal.modal_1.modalRef=this.modalService.open(this.modal_1);
-				this.modal.modal_1.updateTransactionData(modalData);
+				//this.modal.modal_1.updateTransactionData(modalData);
 				
 			},
-			isLoading:true,
+			isLoading:false,
 			updateTransactionData:(modalData:any)=>{
 				this.globalService.getData('transaksi',[modalData.ID_DAFTAR]).subscribe(
 					(x:any)=>{
@@ -425,9 +425,8 @@ export class StockComponent {
 							this.modal.modal_1.grid.columnDefs.map(
 								(item:any)=>
 									Object.assign(item,this.modal.modal_1.grid.defaultColumnDefs)
-							) 
+							)		
 						);
-						
 					}
 				);
 			},
@@ -435,10 +434,32 @@ export class StockComponent {
 				gridOptions:{
 					pagination: true,
 					paginationPageSize:5,	
+					paginationAutoPageSize:true,
 					accentedSort:true,
 					onGridReady:(params:any)=>{
 						console.log("grid Event => onGridReady : ");
-						this.modal.modal_1.isLoading=false;
+						let modalData=this.modal.modal_1.data;
+						//console.log("resize",this.modal.modal_1.grid.gridOptions.columnApi.autoSizeAllColumns());
+						//this.modal.modal_1.isLoading=false;
+						this.globalService.getData('transaksi',[modalData.ID_DAFTAR]).subscribe(
+							(x:any)=>{
+								//this.modal.modal_1.transactionData=x.data;
+								x.data.map((item:any)=>{
+									item.TANGGAL=this.misc.convertDate(item.TANGGAL);
+								});
+								this.modal.modal_1.grid.gridOptions.api.setRowData(x.data);
+								this.modal.modal_1.grid.gridOptions.api.setColumnDefs(
+									this.modal.modal_1.grid.columnDefs.map(
+										(item:any)=>
+											Object.assign(item,this.modal.modal_1.grid.defaultColumnDefs)
+									)		
+								);
+								//this.modal.modal_1.grid.gridOptions.columnApi.sizeColumnsToFit()
+								this.modal.modal_1.grid.gridOptions.columnApi.autoSizeAllColumns();
+							}
+						);
+						
+						
 					},
 					onModelUpdated: (event:any)=>{
 						console.log("grid Event => onModelUpdated : ");
@@ -449,10 +470,12 @@ export class StockComponent {
 					},
 					onFirstDataRendered:(event:any)=>{
 						console.log("grid Event => onFirstDataRendered : ");
-						this.modal.modal_1.grid.gridOptions.columnApi.autoSizeAllColumns();
 					},
 					onColumnVisible:(event:any)=>{
 						console.log("grid Event => onColumnVisible : ");
+					},
+					onViewportChanged:(evet:any)=>{
+						console.log("grid Event => onviewportChanged : ");
 					},
 				},
 				defaultColumnDefs:{
@@ -465,6 +488,7 @@ export class StockComponent {
 					{
 						field:'ID_TRANSAKSI',
 						headerName:'Id',
+						hide:true,
 					},
 					{
 						field:'JUMLAH',
@@ -473,6 +497,8 @@ export class StockComponent {
 					{
 						field:'TANGGAL',
 						headerName:'Tanggal',
+						sort: "desc",
+						autoHeight: true,
 					},	
 					{
 						field:'USER',

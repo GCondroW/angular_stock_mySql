@@ -58,6 +58,7 @@ router.get('/', handleErrorAsync(async(req, res, next)=>{
 router.post('/', handleErrorAsync(async(req, res, next)=>{
 	let params=req.params;
 	let body=req.body;
+	let user=req.get('user')?req.get('user'):'Guest-1';
 	console.log("params ", params);
 	console.log("body ", body);
 	let dbName="TRANSAKSI";
@@ -68,7 +69,7 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 		let currentTime=new Date();
 		console.log("currentTime",currentTime)
 		let q="INSERT INTO TRANSAKSI(JUMLAH,USER,TANGGAL,JENIS,KETERANGAN,ID_DAFTAR) VALUES(?,?,?,?,?,?)";
-		let v=[body.JUMLAH,"SUPER",currentTime,body.JENIS,body.KETERANGAN,body.ID_DAFTAR];
+		let v=[body.JUMLAH,user,currentTime,body.JENIS,body.KETERANGAN,body.ID_DAFTAR];
 		let resVar=await db.preSttQ(q,v);
 		let insertedData=await db.singleQ("SELECT * FROM "+defaultTableName+" WHERE ID_TRANSAKSI="+resVar.insertId);
 		console.log("DEBUG ",resVar);

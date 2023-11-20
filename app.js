@@ -205,7 +205,7 @@ module.exports = app,io;
 	expected=>stock
 	observed=>daftar
 	rep=>do delete all funct from mainOffcanvas ui
--inconsistent transaction table column length format
++inconsistent transaction table column length format
 	expected=>auto adjust
 	observed=>didnt adjust, short, inconsistent
 	rep=>expand transaction modal
