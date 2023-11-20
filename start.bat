@@ -2,7 +2,7 @@ cd /d D:\New folder\XAMP
 start mysql_start.bat
 cd /d D:\New folder\XAMP
 start apache_start.bat
-cd /d d:\api_sql\
+cd /d d:\angular_stock_mySql\
 start cmd /k nodemon start
-cd /d d:\app_angular_jsonServer\
+cd /d d:\angular_stock_mySql\angular
 start cmd /k ng serve
