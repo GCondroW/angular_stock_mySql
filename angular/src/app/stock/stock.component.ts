@@ -880,6 +880,8 @@ export class StockComponent {
 		sortable: true,
 		filter: true,
 		editable:false,
+		//wrapText: true,
+		//autoHeight: true,  
 		getQuickFilterText: function(params) {
 			return params.colDef.hide ? '' : 
 				params.colDef.field!='NAMA' ? '' : params.value; 
@@ -935,10 +937,11 @@ export class StockComponent {
 		paginationAutoPageSize:false,	
 		rowSelection: 'single',
 		rowMultiSelectWithClick:true,
-		paginationPageSize:50,	
+		//paginationPageSize:50,	
 		accentedSort:true,
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
+			window.addEventListener('resize', (event)=>this.adjustTableContainerSize());
 			//this.gridApi=this.gridOptions.api;	
 			//this.gridOptions.api?.setColumnDefs(this.stock.daftar[this.activeView].colDef);
 			//console.log("HIDE LOADING : ",this.gridOptions.api?.hideOverlay());
@@ -947,8 +950,8 @@ export class StockComponent {
 		onFirstDataRendered:(event:any)=>{
 			console.log("grid Event => onFirstDataRendered : ");
 			//console.log("HIDE LOADING : ",	this.gridOptions.api?.hideOverlay());
-			this.gridOptions.columnApi.autoSizeAllColumns();
-			this.adjustTableContainerSize()
+			//this.gridOptions.columnApi.autoSizeAllColumns();
+			
 		},
 		onSelectionChanged:(event: any)=>{
 
@@ -962,7 +965,7 @@ export class StockComponent {
 		onPaginationChanged:(params:any)=>{
 
 		},
-		onRowDataUpdated:(event:any)=>{
+		onRowDataUpdated:async(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
 			/*
 			if(this.activeView==='daftar'){
@@ -976,6 +979,8 @@ export class StockComponent {
 					defaultState: { sort: null },
 				});
 			}*/
+			this.gridOptions.columnApi.autoSizeAllColumns();
+			this.adjustTableContainerSize();
 		},
 		onFilterChanged:(event:any)=>{
 
@@ -984,8 +989,7 @@ export class StockComponent {
 
 		},
 		onModelUpdated: (event:any)=>{
-			this.gridOptions.columnApi.autoSizeAllColumns();
-			this.adjustTableContainerSize()
+
 			
 		},
 		onComponentStateChanged:(event:any)=>{
@@ -993,8 +997,8 @@ export class StockComponent {
 		},
 		onColumnVisible:(event:any)=>{
 			console.log("grid Event => onColumnVisible : ");
-			this.gridOptions.columnApi.autoSizeAllColumns();
-			this.adjustTableContainerSize()
+			//this.gridOptions.columnApi.autoSizeAllColumns();
+			//this.adjustTableContainerSize()
 		},
 		onRowDoubleClicked:(event:any)=>{
 			console.log("grid Event => onRowDoubleClicked : ");
@@ -1005,7 +1009,7 @@ export class StockComponent {
 	public tableContainerStyle:{width:string,height:string}={width:'auto',height:'0px'};
 	public adjustTableContainerSize=()=>{
 		console.log("dataTable event => this.adjustContainerSize()");
-		let navbarHeight=document.getElementById("navbarId")?.clientHeight;
+		let navbarHeight=document.getElementById("mainNavbar")?.clientHeight;
 		if(navbarHeight===undefined)navbarHeight=0;
 		////////////////////////////////////////////
 		let container=document.getElementById("gridTable")!;
@@ -1021,6 +1025,8 @@ export class StockComponent {
 		let scrollBarRect=scrollBar?.getBoundingClientRect();
 		let scrollBarRectWidth=scrollBarRect?.width;
 		scrollBarRectWidth=15
+		
+		let wrapper1=document.getElementById("wrapper1")?.clientHeight;
 		//////////////////////////////////////////////
 		if(!!innerTable){
 			let innerTableWidth=innerTable.getBoundingClientRect().width;
@@ -1032,21 +1038,26 @@ export class StockComponent {
 				width="auto";
 			}else{
 				if(innerTableWidth===0) width='50%'
-				else width=(innerTableRectRight+scrollBarRectWidth)+"px";
+				//else width=(innerTableRectRight+scrollBarRectWidth)+"px";
+				else width=(innerTableRect.width+scrollBarRectWidth)+"px";
 			};
 			let marginBottom:number=0;
-			let tempHeight=(window.innerHeight-containerRectTop+window.scrollY)+marginBottom;
-			height=22*Math.floor(tempHeight/22)+11;
+			let tempHeight=(window.innerHeight-navbarHeight);
+			//let tempHeight=(window.innerHeight-containerRectTop+window.scrollY)+marginBottom;
+			
+			height=22*Math.floor(tempHeight/22);
 			let temp={
 				width:width,
 				height:height+'px',
 			};
 			if(JSON.stringify(this.tableContainerStyle)===JSON.stringify(temp))return
 			this.tableContainerStyle=temp;
-			console.log("innerTableRectRight",innerTableRectRight);
-			console.log("scrollBarRectWidth",scrollBarRectWidth);
-			console.log("tableWidth",width);
-			console.log("aaa0",this.gridOptions.paginationPageSize=(22*Math.floor((height-navbarHeight)/22)/22));
+			//console.log("height ",height);
+			//console.log("22*Math.floor((height-navbarHeight)",Math.floor(((height-navbarHeight)/22)-1));
+			console.log("navbarHeight => ",navbarHeight);
+			console.log("tempHeight => ",tempHeight);
+			console.log("window.innerHeight => ",window.innerHeight);
+			console.log("aaa0",this.gridOptions.api.paginationSetPageSize(Math.floor(((height-navbarHeight)/22)-1)));
 		};		
 	};
 	/// \AG-GRID ///

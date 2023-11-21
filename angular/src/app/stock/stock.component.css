@@ -13,3 +13,12 @@ dynamic-hide{
 	
 	hidden:true;
 }
+
+#mainNavbar{
+
+}
+
+#flexWrapper{
+	justify-content: center;
+	display: flex;
+}
