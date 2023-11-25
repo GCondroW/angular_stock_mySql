@@ -2,79 +2,71 @@
 
 >
 	<div id="flexWrapper">
-		<div id="wrapper1">
-		<nav id="mainNavbar" class="m-0 p-1 navbar sticky-top navbar-light bg-light"
-			[style.width]="tableContainerStyle.width" 
-			[style.min-width]="'50%'" 
+		<div id="wrapper1"
+
 		>
-			<div class="container-fluid px-1">
-				<div class="d-flex">
-				<div class="d-flex">
-					<button 
-						class="float-start btn btn-outline-secondary btn-sm" 
-						(click)="_offCanvas.open(mainOffcanvasContent)" type="button"
-					>=</button>
-					<div ngbDropdown class="float-start ms-1">
-						<button ngbDropdownToggle class="btn btn-secondary btn-sm dropdown-toggle" type="button">
-							{{activeView|titlecase}}
-						</button>
-						<div ngbDropdownMenu class="dropdown-menu">
-							<button 
-								ngbDropdownItem
-								*ngFor="let a of Object.keys(stock.daftar)"
-								(click)="setView(a)"
-								type="button"
-							>
-								{{a|titlecase}}
+			<nav id="mainNavbar" class="m-0 p-1 navbar sticky-top navbar-light bg-light"
+				
+			>
+				<div class="container px-1">
+					<div>
+						<button 
+							class="float-start btn btn-outline-secondary btn-sm" 
+							(click)="_offCanvas.open(mainOffcanvasContent)" type="button"
+						>=</button>
+						<div ngbDropdown class="float-start ms-1">
+							<button ngbDropdownToggle class="btn btn-secondary btn-sm dropdown-toggle" type="button">
+								{{activeView|titlecase}}
 							</button>
-						</div>
-					</div>		
-					<!-- OPERATION MODE -->
-	<!--				
-					<div ngbDropdown class="float-start ms-1"> 
-						<button ngbDropdownToggle class="btn  btn-secondary btn-sm dropdown-toggle" type="button">
-							{{operation.active|titlecase}}
-							<!--{{misc.toUpperCase(operation.active)}}--><!--
-						</button>
-						<div ngbDropdownMenu class="dropdown-menu">
-							<button 
-								ngbDropdownItem
-								*ngFor="let operationPointer of Object.keys(operation.mode)"
-								(click)="operation.changeOperation(operationPointer)"
-								type="button"
-							>
-								{{operationPointer|titlecase}}
+							<div ngbDropdownMenu class="dropdown-menu">
+								<button 
+									ngbDropdownItem
+									*ngFor="let a of Object.keys(stock.daftar)"
+									(click)="setView(a)"
+									type="button"
+								>
+									{{a|titlecase}}
+								</button>
+							</div>
+						</div>		
+						<!-- OPERATION MODE -->
+		<!--				
+						<div ngbDropdown class="float-start ms-1"> 
+							<button ngbDropdownToggle class="btn  btn-secondary btn-sm dropdown-toggle" type="button">
+								{{operation.active|titlecase}}
+								<!--{{misc.toUpperCase(operation.active)}}--><!--
 							</button>
-						</div>
-					</div>	
-	-->				
-					<button
-						class="btn-sm"
-						*ngIf="gridOptions.api?.getSelectedRows().length>0 && operation.active==='delete'"
-						(click)="console.log('delete :',operation.mode.delete.deleteFunction(gridOptions.api.getSelectedRows()))"
-					>
-						Delete
-					</button>
-				</div>			
-				<div class="d-flex">
-					<input 
-						class="form-control form-control-sm me-1" 
-						type="search" 
-						placeholder="Cari.." 
-						aria-label="Search"
-						(input)="filter.search($event)"
-					>
-					<button 
-						class="btn btn-outline-secondary btn-sm" 
-						type="button"
-						(click)="_offCanvas.open(filterOffcanvassContent)" 
-					>
-						Filter
-					</button>
+							<div ngbDropdownMenu class="dropdown-menu">
+								<button 
+									ngbDropdownItem
+									*ngFor="let operationPointer of Object.keys(operation.mode)"
+									(click)="operation.changeOperation(operationPointer)"
+									type="button"
+								>
+									{{operationPointer|titlecase}}
+								</button>
+							</div>
+						</div>	
+		-->		
+					</div>
+					<div class="d-flex">
+						<input 
+							class="form-control form-control-sm me-1" 
+							type="search" 
+							placeholder="Cari.." 
+							aria-label="Search"
+							(input)="filter.search($event)"
+						>
+						<button 
+							class="btn btn-outline-secondary btn-sm" 
+							type="button"
+							(click)="_offCanvas.open(filterOffcanvassContent)" 
+						>
+							Filter
+						</button>
+					</div>
 				</div>
-				</div>
-			</div>
-		</nav>
+			</nav>
 
 		<div id="gridTable"
 			[style.width]="tableContainerStyle.width"

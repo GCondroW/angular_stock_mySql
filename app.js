@@ -63,7 +63,7 @@ let corsOptions={
 //app.set('view engine', 'jade');
 app.use(cors(corsOptions));
 app.use(logger('dev'));
-app.use(express.json());
+app.use(express.json({limit:'8mb'}));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -216,6 +216,8 @@ module.exports = app,io;
 </minor bug>
 
 <improvement>
+-Close button for offCancass
+	Accessibility
 +Persistent server localStorage (API server)
 	Store var that could be persisted such as dbKey in case server offline mid runtime 
 -Better ag-grid (table) ui solution

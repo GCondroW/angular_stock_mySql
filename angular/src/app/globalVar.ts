@@ -439,9 +439,12 @@ export const GlobalVar = {
 					field: "NAMA",
 					sort: "asc",
 					autoHeight: true,
-				},			{
-					field: "SUPPLIER",
-					hide: true,
+				},
+				{
+					field: "STOCK",
+					editable:false,
+					filter:"agNumberColumnFilter",
+					type:"numericColumn",
 					autoHeight: true,
 				},
 				{
@@ -453,16 +456,15 @@ export const GlobalVar = {
 					autoHeight: true,
 				},
 				{
-					field: "KATEGORI",
+					field: "SUPPLIER",
+					hide: true,
 					autoHeight: true,
 				},
 				{
-					field: "STOCK",
-					editable:false,
-					filter:"agNumberColumnFilter",
-					type:"numericColumn",
+					field: "KATEGORI",
 					autoHeight: true,
 				},
+
 				
 			],
 		},

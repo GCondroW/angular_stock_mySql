@@ -53,6 +53,7 @@ export class StockComponent {
 		{corsConfig:this.localOptions.corsConfig}
 		:
 		{corsConfig:GlobalVar.config.defaultValue.cors};
+
 	public options=new GlobalVar.options(Object.assign(this.localTableOptions,Object.assign(this.localActiveViewOptions,this.corsConfig)));
 	public activeView:any="";
 	private fb : FormBuilder = inject(FormBuilder);
@@ -863,8 +864,8 @@ export class StockComponent {
 		postExcel:(dbName:string,data:any)=>{
 			this.gridOptions.api?.showLoadingOverlay();
 			this.globalService.excelHandler(data).then(x=>{
-				let url=this.options.data.corsConfig.url;
-				this.globalService.postExcel(url+"/stock/excelupload",x).subscribe(y=>{
+				let url=new URL ("stock/excelupload",this.options.data.corsConfig.url);
+				this.globalService.postExcel(url.toString(),x).subscribe(y=>{
 					console.log(y)
 					console.log(y.status)
 				})
@@ -1243,7 +1244,7 @@ export class StockComponent {
 			}else{
 				this.globalService.getDbKey().subscribe((x:any)=>{
 					let clientKey=this.user.getDbKey();
-					let dbKey=x.value;
+					let dbKey=Number(x.value);
 					console.log("checkDbParity=()=> dbKey : ",clientKey===dbKey,clientKey,dbKey);
 					if (clientKey===dbKey){
 						console.log("checkDbParity=()=> dbCheckParity Success");
