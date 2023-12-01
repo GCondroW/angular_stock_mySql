@@ -1,6 +1,7 @@
 import { NgModule, ErrorHandler } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
+import { APP_BASE_HREF } from "@angular/common";
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
@@ -50,20 +51,24 @@ const config: SocketIoConfig = { url: corsConfig.url, options:corsConfig.options
     StockComponent,
   ],
   imports: [
-    BrowserModule,
-	SocketIoModule.forRoot(config),
+  	BrowserModule,
+		SocketIoModule.forRoot(config),
     AppRoutingModule,
-	HttpClientModule,
-	AgGridModule,
-	ReactiveFormsModule,
-	NgbModule,
+		HttpClientModule,
+		AgGridModule,
+		ReactiveFormsModule,
+		NgbModule,
   ],
   providers: [
-	GlobalService,
+		GlobalService,
 		{
-		provide:ErrorHandler,
-		useClass:GlobalErrorHandlerService ,
-		}
+			provide:ErrorHandler,
+			useClass:GlobalErrorHandlerService ,
+		},
+		{
+			provide: APP_BASE_HREF,
+			useValue: "/" + (window.location.pathname.split("/")[1] || ""),
+		},
 	],
   bootstrap: [AppComponent]
 })

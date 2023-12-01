@@ -10,7 +10,12 @@ var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
 
 let portNumber=3420;
-let originArr=['http://localhost:4200',"https://gcondrow.github.io"];
+let originArr=[
+	"http://localhost:4200",
+	"http://localhost:3420",
+	"https://gcondrow.github.io",
+	"http://192.168.1.111:3420"
+];
 
 var app = express();
 
@@ -77,7 +82,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 	};
 });*/
 //app.use(express.static(path.join(__dirname + '/dist/app-angular-json-server/')));
-app.get('*.*',express.static(path.join(__dirname + '/dist/app-angular-json-server/')));
+app.get('*.*',express.static(path.join(__dirname + '/dist/')));
 app.use('/key/:c?',function(req, res, next) {
 	let debug=true;
 	if (debug===true){
@@ -90,8 +95,6 @@ app.use('/key/:c?',function(req, res, next) {
 let middlewareArr=[
 	(req,res,next)=>{
 		console.log("MIDDLEWARE 1");
-		req.app.io=io;
-		req.app.dbKey=dbKey;
 		console.log("REQ QUERY : ",req.query);
 		console.log("REQ PARAM : ",req.params);
 		next();
@@ -111,7 +114,6 @@ let middlewareArr=[
 	},
 ];
 
-app.use('/ag', agRouter);
 app.use('/clearStorage',(req,res,next)=>{
 	let debug=true;
 	let testVar;
@@ -137,6 +139,25 @@ app.use('/localStorage',(req,res,next)=>{
 	res.json({dbKey:dbKey});
 });
 
+app.use((req,res,next)=>{
+	req.app.io=io;
+	req.app.dbKey=dbKey;
+	next();
+})
+
+app.use('/ag', agRouter);
+app.get('/:path?',(req,res,next)=>{
+	//res.json({path:req.params.path});
+	let path=req.params.path;
+	console.log("path",path);
+	if(!path)res.redirect('/ag');
+	
+	next()
+});
+
+
+
+
 app.use(middlewareArr,(req,res,next)=>{
 	console.log("middleware");
 	next();
@@ -155,6 +176,7 @@ app.use('/dbParity/',function(req, res, next) {
 	};
 	res.json(dbParity);
 });
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

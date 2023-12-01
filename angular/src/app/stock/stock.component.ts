@@ -14,6 +14,7 @@ import { GlobalValidator } from '../shared/formValidator';
 import { ColDef } from 'ag-grid-community';
 import { Socket } from 'ngx-socket-io';
 
+
 @Component({
   selector: 'app-stock',
   templateUrl: './stock.component.html',
@@ -922,6 +923,8 @@ export class StockComponent {
 			let filterParams=this.options.data.filterParams;
 			console.log("FILTERPARAMS : ",filterParams);
 			filterParams[this.activeView][header]=temp1;
+			console.log("debug1",JSON.parse(JSON.stringify(filterParams[this.activeView][header])));
+			console.log("debug2",temp1);
 			this.misc.setFilterParams(filterParams);
 			filterInstance.setModel(temp1);
 			this.gridOptions.api.onFilterChanged();
@@ -1101,7 +1104,6 @@ export class StockComponent {
 		if(!!confirmed){
 			this.misc.loadingWrapper(
 				()=>{
-					let temp=this.gridOptions.rowData;
 					this.globalService.deleteData(dbName,idArr).subscribe({
 						next:(x)=>{
 							console.log("DELETE_NEXT");
@@ -1160,11 +1162,10 @@ export class StockComponent {
 			console.log("columnName",columnName);
 			console.log("value",value);
 			let tableOptions=this.options.data.tableOptions;
-			console.log(tableOptions)
+			console.log(tableOptions);
 			tableOptions[this.activeView].columnDefs.find((item:any)=>item.field===columnName).hide=value;
 			console.log('tableOptions',tableOptions);
 			this.options.setOptions(tableOptions,'tableOptions');
-
 		},
 		toUpperCase:(x:string)=>{
 			let temp="";

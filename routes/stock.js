@@ -58,9 +58,10 @@ router.delete('/', handleErrorAsync(async(req, res, next)=>{
 	let tempStr='';
 	let q=[];
 	let params=req.params;
+	let idFromBody=req.body.id?req.body.id:"";
 	//let dbName=params.dbName;
 	let query=req.query;
-	let id=!!query.id?query.id:"";
+	let id=!!query.id?query.id:idFromBody;
 	if(!id)throw new Error("ID_NEEDED");
 	let idArray=JSON.parse("["+id+"]");
 	let temp=await db.multQ([
@@ -107,25 +108,26 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 	data.map(item=>item.SUPPLIER).forEach(item=>
 		item!=""?
 		q_SUPPLIER.add(
-			`(SELECT id_supplier FROM supplier WHERE nama ='`+item+`' ),'`+item+`'`
+			`(SELECT id_supplier FROM supplier WHERE nama ="`+item+`"),"`+item+`"`
 		)
 		:""
 	);
+	console.log("q_xupplier",q_SUPPLIER.value);
 	let q_DAFTAR=new qValues();
 	data.forEach(item=>{
 		q_DAFTAR.add(
 			"NULL,"+	
-			"'"+item.NAMA+"',"+	
-			"'"+item.QTY+"',"+
-			"'"+item.STN+"',"+
-			"'"+item.KATEGORI+"',"+
-			"(SELECT id_supplier FROM supplier where nama ='"+item.SUPPLIER+"'),"+
+			"\""+item.NAMA+"\","+	
+			"\""+item.QTY+"\","+
+			"\""+item.STN+"\","+
+			"\""+item.KATEGORI+"\","+
+			"(SELECT id_supplier FROM supplier where nama =\""+item.SUPPLIER+"\"'),"+
 			"'NULL',"+
-			"'"+item.CTN+"',"+
-			"'"+user+"',"+
+			"\""+item.STOCK+"\","+
+			"\""+user+"\","+
 			"(SELECT NOW()),"+
-			"'AWAL',"+
-			"'STOCK AWAL'"
+			"\"AWAL\","+
+			"\"STOCK AWAL\""
 		);
 	});
 	let q=[];
@@ -224,7 +226,7 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 			stock_view_1.STOCK
 		FROM stock_view_1 RIGHT JOIN TEMP_TABLE on stock_view_1.ID_DAFTAR=TEMP_TABLE.ID_DAFTAR;`
 	]
-	//console.log("SQL QUERY : ",q);
+	console.log("SQL QUERY : ",q);
 	//console.log("q_DAFTAR : ",q_DAFTAR.values);
 	let resVar=await db.multQ(q);
 	resVar.map(item=>item.STOCK=Number(item.STOCK));
@@ -312,7 +314,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	data.map(item=>item.SUPPLIER).forEach(item=>
 		item!=""?
 		q_SUPPLIER.add(
-			`(SELECT id_supplier FROM supplier WHERE nama ='`+item+`' ),'`+item+`'`
+			`(SELECT id_supplier FROM supplier WHERE nama ="`+item+'" ),"'+item+`"`
 		)
 		:""
 	);
@@ -326,13 +328,15 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			"'"+item.KATEGORI+"',"+
 			"(SELECT id_supplier FROM supplier where nama ='"+item.SUPPLIER+"'),"+
 			"'NULL',"+
-			"'"+item.CTN+"',"+
+			"'"+item.STOCK+"',"+
 			"'"+user+"',"+
 			"(SELECT NOW()),"+
 			"'AWAL',"+
 			"'STOCK AWAL'"
 		);
+
 	});
+	console.log(q_DAFTAR.value);
 	let q=[];
 	q=[
 		"use "+defaultDbName+";",

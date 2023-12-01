@@ -5,6 +5,7 @@ import { StockComponent } from './stock/stock.component';
 import { ImportComponent } from './import/import.component';
 import { DaftarComponent } from './daftar/daftar.component';
 
+
 const defaultHomeRoutes=StockComponent;
 const dynamicRoutes: Routes = [
 	{path :"" , component : defaultHomeRoutes},
