@@ -72,6 +72,7 @@
 			[style.width]="tableContainerStyle.width"
 			[style.height]="tableContainerStyle.height"
 			[style.min-width]="'50%'"
+
 		>
 			<!-- <ng-container *ngIf="stock.raw;then dataTable; else emptyDataElement"></ng-container> -->
 			<app-data-table 
@@ -98,11 +99,19 @@
 	-->
 </div>
 
-<ng-template #mainOffcanvasContent>
+<ng-template #mainOffcanvasContent let-settingCanvas>
+	<div class="offcanvas-header">
+		<button type="button" class="btn-close ms-auto" (click)="settingCanvas.dismiss('Cross click')" aria-label="Close"></button>
+		<!--
+		<button type="button" class="" (click)="gridOptions.api.sizeColumnsToFit ()" aria-label="Close">[]</button>
+		-->
+	</div>
 	<div class="container-fluid mb-1">
+		<!--
 		<app-navigation 
 			[pages]="navigationPages"
 		></app-navigation>
+		-->
 		<div class="row">
 			<div class="col">
 				<app-upload 
@@ -171,9 +180,13 @@
 		<span>{{version}}</span>
 	</div>
 </ng-template>
-<ng-template #filterOffcanvassContent>
-	<div *ngIf="activeView==='stock'" class="container-fluid">
+<ng-template #filterOffcanvassContent let-filterCanvas>
+	<div class="offcanvas-header">
 		<h3>Filter</h3>
+		<button type="button" class="btn-close ms-auto" (click)="filterCanvas.dismiss('Cross click')" aria-label="Close"></button>
+	</div>
+	<div *ngIf="activeView==='stock'" class="container-fluid">
+
 		<button (click)="gridOptions.api.setFilterModel(filter.getDefaultFilterParam())">Reset</button>
 		<hr>
 		<div class="row mb-1">

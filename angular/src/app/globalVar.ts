@@ -432,39 +432,32 @@ export const GlobalVar = {
 			columnDefs:[
 				{
 					field: "ID_DAFTAR",
-					hide: true,
-					autoHeight: true,			
+					hide: true,		
 				},
 				{
 					field: "NAMA",
 					sort: "asc",
-					autoHeight: true,
-				},
-				{
-					field: "STOCK",
-					editable:false,
-					filter:"agNumberColumnFilter",
-					type:"numericColumn",
-					autoHeight: true,
 				},
 				{
 					field: "QTY",
-					autoHeight: true,
 				},
 				{
 					field: "STN",
-					autoHeight: true,
 				},
 				{
 					field: "SUPPLIER",
 					hide: true,
-					autoHeight: true,
 				},
 				{
 					field: "KATEGORI",
-					autoHeight: true,
 				},
-
+				{
+					field: "STOCK",
+					//filter:"agNumberColumnFilter",
+					type:"numericColumn",
+					pinned:"right",
+					suppressMovable:true,
+				},
 				
 			],
 		},

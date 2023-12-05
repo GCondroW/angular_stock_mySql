@@ -880,10 +880,10 @@ export class StockComponent {
 	public defaultColDef: ColDef = {
 		resizable:true,
 		sortable: true,
-		filter: true,
+		//filter: true,
 		editable:false,
 		//wrapText: true,
-		//autoHeight: true,  
+		autoHeight: true,  
 		getQuickFilterText: function(params) {
 			return params.colDef.hide ? '' : 
 				params.colDef.field!='NAMA' ? '' : params.value; 
@@ -934,6 +934,7 @@ export class StockComponent {
 			return this.gridOptions.api.setQuickFilter(event.target.value);
 		},
 	};
+
 	public gridOptions:any= {
 		rowData:null,
 		columnDefs:[],
@@ -983,7 +984,8 @@ export class StockComponent {
 					defaultState: { sort: null },
 				});
 			}*/
-			this.gridOptions.columnApi.autoSizeAllColumns();
+			//this.gridOptions.columnApi.autoSizeAllColumns();
+			//this.gridOptions.api.sizeColumnsToFit()
 			this.adjustTableContainerSize();
 		},
 		onFilterChanged:(event:any)=>{
@@ -1002,7 +1004,7 @@ export class StockComponent {
 		onColumnVisible:(event:any)=>{
 			console.log("grid Event => onColumnVisible : ");
 			//this.gridOptions.columnApi.autoSizeAllColumns();
-			//this.adjustTableContainerSize()
+			this.adjustTableContainerSize()
 		},
 		onRowDoubleClicked:(event:any)=>{
 			console.log("grid Event => onRowDoubleClicked : ");

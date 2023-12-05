@@ -245,4 +245,10 @@ module.exports = app,io;
 -Better ag-grid (table) ui solution
 	as of now table is auto adjusting length everytime rowData is updated, caused issue when doing navigation throught pagination
 </improvement>
+
+<hosting>
+	my.hostnic.id/
+	cwtest.biz.id 
+</hosting>
+
 */
