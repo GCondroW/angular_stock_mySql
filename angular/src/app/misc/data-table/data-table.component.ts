@@ -23,6 +23,5 @@ export class DataTableComponent implements OnInit {
 	@Input() testFunct:any;
 	@Input() overlayLoadingTemplate?:any|null;
 	@Input() overlayNoRowsTemplate?:any;			
-				
 	public modalIsActive=false;
 }

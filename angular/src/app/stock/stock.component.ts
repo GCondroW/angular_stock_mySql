@@ -22,6 +22,7 @@ import { Socket } from 'ngx-socket-io';
 })
 
 export class StockComponent {
+	public fDebug:boolean=false;
 	public version:string="0.18.0"
 	private globalService:GlobalService=inject(GlobalService);
 	private dbKey=GlobalVar.dbKey;
@@ -62,6 +63,7 @@ export class StockComponent {
 	public debugThis:any='';
 	public lastRequest:any;
 	public temp:any=[];
+	public defaultFIlterParam:{[index:string]:any}={};
 	public operation:any={
 		mode:{
 			view:{
@@ -129,12 +131,13 @@ export class StockComponent {
 				this.options.setOptions(this.activeView,"activeView");
 		};
 		let localDefaultFilterObj=this.localOptions.filterParams;
-		console.log("localDefaultFilterObj",localDefaultFilterObj)
+		console.log("localDefaultFilterObj",localDefaultFilterObj);
 		this.misc.setFilterParams(
 			localDefaultFilterObj?
 			localDefaultFilterObj:
 			this.misc.getDefaultFilterObj()
 		);
+		console.log("localDefaultFilterObj",this.options.data.filterParams);
 		this.globalService.setHeaders("user",this.user.name);
 	};
 	
@@ -156,12 +159,13 @@ export class StockComponent {
 						dbKey:this.user.getDbKey(),
 					};
 					this.socket.emit("login",clientData,(response:any)=>{
-						if(!!response.success&&!!this.user.getTableData(this.activeView)){
-							console.log("LOGIN SUCCESS = > ",response);
-							this.updateData(this.user.getTableData(this.activeView));
+						let tableData=this.user.getTableData(this.activeView);
+						if(!!response.success&&!!tableData){
+							//console.log("LOGIN SUCCESS = > ",response);
+							this.updateData(tableData);
 						}else{
-							console.log("LOGIN FAILED = > ",response);
-							console.log("response.dbKey",response.dbKey)
+							//console.log("LOGIN FAILED = > ",response);
+							//console.log("response.dbKey",response.dbKey)
 							this.refreshPage();
 						};
 					});
@@ -880,15 +884,16 @@ export class StockComponent {
 	public defaultColDef: ColDef = {
 		resizable:true,
 		sortable: true,
-		//filter: true,
+		filter: true,
 		editable:false,
+		suppressMenu: true,
 		//wrapText: true,
 		autoHeight: true,  
 		getQuickFilterText: function(params) {
 			return params.colDef.hide ? '' : 
 				params.colDef.field!='NAMA' ? '' : params.value; 
-		}
-	};	
+		},
+	};
 	public getAllAgGridRows=()=>{
 		this.gridOptions.api.selectAll();
 		let returnVar=this.gridOptions.api.getSelectedRows();
@@ -897,14 +902,31 @@ export class StockComponent {
 	};
 	public filter:any={
 		getCurrentFilter:()=>this.gridOptions.api.getFilterModel(),
-		getDefaultFilterParam:()=>this.stock.daftar[this.activeView].defaultFilterParams,
+		getDefaultFilterParams:()=>{
+			let returnedVar:any={};
+			Object.entries(GlobalVar.defaultColumnDefs).map((item:any)=>{
+				let pointer=item[0];
+				let data=item[1].defaultFilterParams;
+				returnedVar[pointer]=data;
+				console.log("returnedVar[pointer]=data;",returnedVar[pointer]=data)
+			});
+			return returnedVar;
+		},
+		setDefaultFilter:(colName:string)=>{
+			let defaultFilterParams=this.misc.copy(this.filter.getDefaultFilterParams());
+			console.log("this.filter.getDefaultFilterParams();",defaultFilterParams);
+			this.misc.setFilterParams(defaultFilterParams);
+			this.gridOptions.api.setFilterModel(defaultFilterParams[this.activeView]);
+			//this.gridOptions.api.onFilterChanged();
+		},
 		setFilter:(header:any,filter:any,filterType?:string,type?:string)=>{
+			console.log("getCurrentFilter().STOCK?.filter",this.filter.getCurrentFilter().STOCK?.filter);
 			console.log('header',header);
 			console.log('filter',filter);
 			console.log('filterType',filterType);
 			console.log('type',type);
 			let filterInstance = this.gridOptions.api.getFilterInstance(header); 
-			let defaultFilterParams=this.stock.daftar[this.activeView].defaultFilterParams;
+			let defaultFilterParams=this.misc.copy(this.filter.getDefaultFilterParams());
 			let temp1:any={};
 			temp1['filter']=filter;
 			if(!filterType){
@@ -919,12 +941,12 @@ export class StockComponent {
 			} else {
 				temp1['type']=type;
 			};
-			
 			let filterParams=this.options.data.filterParams;
 			console.log("FILTERPARAMS : ",filterParams);
 			filterParams[this.activeView][header]=temp1;
 			console.log("debug1",JSON.parse(JSON.stringify(filterParams[this.activeView][header])));
 			console.log("debug2",temp1);
+			console.log("filterInstance",filterInstance);
 			this.misc.setFilterParams(filterParams);
 			filterInstance.setModel(temp1);
 			this.gridOptions.api.onFilterChanged();
@@ -934,9 +956,9 @@ export class StockComponent {
 			return this.gridOptions.api.setQuickFilter(event.target.value);
 		},
 	};
-
 	public gridOptions:any= {
 		rowData:null,
+		suppressCellFocus:true,
 		columnDefs:[],
 		pagination: true,
 		paginationAutoPageSize:false,	
@@ -947,15 +969,11 @@ export class StockComponent {
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
 			window.addEventListener('resize', (event)=>this.adjustTableContainerSize());
-			//this.gridApi=this.gridOptions.api;	
-			//this.gridOptions.api?.setColumnDefs(this.stock.daftar[this.activeView].colDef);
-			//console.log("HIDE LOADING : ",this.gridOptions.api?.hideOverlay());
-			//this.gridOptions.api?.showLoadingOverlay();
 		},
 		onFirstDataRendered:(event:any)=>{
 			console.log("grid Event => onFirstDataRendered : ");
-			//console.log("HIDE LOADING : ",	this.gridOptions.api?.hideOverlay());
-			//this.gridOptions.columnApi.autoSizeAllColumns();
+			this.gridOptions.columnApi.autoSizeAllColumns();
+			this.adjustTableContainerSize();
 			
 		},
 		onSelectionChanged:(event: any)=>{
@@ -972,39 +990,23 @@ export class StockComponent {
 		},
 		onRowDataUpdated:async(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
-			/*
-			if(this.activeView==='daftar'){
-				this.gridOptions.columnApi.applyColumnState({
-					state: [{ colId: 'nama', sort: 'asc' }],
-					defaultState: { sort: null },
-				});
-			}else if(this.activeView==='transaksi'){
-				this.gridOptions.columnApi.applyColumnState({
-					state: [{ colId: 'tanggal', sort: 'desc' }],
-					defaultState: { sort: null },
-				});
-			}*/
-			//this.gridOptions.columnApi.autoSizeAllColumns();
-			//this.gridOptions.api.sizeColumnsToFit()
-			this.adjustTableContainerSize();
 		},
 		onFilterChanged:(event:any)=>{
-
+			console.log("grid Event => onFilterChanged : ");
 		},
 		onColumnResized: (event:any) => {
-
+			this.adjustTableContainerSize();
 		},
 		onModelUpdated: (event:any)=>{
 
-			
 		},
 		onComponentStateChanged:(event:any)=>{
 
 		},
 		onColumnVisible:(event:any)=>{
 			console.log("grid Event => onColumnVisible : ");
-			//this.gridOptions.columnApi.autoSizeAllColumns();
-			this.adjustTableContainerSize()
+			this.gridOptions.columnApi.autoSizeAllColumns();
+			this.adjustTableContainerSize();
 		},
 		onRowDoubleClicked:(event:any)=>{
 			console.log("grid Event => onRowDoubleClicked : ");
@@ -1013,6 +1015,9 @@ export class StockComponent {
 	};
 	public gridApi:any;//initialize at gridOptions.onGridReady
 	public tableContainerStyle:{width:string,height:string}={width:'auto',height:'0px'};
+	public adjustTableContainerHeight=()=>{
+	
+	};
 	public adjustTableContainerSize=()=>{
 		console.log("dataTable event => this.adjustContainerSize()");
 		let navbarHeight=document.getElementById("mainNavbar")?.clientHeight;
@@ -1022,7 +1027,7 @@ export class StockComponent {
 		let containerRect=container.getBoundingClientRect();
 		let containerRectTop=containerRect.top;
 		////////////////////////////////////////////
-		let innerTable=document.querySelectorAll('[Class=ag-center-cols-container]')[0];
+		let innerTable=document.querySelectorAll('[class="ag-theme-alpine"]')[0];
 		let innerTableRect=innerTable?.getBoundingClientRect();
 		let innerTableRectRight:number=0;;
 		if(!!innerTableRect?.right)innerTableRectRight=innerTableRect.right;
@@ -1030,31 +1035,37 @@ export class StockComponent {
 		let scrollBar=document.querySelectorAll('[Class=ag-body-vertical-scroll-viewport]')[0];
 		let scrollBarRect=scrollBar?.getBoundingClientRect();
 		let scrollBarRectWidth=scrollBarRect?.width;
-		scrollBarRectWidth=15
-		
+		//scrollBarRectWidth=0
+		let horizontalScrolbarBuffer=10;
+		let pinnedColumn=["STOCK",'NAMA'];
+		//let pinnedColumnTotalWidth=this.misc.getPinnedColumnWidth(pinnedColumn);
+
+		let allColumnWidth=this.gridOptions.columnApi.getColumns().map((item:any)=>{
+			let temp=item.colDef;
+			console.log("item.colDef",item.colDef);
+			if(!!item.visible)return item.getActualWidth();
+			return 0;
+		}).reduce((a:number,b:number)=>a+b,0);
 		let wrapper1=document.getElementById("wrapper1")?.clientHeight;
+		console.log("allColumnWidth",allColumnWidth);
 		//////////////////////////////////////////////
 		if(!!innerTable){
 			let innerTableWidth=innerTable.getBoundingClientRect().width;
 			let windowWidth=window.innerWidth;
 			let width="50%";
 			let height:any="100%";
-			console.log("innerTableWidth>=windowWidth",innerTableWidth,windowWidth)
-			if(innerTableWidth>=windowWidth){
-				width="auto";
+			if(allColumnWidth>=windowWidth){
+				width=(windowWidth-20).toString()+'px';
 			}else{
-				if(innerTableWidth===0) width='50%'
+				if(allColumnWidth===0) width='100%'
 				//else width=(innerTableRectRight+scrollBarRectWidth)+"px";
-				else width=(innerTableRect.width+scrollBarRectWidth)+"px";
+				else width=(allColumnWidth+scrollBarRectWidth+horizontalScrolbarBuffer).toString()+'px';
 			};
-			let marginBottom:number=0;
-			let tempHeight=(window.innerHeight-navbarHeight);
-			//let tempHeight=(window.innerHeight-containerRectTop+window.scrollY)+marginBottom;
-			
+			let tempHeight=(window.innerHeight-navbarHeight);		
 			height=22*Math.floor(tempHeight/22);
 			let temp={
 				width:width,
-				height:height+'px',
+				height:height+horizontalScrolbarBuffer+'px',
 			};
 			if(JSON.stringify(this.tableContainerStyle)===JSON.stringify(temp))return
 			this.tableContainerStyle=temp;
@@ -1121,52 +1132,15 @@ export class StockComponent {
 			);
 		};
 	};
-	old_delete=(data:any,dbName?:string,embedName?:string|undefined)=>{
-		if(!Array.isArray(data))throw new Error ('Expected Array');	
-		let confirmed:boolean=false;
-		let idArr:any;
-		if(Array.isArray(data))idArr=data.map(item=>item.ID_DAFTAR);
-		if(!dbName)dbName=this.activeView;
-		if(data.length===this.gridOptions.rowData.length){
-			confirmed=confirm(GlobalVar.alert([],"Hapus Semua Data ?"));
-		}else{
-			confirmed=confirm(GlobalVar.alert(data,"Hapus Data ?"));
-		};
-		if(!!confirmed){
-			//this.gridOptions.api.showLoadingOverlay();
-			/*
-			this.misc.loadingWrapper(
-				()=>{
-					let temp=this.gridOptions.rowData;
-					this.gridOptions.rowData=null;
-					this.globalService.deleteData('stock/'+dbName,idArr,embedName,data[0]._idDaftar).subscribe({
-						next:(x)=>{
-							console.log("DELETE_NEXT")
-							
-						},
-						complete:()=>{
-							console.log("DELETE_COMPLETE");
-							this.gridOptions.rowData=temp;
-							//console.log("HIDE LOADING : ",this.gridApi?.hideOverlay());
-						},
-						error:(e) => {
-							alert(GlobalVar.alert([{name:e.name},{message:e.message}],e.statusText));
-							//this.refreshPage();
-						},
-					});
-				}
-			);
-			*/
-		};
-	};
 	public misc={
+		copy:(x:any)=>JSON.parse(JSON.stringify(x)),
 		showHiddenColumn:(columnName:string,value:boolean)=>{
-			console.log("columnName",columnName);
-			console.log("value",value);
+			//console.log("columnName",columnName);
+			//console.log("value",value);
 			let tableOptions=this.options.data.tableOptions;
-			console.log(tableOptions);
+			//console.log(tableOptions);
 			tableOptions[this.activeView].columnDefs.find((item:any)=>item.field===columnName).hide=value;
-			console.log('tableOptions',tableOptions);
+			//console.log('tableOptions',tableOptions);
 			this.options.setOptions(tableOptions,'tableOptions');
 		},
 		toUpperCase:(x:string)=>{
@@ -1179,7 +1153,7 @@ export class StockComponent {
 			//if(this.user.prompt)true
 		},
 		loadingWrapper:async(_f:any,gridOptions:any,_var?:any)=>{
-			console.log("loadingWrapper _var",_var);
+			console.log("loadingWrapper _var",gridOptions);
 			gridOptions.api.showLoadingOverlay();
 			//this.gridOptions.api.setRowData(null);
 			if(!!_var)return await _f(_var);
@@ -1194,10 +1168,12 @@ export class StockComponent {
 			return !!GlobalVar.config.adm.find(item=>item===this.user.name);
 		},
 		setFilterParams:(filterObj:any)=>{
+			console.log("setFilterParams:(filterObj)",filterObj)
 			Object.keys(filterObj).map(pointer=>{
-				this.stock.setFilterParams(filterObj[pointer],pointer);
+				//this.stock.setFilterParams(filterObj[pointer],pointer);
 			});
 			this.options.setOptions(filterObj,"filterParams");
+			console.log("options.filterParams",this.options.data.filterParams);
 		},
 		getDefaultFilterObj:()=>{
 			let returnedVar:any={};
@@ -1209,19 +1185,33 @@ export class StockComponent {
 			})
 			return returnedVar;
 		},
+		getPinnedColumnWidth:(colArrStr:Array<any>)=>{
+			let width=0;
+			colArrStr.map(item=>{
+				width+=this.gridOptions.columnApi.getColumn(item).getActualWidth()|0;
+			});
+			return width;
+		},
+		testAlert:(text:string)=>alert(text),
 	};
 	public changeView=(view:string)=>{
-		console.log("===>changeView ",view);
-		console.log("this.stock.daftar[view].colDef ",this.stock.daftar[view].colDef);
-		if(this.activeView!==view)this.activeView=view;
+		//console.log("===>changeView ",view);
+		//console.log("this.stock.daftar[view].colDef ",this.stock.daftar[view].colDef);
+		if(this.activeView===view){
+			console.log("changeView literally do NOTHING");
+		}else{
+			this.activeView=view;
+
+		};
 		this.gridOptions.api?.deselectAll();
-		this.gridOptions.api?.setColumnDefs(this.stock.daftar[view].colDef);
-		console.log("this.stock.daftar[view].defaultFilterParam ",this.stock.daftar[view].defaultFilterParams);
-		this.gridOptions.api?.setFilterModel(this.stock.daftar[view].defaultFilterParams);
+		this.gridOptions.api?.setColumnDefs(this.options.data.tableOptions[view].columnDefs);
+		//console.log("this.options.data.this.options.data.tableOptions[this.activeView].defaultFilterParams.defaultFilterParams",this.options.data.tableOptions[this.activeView].defaultFilterParams);
+		//console.log("this.stock.daftar[view].defaultFilterParam ",this.stock.daftar[view].defaultFilterParams);
+		this.gridOptions.api?.setFilterModel(this.options.data.filterParams[view]);
 	};
-	public updateData=async(x:any)=>{
-		console.log("UPDATE DATA",x);
-		let returnVal=this.stock.set(x,this.activeView,this.options.data.tableOptions);
+	public updateData=async(tableData:any)=>{
+		//console.log("UPDATE DATA",tableData);
+		let returnVal=this.stock.set(tableData,this.activeView,this.options.data.tableOptions);
 		this.changeView(this.activeView);
 		return returnVal;
 	};

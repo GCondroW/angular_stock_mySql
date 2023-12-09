@@ -1,5 +1,5 @@
 import { ColDef } from 'ag-grid-community';
-export const GlobalVar = {
+export const GlobalVar ={
 	_var:{
 		socketConfig:"",
 	},
@@ -403,7 +403,6 @@ export const GlobalVar = {
 			return this.url=url;
 		};
 	},
-	
 	defaultColumnDefs:{
 		stock:{
 			excludedTableColumn:["ID_DAFTAR","NAMA","QTY","STOCK"],
@@ -437,6 +436,7 @@ export const GlobalVar = {
 				{
 					field: "NAMA",
 					sort: "asc",
+					pinned:'left',
 				},
 				{
 					field: "QTY",
@@ -453,10 +453,9 @@ export const GlobalVar = {
 				},
 				{
 					field: "STOCK",
-					//filter:"agNumberColumnFilter",
+					filter:"agNumberColumnFilter",
+					pinned:'left',
 					type:"numericColumn",
-					pinned:"right",
-					suppressMovable:true,
 				},
 				
 			],

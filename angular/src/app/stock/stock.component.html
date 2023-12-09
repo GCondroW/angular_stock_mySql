@@ -76,10 +76,22 @@
 		>
 			<!-- <ng-container *ngIf="stock.raw;then dataTable; else emptyDataElement"></ng-container> -->
 			<app-data-table 
+				[hidden]="!stock.daftar[activeView].data[0]"
 				[gridOptions]="gridOptions"
 				[rowData]="stock.daftar[activeView].data"
 				[defaultColDef]="defaultColDef"
 			></app-data-table>
+			<div 
+				class="d-flex justify-content-center"
+				*ngIf="!stock.daftar[activeView].data[0]"
+			>
+				<div 
+					class="spinner-border" 
+					role="status"
+				>
+			</div>
+				<span class="visually-hidden">Loading...</span>
+			</div>
 			<!-- [overlayNoRowsTemplate]="'<div>kosong..</div>'" -->
 		</div>	
 		</div>
@@ -158,6 +170,8 @@
 						console.log('item.field',item.field);
 						console.log('item.hide',!item.hide);
 						misc.showHiddenColumn(item.field,!item.hide);
+						gridOptions.columnApi.autoSizeAllColumns();
+						adjustTableContainerSize();
 						
 					"
 				>
@@ -187,7 +201,7 @@
 	</div>
 	<div *ngIf="activeView==='stock'" class="container-fluid">
 
-		<button (click)="gridOptions.api.setFilterModel(filter.getDefaultFilterParam())">Reset</button>
+		<button (click)="filter.setDefaultFilter('STOCK')">Reset</button>
 		<hr>
 		<div class="row mb-1">
 			<label class="col-4">Stock : </label>
@@ -195,17 +209,16 @@
 				<select class="form-select form-select-sm">
 					<option
 						(click)="filter.setFilter('STOCK','','number','greaterThanOrEqual')"
-						[attr.selected]="this.filter.getCurrentFilter().STOCK?.filter===''?'selected':null"
+						[selected]="options.data.filterParams[activeView].STOCK.filter===''"
 					>
 						Semua
 					</option>
 					<option
 						(click)="filter.setFilter('STOCK',1,'number','greaterThanOrEqual')"
-						[attr.selected]="
-							this.filter.getCurrentFilter().STOCK?.filter===1
+						[selected]="
+							options.data.filterParams[activeView].STOCK.filter===1
 							&&
-							this.filter.getCurrentFilter().STOCK?.type==='greaterThanOrEqual'
-							?'selected':null"
+							options.data.filterParams[activeView].STOCK.type==='greaterThanOrEqual'"
 					>
 					
 					
@@ -213,32 +226,59 @@
 					</option>
 					<option
 						(click)="filter.setFilter('STOCK',1,'number','lessThan')"
-						[attr.selected]=
-							"this.filter.getCurrentFilter().STOCK?.filter===1
+						[selected]=
+							"options.data.filterParams[activeView].STOCK.filter===1
 							&&
-							this.filter.getCurrentFilter().STOCK?.type==='lessThan'
-							?'selected':null"
+							options.data.filterParams[activeView].STOCK.type==='lessThan'"
 					>
 						Habis
 					</option>
 				</select>
 			</div>
 		</div>	
+		<div>
+			<pre>
+debug
+
+filter defaultFilterParams
+{{JSON.stringify(filter.getDefaultFilterParams().stock.STOCK)}}
+
+options.data.filterParams
+{{JSON.stringify(
+	options.data.filterParams[activeView].STOCK
+)}}
+
+options.data.tableOptions.stock.defaultFilterParams
+{{JSON.stringify(
+	options.data.tableOptions.stock.defaultFilterParams.STOCK
+)}}
+
+conditional
+1=>{{options.data.filterParams[activeView].STOCK.filter===''}}
+2=>{{options.data.filterParams[activeView].STOCK.filter===1
+							&&
+							options.data.filterParams[activeView].STOCK.type==='greaterThanOrEqual'}}
+3=>{{options.data.filterParams[activeView].STOCK.filter===1
+							&&
+							options.data.filterParams[activeView].STOCK.type==='lessThan'}}
+
+			</pre>
+		</div>
 		<hr>
 		<div class="row mb-1" *ngFor="let header of Object.keys(stock.daftar[activeView].filterData)">
 			<label class="col-4" for="sort">{{header|titlecase}} : </label>
 			<div class="col-8">
 				<select class="form-select form-select-sm" name="sort" id="sort" aria-label="Small select example">
 					<option
-						[attr.selected]="!this.filter.getCurrentFilter()[header]?'selected':null"
+						[attr.selected]="!filter.getCurrentFilter()[header]?'selected':null"
 						(click)="filter.setFilter(header,'')"
 					>Semua</option>
 					<option 
 						*ngFor="let filterItem of stock.daftar[activeView].filterData[header]"
 						[attr.selected]="
-							this.filter.getCurrentFilter()[header]?.filter===filterItem
+							filter.getCurrentFilter()[header]?.filter===filterItem
 							&&
-							this.filter.getCurrentFilter()[header]?.filter!=undefined?
+							filter.getCurrentFilter()[header]?.filter!=undefined?
 							'selected'
 							:
 							null"
@@ -368,20 +408,23 @@
 	<div>
 		<div class="container-fluid">
 
-			<div *ngFor="let item of Object.keys(modal.modal_1.data)" class="row">
-			
+			<div *ngFor="let item of Object.keys(modal.modal_1.data)" class="row mb-1">
 				<label for="{{item+'Id'}}" 
-					class="col-sm-3 col-form-label col-form-label-sm">
+					class="col-3 col-form-label col-form-label-sm">
 					{{item}}
 				</label>
-				<div class="col-sm-9">
+				<label for="{{item+'Id'}}" 
+					class="col-1 col-form-label col-form-label-sm">
+					:
+				</label>
+				<div class="col-8">
 					<input 
 						style="{border:none;}" 
 						type="text" 
 						id="{{item+'Id'}}"
 						readonly
 						class="form-control form-control-plaintext form-control-sm" 
-						value="{{': '+modal.modal_1.data[item]}}"
+						value="{{modal.modal_1.data[item]}}"
 					>
 				</div>
 			</div>
