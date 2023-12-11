@@ -596,9 +596,6 @@ export class StockComponent {
 					final:[modalData.STOCK,[Validators.required,StockValidators.final]],
 					jenis:["-"],
 					keterangan:["-"],
-				},
-				{
-					validator:StockValidators.number,
 				});
 				let form=this.modal.modal_2.form;
 				let formUpdateValue=form.get("update");
@@ -608,13 +605,13 @@ export class StockComponent {
 				console.log("formUpdateValue",formUpdateValue)
 				let alreadyOnce:boolean=false;
 				this.modal.modal_2.isInteracted=false
-				
 				let f_1=(x:any)=>{
-					console.log(x)
-					if(!(x>0) && !(x<0)) return formJenisValue.setValue("-");
-					if(x<0) return this.modal.modal_2.form.get('jenis').setValue("KELUAR");
-					if(x>0) return this.modal.modal_2.form.get('jenis').setValue("MASUK");
-					return(alert('error'));
+					console.log("X   =  >   ",x)
+					//if(!(x>0) && !(x<0)) return formJenisValue.setValue("-");
+					if(x<0) return formJenisValue.setValue("KELUAR");
+					if(x>0) return formJenisValue.setValue("MASUK");
+					if(x===null || x===0) return console.log("NULL");
+					return formJenisValue.setValue("-");
 				};
 				
 				formUpdateValue.valueChanges.subscribe((x:number)=>{
@@ -632,14 +629,16 @@ export class StockComponent {
 						f_1(formUpdateValue.value);
 					}
 				})
-				
 				formFinalValue.valueChanges.subscribe((x:number)=>{
 					if(alreadyOnce){alreadyOnce=false}
 					else{
 						alreadyOnce=true;
 						this.modal.modal_2.isInteracted=true
-						let temp=x-(modalData.STOCK);
-						formUpdateValue.setValue(temp);
+						let temp;
+						if (x!==null){
+							temp = x-(modalData.STOCK);
+							formUpdateValue.setValue(temp);
+						}else formUpdateValue.setValue("-")
 						console.log("x",x);
 						console.log("typeof X",typeof(x));
 						console.log("STOCK",temp);
@@ -666,6 +665,7 @@ export class StockComponent {
 				return false
 			},
 			data:{},
+			defaultData:{},
 			form:{},
 			modalRef:undefined,
 			newTransactionSubmit:()=>{

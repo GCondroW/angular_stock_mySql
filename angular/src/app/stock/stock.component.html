@@ -1,36 +1,43 @@
-<div  
-
->
+<div>
 	<div id="flexWrapper">
-		<div id="wrapper1"
-
-		>
-			<nav id="mainNavbar" class="m-0 p-1 navbar sticky-top navbar-light bg-light"
-				
-			>
+		<div id="wrapper1">
+			<nav id="mainNavbar" class="m-0 p-1 navbar sticky-top navbar-light bg-light">
 				<div class="container px-1">
 					<div>
 						<button 
 							class="float-start btn btn-outline-secondary btn-sm" 
-							(click)="_offCanvas.open(mainOffcanvasContent)" type="button"
-						>=</button>
-						<div ngbDropdown class="float-start ms-1">
-							<button ngbDropdownToggle class="btn btn-secondary btn-sm dropdown-toggle" type="button">
+							(click)="_offCanvas.open(mainOffcanvasContent)" 
+							type="button"
+						>
+							=
+						</button>
+						<div 
+							ngbDropdown 
+							class="float-start ms-1"
+						>
+							<button 
+								ngbDropdownToggle 
+								class="btn btn-secondary btn-sm dropdown-toggle" 
+								type="button"
+							>
 								{{activeView|titlecase}}
 							</button>
-							<div ngbDropdownMenu class="dropdown-menu">
+							<div 
+								ngbDropdownMenu 
+								class="dropdown-menu"
+							>
 								<button 
-									ngbDropdownItem
+									ngbDropdownItem 
 									*ngFor="let a of Object.keys(stock.daftar)"
-									(click)="setView(a)"
-									type="button"
+									(click)="setView(a)
+									"type="button"
 								>
 									{{a|titlecase}}
 								</button>
 							</div>
-						</div>		
+						</div>	
 						<!-- OPERATION MODE -->
-		<!--				
+						<!--				
 						<div ngbDropdown class="float-start ms-1"> 
 							<button ngbDropdownToggle class="btn  btn-secondary btn-sm dropdown-toggle" type="button">
 								{{operation.active|titlecase}}
@@ -47,7 +54,7 @@
 								</button>
 							</div>
 						</div>	
-		-->		
+						-->					
 					</div>
 					<div class="d-flex">
 						<input 
@@ -67,14 +74,12 @@
 					</div>
 				</div>
 			</nav>
-
 		<div id="gridTable"
 			[style.width]="tableContainerStyle.width"
 			[style.height]="tableContainerStyle.height"
 			[style.min-width]="'50%'"
 
 		>
-			<!-- <ng-container *ngIf="stock.raw;then dataTable; else emptyDataElement"></ng-container> -->
 			<app-data-table 
 				[hidden]="!stock.daftar[activeView].data[0]"
 				[gridOptions]="gridOptions"
@@ -293,7 +298,6 @@ conditional
 	<div *ngIf="activeView==='transaksi'" class="container-fluid">
 		<h3>Filter</h3>
 		<button (click)="gridApi.setFilterModel(filter.getDefaultFilterParam())">Reset</button>
-	
 		<hr>
 		<div class="row mb-1">
 			<label>Jenis : </label>
@@ -407,7 +411,6 @@ conditional
 <ng-template #modalBody1>
 	<div>
 		<div class="container-fluid">
-
 			<div *ngFor="let item of Object.keys(modal.modal_1.data)" class="row mb-1">
 				<label for="{{item+'Id'}}" 
 					class="col-3 col-form-label col-form-label-sm">
@@ -418,6 +421,11 @@ conditional
 					:
 				</label>
 				<div class="col-8">
+					<p
+						id="{{item+'Id'}}"
+						class="form-control form-control-plaintext form-control-sm col-8" 
+					>{{modal.modal_1.data[item]}}</p>
+					<!--
 					<input 
 						style="{border:none;}" 
 						type="text" 
@@ -426,6 +434,7 @@ conditional
 						class="form-control form-control-plaintext form-control-sm" 
 						value="{{modal.modal_1.data[item]}}"
 					>
+					-->
 				</div>
 			</div>
 		</div>
@@ -463,76 +472,38 @@ conditional
 		[modalBody]="modalBody2"
 		[modalFooter]="modalFooter2"
 		[modal]="modal2"
-		[modalTitle]="'Transaksi'"
+		[modalTitle]="'Perubahan Stock'"
 	></app-dynamic-modal>
 </ng-template>
 <ng-template #modalBody2>
 	<div>
 		<div class="container">
 			<div class="row">
-				<label for="l_1" class="col-sm-4 col-form-label col-form-label-sm">
-					Nama
-				</label>
-				<div class="col-sm-8">
-					<input 
-						style="{border:none;}" 
-						type="text" 
-						id="l_1"
-						readonly
-						class="form-control-plaintext form-control-sm" 
-						value="{{': '+modal.modal_2.data.NAMA}}"
-					>
+				<label for="l_1" class="col-3 col-form-label col-form-label-sm">Nama</label>
+				<label for="l_1" class="col-1 col-form-label col-form-label-sm">:</label>
+				<div class="col-8">
+					<p id="l_1" class="form-control-plaintext form-control-sm">{{modal.modal_2.data.NAMA}}</p>
 				</div>
 			</div>
 			<div class="row">
-				<label for="l_2" class="col-sm-4 col-form-label col-form-label-sm">
-					Supplier
-				</label>
-				<div class="col-sm-8">
-					<div class="col-8">
-						<input 
-							style="{border:none;}" 
-							type="text"
-							id="l_2"
-							readonly
-							class="form-control-plaintext form-control-sm" 
-							value="{{': '+modal.modal_2.data.SUPPLIER}}"
-						>
-					</div>
+				<label for="l_2" class="col-3 col-form-label col-form-label-sm">Supplier</label>
+				<label for="l_2" class="col-1 col-form-label col-form-label-sm">:</label>
+				<div class="col-8">
+					<p id="l_2" class="form-control-plaintext form-control-sm">{{modal.modal_2.data.SUPPLIER}}</p>
 				</div>
 			</div>
 			<div class="row">
-				<label for="l_3" class="col-sm-4 col-form-label col-form-label-sm">
-					Kategori
-				</label>
-				<div class="col-sm-8">
-					<div class="col-8">
-						<input 
-							style="{border:none;}" 
-							type="text" 
-							id="l_3"
-							readonly
-							class="form-control-plaintext form-control-sm" 
-							value="{{': '+modal.modal_2.data.KATEGORI}}"
-						>
-					</div>
+				<label for="l_3" class="col-3 col-form-label col-form-label-sm">Kategori</label>
+				<label for="l_3" class="col-1 col-form-label col-form-label-sm">:</label>
+				<div class="col-8">
+					<p id="l_3" class="form-control-plaintext form-control-sm">{{modal.modal_2.data.KATEGORI}}</p>
 				</div>
 			</div>
 			<div class="row">
-				<label for="l_4" class="col-sm-4 col-form-label col-form-label-sm">
-					Qty/ Ctn 
-				</label>
-				<div class="col-sm-8">
-					<div class="col-8">
-						<input 
-							style="{border:none;}" 
-							type="text" 
-							id="l_4"
-							readonly
-							class="form-control-plaintext form-control-sm" 
-							value="{{': '+modal.modal_2.data.QTY+' / '+modal.modal_2.data.STN}}"
-						>
-					</div>
+				<label for="l_4" class="col-3 col-form-label col-form-label-sm">Qty/ Ctn</label>
+				<label for="l_4" class="col-1 col-form-label col-form-label-sm">:</label>
+				<div class="col-8">
+					<p id="l_4" class="form-control-plaintext form-control-sm">{{+modal.modal_2.data.QTY+' '+modal.modal_2.data.STN+'/ Ctn'}}</p>
 				</div>
 			</div>
 		</div>
@@ -540,25 +511,23 @@ conditional
 			<form [formGroup]="modal.modal_2.form" (ngSubmit)="modal.modal_2.newTransactionSubmit()">
 				<hr>
 				<div class="row mb-1">
-					<label for="l_5" class="col-sm-4 col-form-label col-form-label-sm">
-						Jumlah Ctn Awal
-					</label>
+					<label for="l_5" class="col-3 col-form-label col-form-label-sm">Jumlah Awal</label>
+					<label for="l_5" class="col-1 col-form-label col-form-label-sm">:</label>
 					<div class="col-8">
 						<input 
 							style="{border:none;}" 
-							type="text" 
+							type="number" 
 							id="l_5"
 							readonly
-							class="form-control-plaintext form-control-sm" 
-							value="{{' : '+modal.modal_2.data.STOCK}}"
+							class="form-control form-control-sm" 
+							value="{{modal.modal_2.data.STOCK}}"
 						>
 					</div>
 				</div>
 				<div class="row mb-1" id="updatePrepend">
-					<label for="l_6" class="col-sm-4 col-form-label col-form-label-sm">
-						Jumlah Ctn Akhir
-					</label>
-					<div class="col-4">
+					<label for="l_6" class="col-3 col-form-label col-form-label-sm">Jumlah Akhir</label>
+					<label for="l_6" class="col-1 col-form-label col-form-label-sm">:</label>
+					<div class="col-8">
 						<input
 							onclick="this.select()" 
 							type="number" 

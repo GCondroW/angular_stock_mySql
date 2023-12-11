@@ -25,19 +25,17 @@ export let StockValidators={
 		update:"",
 		final:"",
 	},
-	number:(control: AbstractControl)=>{
-		let data=control.value;
-		let pattern=RegExp(regex.number);
-		if (pattern.test(data))return{invalidUrl:true,message:"Hanya menerima input angka"};
-		return null;
-	},
 	update:(control: AbstractControl)=>{
 		let data=control.value;
+		if (data==="-")return{invalidUrl:true,message:"Err"};
 		if (data===0)return{invalidUrl:true,message:"Tidak ada perubahan"};
 		return null;
 	},
 	final:(control: AbstractControl)=>{
 		let data=control.value;
+		let pattern=RegExp(regex.number);
+		if (data==="")return{invalidUrl:true,message:"Kolom Kosong"};
+		if (!pattern.test(data))return{invalidUrl:true,message:"Hanya menerima input angka"};
 		if (data<0)return{invalidUrl:true,message:"Stock dibawah 0"};
 		return null;
 	}
@@ -54,7 +52,6 @@ export let GlobalValidator={
 		let data=control.value;
 		let pattern=RegExp(regex.string);
 		console.log("pattern.test(data)",pattern.test(data));
-		console.log("data",data);
 		if (pattern.test(data))return{notString:true,message:"Tidak menerima input angka"};
 		return null;
 	},
