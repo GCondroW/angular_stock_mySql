@@ -135,7 +135,7 @@ export class GlobalService {
 				["utils",utils],
 				["downloadData",x]
 			]);
-			let dataSheet=utils.json_to_sheet(x);
+			let dataSheet=utils.json_to_sheet(x.data);
 			let wb = utils.book_new();
 			utils.book_append_sheet(wb,dataSheet , dbName);
 			writeFile(wb, dbName+".xlsx", { compression: true });

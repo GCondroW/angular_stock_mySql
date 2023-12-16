@@ -998,10 +998,12 @@ export class StockComponent {
 			this.adjustTableContainerSize();
 		},
 		onModelUpdated: (event:any)=>{
-
+			console.log("grid Event => onModelUpdated : ");
 		},
 		onComponentStateChanged:(event:any)=>{
-
+			console.log("grid Event => onComponentStateChanged : ");
+			this.gridOptions.columnApi.autoSizeAllColumns();
+			this.adjustTableContainerSize();
 		},
 		onColumnVisible:(event:any)=>{
 			console.log("grid Event => onColumnVisible : ");
@@ -1042,7 +1044,6 @@ export class StockComponent {
 
 		let allColumnWidth=this.gridOptions.columnApi.getColumns().map((item:any)=>{
 			let temp=item.colDef;
-			console.log("item.colDef",item.colDef);
 			if(!!item.visible)return item.getActualWidth();
 			return 0;
 		}).reduce((a:number,b:number)=>a+b,0);
@@ -1078,12 +1079,6 @@ export class StockComponent {
 		};		
 	};
 	/// \AG-GRID ///
-	
-	setView=(viewName:string)=>{
-		console.log("SET_VIEW => ",viewName,this.options.setOptions(viewName,"activeView"));
-		this.activeView=viewName;
-		this.refreshPage();
-	};
 	setDbKey=(dbKey:number)=>{
 		let temp=this.user.setDbKey(dbKey);
 		console.log("set db key ", temp);
@@ -1153,9 +1148,9 @@ export class StockComponent {
 			//if(this.user.prompt)true
 		},
 		loadingWrapper:async(_f:any,gridOptions:any,_var?:any)=>{
-			console.log("loadingWrapper _var",gridOptions);
-			gridOptions.api.showLoadingOverlay();
-			//this.gridOptions.api.setRowData(null);
+			this.gridOptions.api.setRowData(null);
+			this.gridOptions.api.showLoadingOverlay();
+
 			if(!!_var)return await _f(_var);
 			return await _f();
 		},
@@ -1194,6 +1189,29 @@ export class StockComponent {
 		},
 		testAlert:(text:string)=>alert(text),
 	};
+	public setView=(viewName:string)=>{
+		
+		this.misc.loadingWrapper(
+			()=>{
+				console.log("SET_VIEW => ",viewName,this.options.setOptions(viewName,"activeView"));
+				
+				let tableName=viewName;
+				let tableData=this.stock.daftar[viewName].data[0];
+				let clientKey=this.user.getDbKey();
+				this.globalService.getDbKey().subscribe((x:any)=>{
+					let dbKey=Number(x.value);
+					if(!!tableData && (clientKey===dbKey)){
+						this.changeView(viewName);
+					}else{
+						this.activeView=viewName;
+						this.setDbKey(x.value);
+						this.getPage();
+					};
+				});
+			},
+			this.gridOptions
+		);
+	};
 	public changeView=(view:string)=>{
 		//console.log("===>changeView ",view);
 		//console.log("this.stock.daftar[view].colDef ",this.stock.daftar[view].colDef);
@@ -1210,45 +1228,27 @@ export class StockComponent {
 		this.gridOptions.api?.setFilterModel(this.options.data.filterParams[view]);
 	};
 	public updateData=async(tableData:any)=>{
-		//console.log("UPDATE DATA",tableData);
-		let returnVal=this.stock.set(tableData,this.activeView,this.options.data.tableOptions);
+		this.stock.set(tableData,this.activeView,this.options.data.tableOptions);
 		this.changeView(this.activeView);
-		return returnVal;
+		//this.changeView(this.activeView);
 	};
 	private getPage=()=>{
 		this.globalService.getData(this.activeView).subscribe((x:any)=>{
 			x.data.map((item:any)=>item.STOCK=Number(item.STOCK));
-			let temp=this.user.setTableData(this.user.getDbKey(),x.data,this.activeView);
-			this.updateData(temp);
+			let tableData=this.user.setTableData(this.user.getDbKey(),x.data,this.activeView);
+			this.updateData(tableData);
 		});
 	};
 	public refreshPage=()=>{
-		console.log("checkDbParity=()=> Start");
 		try{
 			let tableName=this.activeView;
 			let tableData=this.user.getTableData(tableName)
-			console.log("checkDbParity=()=> tableData : ",tableData);
-			if(!tableData||tableData.length<1){
-				this.globalService.getDbKey().subscribe((x:any)=>{
-					console.log("checkDbParity=()=> dbCheckParity Failed");
-					this.setDbKey(x.value);
-					this.getPage();
-				});
-			}else{
-				this.globalService.getDbKey().subscribe((x:any)=>{
-					let clientKey=this.user.getDbKey();
-					let dbKey=Number(x.value);
-					console.log("checkDbParity=()=> dbKey : ",clientKey===dbKey,clientKey,dbKey);
-					if (clientKey===dbKey){
-						console.log("checkDbParity=()=> dbCheckParity Success");
-						this.getPage();
-					}else {
-						console.log("checkDbParity=()=> dbCheckParity Failed");
-						this.setDbKey(x.value);
-						this.getPage();
-					};
-				});
-			};
+			let clientKey=this.user.getDbKey();
+			this.globalService.getDbKey().subscribe((x:any)=>{
+				let dbKey=Number(x.value);
+				this.setDbKey(x.value);
+				return this.getPage();
+			});
 		}catch(e){
 			console.log("checkDbParity=()=> dbCheckParity Error : ",e);
 		};
@@ -1257,19 +1257,18 @@ export class StockComponent {
 		console.log("checkDbParity=()=> Start");
 		try{
 			let tableName=this.activeView;
-			let tableData=this.user.getTableData(tableName)
-			let returnedVar;
+			let tableData=this.user.getTableData(tableName);
 			console.log("checkDbParity=()=> tableData : ",tableData);
-			if(!tableData||tableData.length<1){
+			if(!tableData||tableData.length<1){//table didnt exist on client
 				this.globalService.getDbKey().subscribe((x:any)=>{
 					console.log("checkDbParity=()=> dbCheckParity Failed");
 					this.setDbKey(x.value);
 					this.getPage();
 				});
-			}else{
+			}else{//table exist on client
 				this.globalService.getDbKey().subscribe((x:any)=>{
 					let clientKey=this.user.getDbKey();
-					let dbKey=x.value;
+					let dbKey=Number(x.value);
 					console.log("checkDbParity=()=> dbKey : ",clientKey===dbKey,clientKey,dbKey);
 					if (clientKey===dbKey){
 						console.log("checkDbParity=()=> dbCheckParity Success");

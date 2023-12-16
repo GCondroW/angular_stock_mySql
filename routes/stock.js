@@ -121,9 +121,9 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 			"\""+item.QTY+"\","+
 			"\""+item.STN+"\","+
 			"\""+item.KATEGORI+"\","+
-			"(SELECT id_supplier FROM supplier where nama =\""+item.SUPPLIER+"\"'),"+
-			"'NULL',"+
-			"\""+item.STOCK+"\","+
+			"(SELECT id_supplier FROM supplier where nama =\""+item.SUPPLIER+"\"),"+
+			"NULL,"+
+			"\""+item.CTN+"\","+
 			"\""+user+"\","+
 			"(SELECT NOW()),"+
 			"\"AWAL\","+

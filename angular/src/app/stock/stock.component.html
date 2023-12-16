@@ -29,8 +29,8 @@
 								<button 
 									ngbDropdownItem 
 									*ngFor="let a of Object.keys(stock.daftar)"
-									(click)="setView(a)
-									"type="button"
+									(click)="setView(a)"
+									type="button"
 								>
 									{{a|titlecase}}
 								</button>
@@ -148,7 +148,7 @@
 	</div>
 	<div class="container-fluid" >
 		<div class="btn-group btn-group-sm" role="group">
-			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="_excel.downloadExcel(currentPage)">Download</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="_excel.downloadExcel(activeView)">Download</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refreshPage()">Refresh</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="delete(getAllAgGridRows(),'stock')">Delete All</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.modal_3.openModal()">Tambah Data</button>
@@ -511,15 +511,14 @@ conditional
 			<form [formGroup]="modal.modal_2.form" (ngSubmit)="modal.modal_2.newTransactionSubmit()">
 				<hr>
 				<div class="row mb-1">
-					<label for="l_5" class="col-3 col-form-label col-form-label-sm">Jumlah Awal</label>
-					<label for="l_5" class="col-1 col-form-label col-form-label-sm">:</label>
+					<label for="l_5" class="col-3 col-form-label-sm">Jumlah Awal</label>
+					<label for="l_5" class="col-1 col-form-label-sm">:</label>
 					<div class="col-8">
 						<input 
-							style="{border:none;}" 
-							type="number" 
+							type="text" 
 							id="l_5"
 							readonly
-							class="form-control form-control-sm" 
+							class="form-control form-control-plaintext form-control-sm" 
 							value="{{modal.modal_2.data.STOCK}}"
 						>
 					</div>
@@ -777,8 +776,10 @@ conditional
 					"
 				>
 
-					<option>NON-PAJAK</option>
+					
 					<option>PAJAK</option>
+					<option>GLOBAL</option>
+					<option>IMPORT</option>
 				</select>
 				<div class="invalid-feedback" *ngIf="formKategori.errors && (formKategori.dirty || formKategori.touched)">
 					{{formKategori.errors?.message}}
@@ -985,8 +986,9 @@ conditional
 						!formKategori.valid && (formKategori.dirty || formKategori.touched)
 					"
 				>
-					<option>NON-PAJAK</option>
 					<option>PAJAK</option>
+					<option>GLOBAL</option>
+					<option>IMPORT</option>
 				</select>
 				<div class="invalid-feedback" *ngIf="formKategori.errors && (formKategori.dirty || formKategori.touched)">
 					{{formKategori.errors?.message}}

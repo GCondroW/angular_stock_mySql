@@ -35,8 +35,9 @@ export let StockValidators={
 		let data=control.value;
 		let pattern=RegExp(regex.number);
 		if (data==="")return{invalidUrl:true,message:"Kolom Kosong"};
-		if (!pattern.test(data))return{invalidUrl:true,message:"Hanya menerima input angka"};
 		if (data<0)return{invalidUrl:true,message:"Stock dibawah 0"};
+		if (!pattern.test(data))return{invalidUrl:true,message:"Hanya menerima input angka"};
+
 		return null;
 	}
 };
