@@ -304,7 +304,11 @@ export const GlobalVar ={
 		public getName=()=>localStorage.getItem('name');
 		public getDbKey=()=>Number(localStorage.getItem('dbKey'));
 		public getTableData=(tableName:any)=>{
+			console.log("===================================================");
+			console.log("tableName",tableName)
 			let temp=JSON.parse(localStorage.getItem('tableData')||'{}');
+			console.log("temp",temp)
+			console.log("this.getDbKey()",this.getDbKey())
 			if(temp[tableName])return temp[tableName][this.getDbKey()];
 			return [];
 			//return Object.assign(temp,{[tableName]:[]})
@@ -415,7 +419,7 @@ export const GlobalVar ={
 				KATEGORI:{
 					filterType: 'text',
 					type:'contains',
-					filter:null,
+					filter:"",
 				},
 				STOCK:{
 					filterType: 'number',
@@ -425,7 +429,7 @@ export const GlobalVar ={
 				STN:{
 					filterType: 'text',
 					type:'contains',
-					filter:null,
+					filter:"",
 				},
 			},
 			columnDefs:[
@@ -450,6 +454,7 @@ export const GlobalVar ={
 				},
 				{
 					field: "KATEGORI",
+					hide: true,
 				},
 				{
 					field: "STOCK",
@@ -480,7 +485,7 @@ export const GlobalVar ={
 				},
 				JUMLAH:{
 					filterType: 'number',
-					type:'notEqual',
+					type:'greaterThanOrEqual',
 					filter:0,
 				},
 				USER:{

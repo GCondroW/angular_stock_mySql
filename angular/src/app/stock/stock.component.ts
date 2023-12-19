@@ -33,11 +33,19 @@ export class StockComponent {
 	public Object=Object;
 	public console=console;
 	public stock=new GlobalVar.stockData();
+	private getDefaultTableData=()=>{
+		let returnVar:{[index:string]:any}={};
+		let dbNameArr=Object.keys(GlobalVar.defaultColumnDefs);
+		dbNameArr.map(pointer=>returnVar[pointer]=[]);
+		console.log("defaultTableData = > ",returnVar);
+		return returnVar;
+	};
+	public defaultTableData=this.getDefaultTableData();
 	public user=new GlobalVar.user(
 		localStorage.getItem('name'),
 		localStorage.getItem('id'),
 		Number(localStorage.getItem('dbKey')),
-		localStorage.getItem('tableData'),
+		localStorage.getItem('tableData') || JSON.stringify(this.defaultTableData),
 	);
 	private localOptions=JSON.parse(localStorage.getItem('options')||'{}');
 	private localTableOptions=
@@ -160,6 +168,7 @@ export class StockComponent {
 					};
 					this.socket.emit("login",clientData,(response:any)=>{
 						let tableData=this.user.getTableData(this.activeView);
+						console.log("tableDataNull?"+"=>",tableData);
 						if(!!response.success&&!!tableData){
 							//console.log("LOGIN SUCCESS = > ",response);
 							this.updateData(tableData);
@@ -200,31 +209,22 @@ export class StockComponent {
 				()=>{
 					console.log("EMIT RECEIVED: DELETE =>",emittedData);
 					console.log("AT =>",this.activeView);
-					
 					let message=emittedData.message;
-					let deletedDataId=emittedData.deletedDataId;
-					
-					switch(this.activeView){
-						case 'stock':
-							let oldData=this.user.getTableData(this.activeView);
-							let alertArr:Array<any>=[];
-							let deletedData = oldData.filter((item:any)=>deletedDataId.includes(item.ID_DAFTAR));
-							deletedData.map((item:any)=>{
-								alertArr.push({
-									id:item.ID_DAFTAR,
-									Nama:item.NAMA,
-									Supplier:item.SUPPLIER,
-								});
+					let deletedDataId=emittedData.deletedDataId;	
+					let oldData=this.user.getTableData(this.activeView);
+						let alertArr:Array<any>=[];
+						let deletedData = oldData.filter((item:any)=>deletedDataId.includes(item.ID_DAFTAR));
+						deletedData.map((item:any)=>{
+							alertArr.push({
+								id:item.ID_DAFTAR,
+								Nama:item.NAMA,
+								Supplier:item.SUPPLIER,
 							});
-							this.user.setTableData(emittedData.dbKey,this.user.deleteById(deletedDataId,this.activeView),this.activeView);
-							this.setDbKey(emittedData.dbKey);
-							this.updateData(this.user.getTableData(this.activeView));
-							alert(GlobalVar.alert(alertArr,message));
-							break;
-
-						default :
-							switchFallbackFunct();
-					}
+						});
+						this.user.setTableData(emittedData.dbKey,this.user.deleteById(deletedDataId,this.activeView),this.activeView);
+						this.setDbKey(emittedData.dbKey);
+						this.updateData(this.user.getTableData(this.activeView));
+						alert(GlobalVar.alert(alertArr,message));
 				},this.gridOptions
 			);
 		});
@@ -887,6 +887,7 @@ export class StockComponent {
 		filter: true,
 		editable:false,
 		suppressMenu: true,
+		suppressMovable:true,
 		//wrapText: true,
 		autoHeight: true,  
 		getQuickFilterText: function(params) {
@@ -969,12 +970,14 @@ export class StockComponent {
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
 			window.addEventListener('resize', (event)=>this.adjustTableContainerSize());
+			
+			//this.adjustTableContainerSize();
+			
 		},
 		onFirstDataRendered:(event:any)=>{
 			console.log("grid Event => onFirstDataRendered : ");
-			this.gridOptions.columnApi.autoSizeAllColumns();
-			this.adjustTableContainerSize();
 			
+			//this.gridOptions.columnApi.autoSizeAllColumns();
 		},
 		onSelectionChanged:(event: any)=>{
 
@@ -990,25 +993,35 @@ export class StockComponent {
 		},
 		onRowDataUpdated:async(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
+			
 		},
 		onFilterChanged:(event:any)=>{
 			console.log("grid Event => onFilterChanged : ");
 		},
 		onColumnResized: (event:any) => {
+			console.log("grid Event => onColumnResized : ");
+			/*
+			this.misc.loadingWrapper(()=>this.adjustTableContainerSize(),this.gridOptions).then(x=>{
+				console.log("-----------------------------------------------------")
+				this.gridOptions.api.hideOverlay();
+			});
+			*/
 			this.adjustTableContainerSize();
 		},
 		onModelUpdated: (event:any)=>{
 			console.log("grid Event => onModelUpdated : ");
+			//this.gridOptions.columnApi.autoSizeAllColumns();
+			//this.adjustTableContainerSize();
 		},
 		onComponentStateChanged:(event:any)=>{
 			console.log("grid Event => onComponentStateChanged : ");
-			this.gridOptions.columnApi.autoSizeAllColumns();
-			this.adjustTableContainerSize();
+			//this.gridOptions.columnApi.autoSizeAllColumns();
+			//this.adjustTableContainerSize();
 		},
 		onColumnVisible:(event:any)=>{
 			console.log("grid Event => onColumnVisible : ");
-			this.gridOptions.columnApi.autoSizeAllColumns();
-			this.adjustTableContainerSize();
+			
+			//this.adjustTableContainerSize();
 		},
 		onRowDoubleClicked:(event:any)=>{
 			console.log("grid Event => onRowDoubleClicked : ");
@@ -1092,7 +1105,6 @@ export class StockComponent {
 			console.log("POST_NEXT => ",x);
 			this.gridOptions.rowData=temp;
 			return x;
-
 		});
 	};
 	postEmbed=(dbName:string,data:any,embedName:string|undefined,id:string|undefined)=>{
@@ -1148,10 +1160,9 @@ export class StockComponent {
 			//if(this.user.prompt)true
 		},
 		loadingWrapper:async(_f:any,gridOptions:any,_var?:any)=>{
-			this.gridOptions.api.setRowData(null);
+			//this.gridOptions.api.setRowData(null);
 			this.gridOptions.api.showLoadingOverlay();
-
-			if(!!_var)return await _f(_var);
+			//if(!!_var)return await _f(_var);
 			return await _f();
 		},
 		closeAllModals:()=>console.log(this.offcanvasService),
@@ -1190,42 +1201,45 @@ export class StockComponent {
 		testAlert:(text:string)=>alert(text),
 	};
 	public setView=(viewName:string)=>{
-		
 		this.misc.loadingWrapper(
 			()=>{
 				console.log("SET_VIEW => ",viewName,this.options.setOptions(viewName,"activeView"));
 				
 				let tableName=viewName;
-				let tableData=this.stock.daftar[viewName].data[0];
+				//let tableData=this.stock.daftar[viewName].data[0];
+				let tableData=this.user.getTableData(tableName);
 				let clientKey=this.user.getDbKey();
 				this.globalService.getDbKey().subscribe((x:any)=>{
 					let dbKey=Number(x.value);
-					if(!!tableData && (clientKey===dbKey)){
-						this.changeView(viewName);
+					console.log("TABLEDATA = > ",tableData)
+					if(tableData!=null && tableData.length>0 && (clientKey===dbKey)){
+						this.activeView=tableName;
+						this.updateData(tableData);
 					}else{
-						this.activeView=viewName;
-						this.setDbKey(x.value);
-						this.getPage();
+						this.activeView=tableName;
+						this.refreshPage();
 					};
 				});
 			},
 			this.gridOptions
 		);
 	};
-	public changeView=(view:string)=>{
-		//console.log("===>changeView ",view);
+	public changeView=async(view:string)=>{
+		console.log("===>changeView ",view);
 		//console.log("this.stock.daftar[view].colDef ",this.stock.daftar[view].colDef);
 		if(this.activeView===view){
 			console.log("changeView literally do NOTHING");
 		}else{
 			this.activeView=view;
-
 		};
-		this.gridOptions.api?.deselectAll();
-		this.gridOptions.api?.setColumnDefs(this.options.data.tableOptions[view].columnDefs);
+		this.gridOptions.api.deselectAll();
+		this.gridOptions.api.setColumnDefs(this.options.data.tableOptions[view].columnDefs);
 		//console.log("this.options.data.this.options.data.tableOptions[this.activeView].defaultFilterParams.defaultFilterParams",this.options.data.tableOptions[this.activeView].defaultFilterParams);
 		//console.log("this.stock.daftar[view].defaultFilterParam ",this.stock.daftar[view].defaultFilterParams);
-		this.gridOptions.api?.setFilterModel(this.options.data.filterParams[view]);
+		this.gridOptions.api.setFilterModel(this.options.data.filterParams[view]);
+		this.gridOptions.columnApi.autoSizeAllColumns();
+		this.gridOptions.api.hideOverlay();
+		
 	};
 	public updateData=async(tableData:any)=>{
 		this.stock.set(tableData,this.activeView,this.options.data.tableOptions);

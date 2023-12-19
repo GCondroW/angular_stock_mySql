@@ -28,7 +28,7 @@
 							>
 								<button 
 									ngbDropdownItem 
-									*ngFor="let a of Object.keys(stock.daftar)"
+									*ngFor="let a of Object.keys(defaultTableData)"
 									(click)="setView(a)"
 									type="button"
 								>
@@ -81,14 +81,14 @@
 
 		>
 			<app-data-table 
-				[hidden]="!stock.daftar[activeView].data[0]"
+				[hidden]="!user.tableData?.[activeView][user.dbKey]"
 				[gridOptions]="gridOptions"
-				[rowData]="stock.daftar[activeView].data"
+				[rowData]="user.tableData?.[activeView][user.dbKey]"
 				[defaultColDef]="defaultColDef"
 			></app-data-table>
 			<div 
 				class="d-flex justify-content-center"
-				*ngIf="!stock.daftar[activeView].data[0]"
+				*ngIf="!user.tableData?.[activeView][user.dbKey]"
 			>
 				<div 
 					class="spinner-border" 
