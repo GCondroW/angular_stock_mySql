@@ -249,8 +249,8 @@ export const GlobalVar ={
 			if(tableData){
 				tableData=JSON.parse(tableData);
 				Object.keys(tableData).map((tableName:string)=>{
+					
 					this.setTableData(this.getDbKey(),tableData[tableName][this.getDbKey()],tableName)
-					console.log("+++++++++++++++++++++++++++++++++",this);
 				});
 			}else{
 				console.log('this',this);
@@ -514,18 +514,22 @@ export const GlobalVar ={
 					field: "ID_TRANSAKSI",
 					hide: true,
 					autoHeight: true,
-					
 				},
 				{
 					field: "ID_DAFTAR",
 					hide: true,
 					autoHeight: true,
-					
+				},
+				{
+					field: "NAMA",
+					autoHeight: true,
+					pinned:'left',
 				},
 				{
 					field: "JUMLAH",
 					filter: "agNumberColumnFilter",
 					type: "numericColumn",
+					pinned:'left',
 					autoHeight: true,
 				},
 				{
@@ -536,6 +540,14 @@ export const GlobalVar ={
 					field: "TANGGAL",
 					sort: "desc",
 					autoHeight: true,
+					valueFormatter: (params:any)=>{
+						console.log("globalVar Params");
+						return params.value? new Date(params.value).toLocaleString('id',{
+							year: "numeric",
+							month: "numeric",
+							day: "numeric",
+						}):"";
+					},
 				},
 				{
 					field: "JENIS",
@@ -544,10 +556,7 @@ export const GlobalVar ={
 				},
 				{
 					field: "KETERANGAN",
-					autoHeight: true,
-				},
-				{
-					field: "NAMA",
+					hide: true,
 					autoHeight: true,
 				},
 				{

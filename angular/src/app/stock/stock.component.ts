@@ -952,11 +952,17 @@ export class StockComponent {
 			filterInstance.setModel(temp1);
 			this.gridOptions.api.onFilterChanged();
 		},
+		searchTimeout:undefined,
+		searchDelay:500,
 		search:(event:any)=>{
-			console.log(event);
-			return this.gridOptions.api.setQuickFilter(event.target.value);
+			if(!!this.filter.searchTimeout)clearTimeout(this.filter.searchTimeout);
+			this.filter.searchTimeout=setTimeout(()=>{
+				this.gridOptions.api.setQuickFilter(event.target.value);
+			},this.filter.searchDelay);	
 		},
 	};
+	private gridTimeoutDelay:number=2;
+	private gridTimeoutContainer:any=undefined;
 	public gridOptions:any= {
 		rowData:null,
 		suppressCellFocus:true,
@@ -970,7 +976,7 @@ export class StockComponent {
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
 			window.addEventListener('resize', (event)=>this.adjustTableContainerSize());
-			
+			this.adjustTableContainerSize();
 			//this.adjustTableContainerSize();
 			
 		},
@@ -1012,6 +1018,14 @@ export class StockComponent {
 			console.log("grid Event => onModelUpdated : ");
 			//this.gridOptions.columnApi.autoSizeAllColumns();
 			//this.adjustTableContainerSize();
+			console.log("onModelUpdated timeout start")
+			if(!!this.gridTimeoutContainer)clearTimeout(this.gridTimeoutContainer);
+			this.gridTimeoutContainer=setTimeout(async()=>{
+				console.log("onModelUpdated timeout finish")
+				
+				this.gridOptions.columnApi.autoSizeAllColumns();
+				this.gridOptions.api.hideOverlay();
+			},this.gridTimeoutDelay);
 		},
 		onComponentStateChanged:(event:any)=>{
 			console.log("grid Event => onComponentStateChanged : ");
@@ -1161,6 +1175,8 @@ export class StockComponent {
 		},
 		loadingWrapper:async(_f:any,gridOptions:any,_var?:any)=>{
 			//this.gridOptions.api.setRowData(null);
+			
+
 			this.gridOptions.api.showLoadingOverlay();
 			//if(!!_var)return await _f(_var);
 			return await _f();
@@ -1233,13 +1249,10 @@ export class StockComponent {
 			this.activeView=view;
 		};
 		this.gridOptions.api.deselectAll();
+		this.gridOptions.api.setColumnDefs(null);
+		this.gridOptions.api.setFilterModel(null);
 		this.gridOptions.api.setColumnDefs(this.options.data.tableOptions[view].columnDefs);
-		//console.log("this.options.data.this.options.data.tableOptions[this.activeView].defaultFilterParams.defaultFilterParams",this.options.data.tableOptions[this.activeView].defaultFilterParams);
-		//console.log("this.stock.daftar[view].defaultFilterParam ",this.stock.daftar[view].defaultFilterParams);
 		this.gridOptions.api.setFilterModel(this.options.data.filterParams[view]);
-		this.gridOptions.columnApi.autoSizeAllColumns();
-		this.gridOptions.api.hideOverlay();
-		
 	};
 	public updateData=async(tableData:any)=>{
 		this.stock.set(tableData,this.activeView,this.options.data.tableOptions);

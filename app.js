@@ -57,6 +57,7 @@ class idPrototype{
 		return this.value;
 	};
 };
+
 let dbKey=new idPrototype("dbKey");
 let userId=new idPrototype("userId");
 let dbParity={};
@@ -64,8 +65,21 @@ let corsOptions={
 	credentials: true,
 	origin:originArr,
 };
-//app.set('views', path.join(__dirname, 'views'));
-//app.set('view engine', 'jade');
+let tableViewCache=new class tableViewCache{
+	constructor(){
+		this.db=require("./db/mySql")
+		this.getView().then(x=>{
+			console.log("isReady");
+			this.data=x;
+		});
+	};
+	getView=async(dbName)=>{
+		let temp={};
+		temp['stock']=await this.db.singleQ("select * from "+"stock"+"_view_1");
+		temp['transaksi']=await this.db.singleQ("select * from "+"transaksi"+"_view_1");
+		return temp;
+	};
+};
 app.use(cors(corsOptions));
 app.use(logger('dev'));
 app.use(express.json({limit:'8mb'}));
@@ -92,11 +106,9 @@ app.use('/key/:c?',function(req, res, next) {
 	};
 	res.json(dbKey);
 });
-let middlewareArr=[
-	(req,res,next)=>{
-		console.log("MIDDLEWARE 1");
-		console.log("REQ QUERY : ",req.query);
-		console.log("REQ PARAM : ",req.params);
+let middlewareArr=[async(req,res,next)=>{
+		console.log("MIDDLEWARE 1 => INIT FUNCT");
+
 		next();
 	},
 	(req,res,next)=>{
@@ -114,33 +126,9 @@ let middlewareArr=[
 	},
 ];
 
-app.use('/clearStorage',(req,res,next)=>{
-	let debug=true;
-	let testVar;
-	if (debug===true){
-
-	};
-	res.json(dbKey.clearValue());
-});
-app.use('/localStorageUp',(req,res,next)=>{
-	let debug=true;
-	let testVar;
-	if (debug===true){
-
-	};
-	res.json({dbKey:dbKey.up()});
-});
-app.use('/localStorage',(req,res,next)=>{
-	let debug=true;
-	let testVar;
-	if (debug===true){
-
-	};
-	res.json({dbKey:dbKey});
-});
-
 app.use((req,res,next)=>{
 	req.app.io=io;
+	console.log("test))394012");
 	req.app.dbKey=dbKey;
 	next();
 })
@@ -151,12 +139,12 @@ app.get('/:path?',(req,res,next)=>{
 	let path=req.params.path;
 	console.log("path",path);
 	if(!path)res.redirect('/ag');
-	
 	next()
 });
-
-
-
+app.get('/tableView',(req,res,next)=>{
+	console.log("tableViewCache",tableViewCache.data);
+	res.send(tableViewCache.data);
+});
 
 app.use(middlewareArr,(req,res,next)=>{
 	console.log("middleware");
