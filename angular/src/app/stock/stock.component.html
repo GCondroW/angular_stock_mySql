@@ -81,7 +81,7 @@
 
 		>
 			<app-data-table 
-				[hidden]="!user.tableData?.[activeView][user.dbKey]"
+				[hidden]="!user.tableData[activeView][user.dbKey]"
 				[gridOptions]="gridOptions"
 				[rowData]="user.tableData?.[activeView][user.dbKey]"
 				[defaultColDef]="defaultColDef"

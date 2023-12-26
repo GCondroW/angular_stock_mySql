@@ -3,7 +3,7 @@ var router = express.Router();
 var app = express();
 var db = require('../db/mysql');
 
-const defaultTableName="stock_view_1";
+const defaultTableName="stock";
 const defaultDbName="test";
 const handleErrorAsync = func => (req, res, next) => {
     func(req, res, next).catch((error) => next(error));
@@ -38,18 +38,27 @@ router.get('/', handleErrorAsync(async(req, res, next)=>{
 	let params=req.params;
 	let dbName=params.dbName
 	if(!dbName)dbName=defaultTableName;
-	console.log("dbName : ",dbName);
 	let query=req.query;
 	let id=!!query.id?query.id:"";
-	q+="select * from "+dbName;
-	if(!!id)q+=" where id_daftar in ("+id+")";
-	let resVar={
-		data:await db.singleQ(q),
+	let resVar=null;
+	console.log("dbName : ",dbName);
+	console.log("query : ",query);
+	if(!!id){
+		q+="select * from "+dbName+"_view_1";
+		q+=" where id_daftar in ("+id+")";
+		console.log("router>get>sql")
+		resVar={
+			data:await db.singleQ(q),
+		};
+	}else{
+		console.log("router>get>tableViewCache")
+		resVar={
+			data:req.app.tableViewCache[dbName],
+		};
 	};
 	resVar.data.map(item=>item.STOCK=Number(item.STOCK));
 	console.log("EMIT_AT_GET",
 		//req.app.io.emit("GET",resVar)
-		
 	);
 	res.json(resVar);
 }));

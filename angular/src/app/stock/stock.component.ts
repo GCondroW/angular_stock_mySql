@@ -911,6 +911,7 @@ export class StockComponent {
 				returnedVar[pointer]=data;
 				console.log("returnedVar[pointer]=data;",returnedVar[pointer]=data)
 			});
+			console.log("returnedVar",returnedVar);
 			return returnedVar;
 		},
 		setDefaultFilter:(colName:string)=>{
@@ -932,13 +933,13 @@ export class StockComponent {
 			temp1['filter']=filter;
 			if(!filterType){
 				if(filterInstance.filterType) return temp1['filterType']=filterInstance.filterType;
-				temp1['filterType']=defaultFilterParams[header].filterType;
+				temp1['filterType']=defaultFilterParams[this.activeView][header].filterType;
 			} else {
 				temp1['filterType']=filterType;
 			};
 			if(!type){
 				if(filterInstance.type) return temp1['type']=filterInstance.type;
-				temp1['type']=defaultFilterParams[header].type;
+				temp1['type']=defaultFilterParams[this.activeView][header].type;
 			} else {
 				temp1['type']=type;
 			};
@@ -961,7 +962,7 @@ export class StockComponent {
 			},this.filter.searchDelay);	
 		},
 	};
-	private gridTimeoutDelay:number=2;
+	private gridTimeoutDelay:number=500;
 	private gridTimeoutContainer:any=undefined;
 	public gridOptions:any= {
 		rowData:null,

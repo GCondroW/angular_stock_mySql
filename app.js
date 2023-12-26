@@ -8,6 +8,8 @@ var { createServer } = require("http");
 var stockRouter = require('./routes/stock');
 var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
+var LocalStorage = require('node-localstorage').LocalStorage;
+var localDb=new LocalStorage("./db/localDb");
 
 let portNumber=3420;
 let originArr=[
@@ -33,26 +35,24 @@ const io = new Server(httpServer, {
 class idPrototype{
 	constructor(path){
 		this.key=path;
-		let LocalStorage=require('node-localstorage').LocalStorage;
-		this.db=new LocalStorage("./db/localDb");
 		if(!this.getValue()){
-			this.db.setItem(this.key, '1');
+			localDb.setItem(this.key, '1');
 			this.value=this.getValue();
 		}else{
 			this.value=this.getValue();
 		};
 	};
 	up=()=>{
-		this.value=(Number(this.db.getItem(this.key))+1).toString();
-		this.db.setItem(this.key, this.value);
+		this.value=(Number(localDb.getItem(this.key))+1).toString();
+		localDb.setItem(this.key, this.value);
 		return this.value;
 	};
 	getValue=()=>{
-		this.value=this.db.getItem(this.key);
+		this.value=localDb.getItem(this.key);
 		return this.value;
 	};
 	clearValue=()=>{
-		this.db.clear(this.key);
+		localDb.clear(this.key);
 		delete(this.value);
 		return this.value;
 	};
@@ -71,12 +71,22 @@ let tableViewCache=new class tableViewCache{
 		this.getView().then(x=>{
 			console.log("isReady");
 			this.data=x;
+			httpServer.listen(portNumber,()=>{
+				//console.log(this.data);
+				console.log("Start, port :",portNumber);
+			});
 		});
 	};
-	getView=async(dbName)=>{
+	getView=async()=>{
 		let temp={};
+		let localTableViewCache=localDb.getItem('localTableViewCache');
+		//console.log("clearCache",localDb.clear("localTableViewCache"));
+		//console.log("localTableViewCache",localTableViewCache);
+		console.log("localTableViewCache exist?",localTableViewCache?true:false);
+		if(!!localTableViewCache)return JSON.parse(localTableViewCache.toString());
 		temp['stock']=await this.db.singleQ("select * from "+"stock"+"_view_1");
 		temp['transaksi']=await this.db.singleQ("select * from "+"transaksi"+"_view_1");
+		localDb.setItem('localTableViewCache',JSON.stringify(temp));
 		return temp;
 	};
 };
@@ -128,6 +138,7 @@ let middlewareArr=[async(req,res,next)=>{
 
 app.use((req,res,next)=>{
 	req.app.io=io;
+	req.app.tableViewCache=tableViewCache.data;
 	console.log("test))394012");
 	req.app.dbKey=dbKey;
 	next();
@@ -141,7 +152,7 @@ app.get('/:path?',(req,res,next)=>{
 	if(!path)res.redirect('/ag');
 	next()
 });
-app.get('/tableView',(req,res,next)=>{
+app.get('/tableviewcache',(req,res,next)=>{
 	console.log("tableViewCache",tableViewCache.data);
 	res.send(tableViewCache.data);
 });
@@ -204,9 +215,7 @@ io.on('connection', socket => {
 	});
 });
 
-httpServer.listen(portNumber,()=>{
-	console.log("Start, port :",portNumber);
-});
+
 
 module.exports = app,io;
 /*
