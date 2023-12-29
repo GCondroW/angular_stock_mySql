@@ -14,7 +14,6 @@ import { GlobalValidator } from '../shared/formValidator';
 import { ColDef } from 'ag-grid-community';
 import { Socket } from 'ngx-socket-io';
 
-
 @Component({
   selector: 'app-stock',
   templateUrl: './stock.component.html',
@@ -63,7 +62,6 @@ export class StockComponent {
 		{corsConfig:this.localOptions.corsConfig}
 		:
 		{corsConfig:GlobalVar.config.defaultValue.cors};
-
 	public options=new GlobalVar.options(Object.assign(this.localTableOptions,Object.assign(this.localActiveViewOptions,this.corsConfig)));
 	public activeView:any="";
 	private fb : FormBuilder = inject(FormBuilder);

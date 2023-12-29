@@ -8,15 +8,17 @@ var { createServer } = require("http");
 var stockRouter = require('./routes/stock');
 var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
+var mySqlDb=require("./db/mysql")
 var LocalStorage = require('node-localstorage').LocalStorage;
 var localDb=new LocalStorage("./db/localDb");
 
-let portNumber=3420;
+let portNumber=process.env.PORT || '3420';
 let originArr=[
 	"http://localhost:4200",
 	"http://localhost:3420",
 	"https://gcondrow.github.io",
-	"http://192.168.1.111:3420"
+	"http://192.168.1.111:3420",
+	"http://cwtest.biz.id",
 ];
 
 var app = express();
@@ -67,7 +69,6 @@ let corsOptions={
 };
 let tableViewCache=new class tableViewCache{
 	constructor(){
-		this.db=require("./db/mySql")
 		this.getView().then(x=>{
 			console.log("isReady");
 			this.data=x;
@@ -83,9 +84,9 @@ let tableViewCache=new class tableViewCache{
 		//console.log("clearCache",localDb.clear("localTableViewCache"));
 		//console.log("localTableViewCache",localTableViewCache);
 		console.log("localTableViewCache exist?",localTableViewCache?true:false);
-		if(!!localTableViewCache)return JSON.parse(localTableViewCache.toString());
-		temp['stock']=await this.db.singleQ("select * from "+"stock"+"_view_1");
-		temp['transaksi']=await this.db.singleQ("select * from "+"transaksi"+"_view_1");
+		//if(!!localTableViewCache)return JSON.parse(localTableViewCache.toString());
+		temp['stock']=await mySqlDb.singleQ("select * from "+"stock"+"_view_1");
+		temp['transaksi']=await mySqlDb.singleQ("select * from "+"transaksi"+"_view_1");
 		localDb.setItem('localTableViewCache',JSON.stringify(temp));
 		return temp;
 	};
@@ -235,6 +236,7 @@ module.exports = app,io;
 </minor bug>
 
 <improvement>
+-create means of resetting client localstorage somehow
 -Close button for offCancass
 	Accessibility
 +Persistent server localStorage (API server)

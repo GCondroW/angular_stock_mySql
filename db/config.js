@@ -1,7 +1,7 @@
 const config={
 	host     : 'localhost',
 	user     : 'root',
-	password : '',
+	password : '',//#KhUwzudxT{B
 	connectTimeout: 60000,
 	database : 'test',
 };

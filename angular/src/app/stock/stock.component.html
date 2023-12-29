@@ -1,6 +1,65 @@
 <div>
 	<div id="flexWrapper">
 		<div id="wrapper1">
+		
+			<nav id="mainNavbar" class="m-0 p-1 navbar sticky-top navbar-light bg-light">
+				<div class="p-0 container-fluid">
+					<div class="d-flex">
+						<button 
+							class="btn btn-outline-secondary btn-sm" 
+							(click)="_offCanvas.open(mainOffcanvasContent)" 
+							type="button"
+						>
+							<span class="navbar-toggler-icon"></span>
+						</button>
+						<div 
+							ngbDropdown 
+							class="ms-1"
+						>
+							<button 
+								ngbDropdownToggle 
+								class="btn btn-secondary btn-sm dropdown-toggle" 
+								type="button"
+							>
+								{{activeView|titlecase}}
+							</button>
+							<div 
+								ngbDropdownMenu 
+								class="dropdown-menu"
+							>
+								<button 
+									ngbDropdownItem 
+									*ngFor="let a of Object.keys(defaultTableData)"
+									(click)="setView(a)"
+									type="button"
+								>
+									{{a|titlecase}}
+								</button>
+							</div>
+						</div>
+					</div>	
+					
+					<div class="d-flex">
+						<input 
+							class="form-control form-control-sm me-1" 
+							type="search" 
+							placeholder="Cari.." 
+							aria-label="Search"
+							(input)="filter.search($event)"
+						>
+						<button 
+							class="btn btn-outline-secondary btn-sm" 
+							type="button"
+							(click)="_offCanvas.open(filterOffcanvassContent)" 
+						>
+							Filter
+						</button>
+					</div>
+					
+				</div>
+			</nav>
+			
+			<!--
 			<nav id="mainNavbar" class="m-0 p-1 navbar sticky-top navbar-light bg-light">
 				<div class="container px-1">
 					<div>
@@ -36,25 +95,7 @@
 								</button>
 							</div>
 						</div>	
-						<!-- OPERATION MODE -->
-						<!--				
-						<div ngbDropdown class="float-start ms-1"> 
-							<button ngbDropdownToggle class="btn  btn-secondary btn-sm dropdown-toggle" type="button">
-								{{operation.active|titlecase}}
-								<!--{{misc.toUpperCase(operation.active)}}--><!--
-							</button>
-							<div ngbDropdownMenu class="dropdown-menu">
-								<button 
-									ngbDropdownItem
-									*ngFor="let operationPointer of Object.keys(operation.mode)"
-									(click)="operation.changeOperation(operationPointer)"
-									type="button"
-								>
-									{{operationPointer|titlecase}}
-								</button>
-							</div>
-						</div>	
-						-->					
+						
 					</div>
 					<div class="d-flex">
 						<input 
@@ -74,6 +115,28 @@
 					</div>
 				</div>
 			</nav>
+			-->
+			
+			<!-- OPERATION MODE -->
+			<!--				
+			<div ngbDropdown class="float-start ms-1"> 
+				<button ngbDropdownToggle class="btn  btn-secondary btn-sm dropdown-toggle" type="button">
+					{{operation.active|titlecase}}
+					<!--{{misc.toUpperCase(operation.active)}}--><!--
+				</button>
+				<div ngbDropdownMenu class="dropdown-menu">
+					<button 
+						ngbDropdownItem
+						*ngFor="let operationPointer of Object.keys(operation.mode)"
+						(click)="operation.changeOperation(operationPointer)"
+						type="button"
+					>
+						{{operationPointer|titlecase}}
+					</button>
+				</div>
+			</div>	
+			-->					
+			
 		<div id="gridTable"
 			[style.width]="tableContainerStyle.width"
 			[style.height]="tableContainerStyle.height"

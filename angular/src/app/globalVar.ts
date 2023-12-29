@@ -1,4 +1,6 @@
 import { ColDef } from 'ag-grid-community';
+const domainName="cwtest.biz.id";
+const defaultDomainName="http://localhost:3420"
 export const GlobalVar ={
 	_var:{
 		socketConfig:"",
@@ -16,7 +18,7 @@ export const GlobalVar ={
 		adm:["guest42","a89",",./`"],
 		defaultValue:{
 			cors:{
-				url:"http://127.0.0.1:3420/",
+				url:window.location.hostname===domainName?window.location.origin:defaultDomainName,
 				options:{withCredentials: true},
 			},
 		},
@@ -441,12 +443,16 @@ export const GlobalVar ={
 					field: "NAMA",
 					sort: "asc",
 					pinned:'left',
+					maxWidth:144,
+					minWidth:72,
 				},
 				{
 					field: "QTY",
+					maxWidth:50,
 				},
 				{
 					field: "STN",
+					maxWidth:50,
 				},
 				{
 					field: "SUPPLIER",
@@ -461,6 +467,7 @@ export const GlobalVar ={
 					filter:"agNumberColumnFilter",
 					pinned:'left',
 					type:"numericColumn",
+					maxWidth:60,
 				},
 				
 			],
@@ -524,6 +531,8 @@ export const GlobalVar ={
 					field: "NAMA",
 					autoHeight: true,
 					pinned:'left',
+					maxWidth:144,
+					minWidth:72,
 				},
 				{
 					field: "JUMLAH",
