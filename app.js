@@ -216,8 +216,6 @@ io.on('connection', socket => {
 	});
 });
 
-
-
 module.exports = app,io;
 /*
 <minor bug>
@@ -237,6 +235,11 @@ module.exports = app,io;
 
 <improvement>
 -create means of resetting client localstorage somehow
+-fixing post transaksi message(undefined)
+-edit modal form didnt neet to click.selectall
+-creating user priviledges
+-search button navigation 
+-empty table indicator
 -Close button for offCancass
 	Accessibility
 +Persistent server localStorage (API server)

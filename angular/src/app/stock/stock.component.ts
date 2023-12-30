@@ -21,6 +21,7 @@ import { Socket } from 'ngx-socket-io';
 })
 
 export class StockComponent {
+
 	public fDebug:boolean=false;
 	public version:string="0.18.0"
 	private globalService:GlobalService=inject(GlobalService);
@@ -126,25 +127,27 @@ export class StockComponent {
 		},
 	};
 	constructor(){
-		this.navigationPages=GlobalVar.pages;
-		this.operation.active=Object.keys(this.operation.mode)[0];
-		let defaultActiveViewValue='stock';
-		if(defaultActiveViewValue){
-			this.activeView=defaultActiveViewValue;
-		}else{
-			this.activeView=this.options.data.activeView
-				||
-				this.options.setOptions(this.activeView,"activeView");
-		};
-		let localDefaultFilterObj=this.localOptions.filterParams;
-		console.log("localDefaultFilterObj",localDefaultFilterObj);
-		this.misc.setFilterParams(
-			localDefaultFilterObj?
-			localDefaultFilterObj:
-			this.misc.getDefaultFilterObj()
-		);
-		console.log("localDefaultFilterObj",this.options.data.filterParams);
-		this.globalService.setHeaders("user",this.user.name);
+
+		
+			this.navigationPages=GlobalVar.pages;
+			this.operation.active=Object.keys(this.operation.mode)[0];
+			let defaultActiveViewValue='stock';
+			if(defaultActiveViewValue){
+				this.activeView=defaultActiveViewValue;
+			}else{
+				this.activeView=this.options.data.activeView
+					||
+					this.options.setOptions(this.activeView,"activeView");
+			};
+			let localDefaultFilterObj=this.localOptions.filterParams;
+			console.log("localDefaultFilterObj",localDefaultFilterObj);
+			this.misc.setFilterParams(
+				localDefaultFilterObj?
+				localDefaultFilterObj:
+				this.misc.getDefaultFilterObj()
+			);
+			console.log("localDefaultFilterObj",this.options.data.filterParams);
+			this.globalService.setHeaders("user",this.user.name);
 	};
 	
 	ngOnInit(){
@@ -678,6 +681,7 @@ export class StockComponent {
 
 				});
 				this.modal.modal_2.closeModal();
+				this.modal.modal_1.closeModal();
 			},
 		},
 		modal_3:{
@@ -981,6 +985,13 @@ export class StockComponent {
 		},
 		onFirstDataRendered:(event:any)=>{
 			console.log("grid Event => onFirstDataRendered : ");
+			console.log("onFirstDataRendered timeout start")
+			if(!!this.gridTimeoutContainer)clearTimeout(this.gridTimeoutContainer);
+			this.gridTimeoutContainer=setTimeout(async()=>{
+				console.log("onFirstDataRendered timeout finish")
+				this.gridOptions.columnApi.autoSizeAllColumns();
+				this.gridOptions.api.hideOverlay();
+			},this.gridTimeoutDelay);
 			
 			//this.gridOptions.columnApi.autoSizeAllColumns();
 		},
@@ -994,7 +1005,7 @@ export class StockComponent {
 
 		},
 		onPaginationChanged:(params:any)=>{
-
+			//console.log("grid Event => onPaginationChanged : ");
 		},
 		onRowDataUpdated:async(event:any)=>{
 			console.log("grid Event => onRowDataUpdated : ");
@@ -1017,19 +1028,19 @@ export class StockComponent {
 			console.log("grid Event => onModelUpdated : ");
 			//this.gridOptions.columnApi.autoSizeAllColumns();
 			//this.adjustTableContainerSize();
-			console.log("onModelUpdated timeout start")
-			if(!!this.gridTimeoutContainer)clearTimeout(this.gridTimeoutContainer);
-			this.gridTimeoutContainer=setTimeout(async()=>{
-				console.log("onModelUpdated timeout finish")
-				
-				this.gridOptions.columnApi.autoSizeAllColumns();
-				this.gridOptions.api.hideOverlay();
-			},this.gridTimeoutDelay);
 		},
 		onComponentStateChanged:(event:any)=>{
 			console.log("grid Event => onComponentStateChanged : ");
 			//this.gridOptions.columnApi.autoSizeAllColumns();
 			//this.adjustTableContainerSize();
+			console.log("onComponentStateChanged timeout start")
+			if(!!this.gridTimeoutContainer)clearTimeout(this.gridTimeoutContainer);
+			this.gridTimeoutContainer=setTimeout(async()=>{
+				console.log("onComponentStateChanged timeout finish")
+				this.gridOptions.columnApi.autoSizeAllColumns();
+				this.gridOptions.api.hideOverlay();
+			},this.gridTimeoutDelay);
+			
 		},
 		onColumnVisible:(event:any)=>{
 			console.log("grid Event => onColumnVisible : ");
@@ -1219,7 +1230,6 @@ export class StockComponent {
 		this.misc.loadingWrapper(
 			()=>{
 				console.log("SET_VIEW => ",viewName,this.options.setOptions(viewName,"activeView"));
-				
 				let tableName=viewName;
 				//let tableData=this.stock.daftar[viewName].data[0];
 				let tableData=this.user.getTableData(tableName);
@@ -1248,8 +1258,8 @@ export class StockComponent {
 			this.activeView=view;
 		};
 		this.gridOptions.api.deselectAll();
-		this.gridOptions.api.setColumnDefs(null);
-		this.gridOptions.api.setFilterModel(null);
+		//this.gridOptions.api.setColumnDefs(null);
+		//this.gridOptions.api.setFilterModel(null);
 		this.gridOptions.api.setColumnDefs(this.options.data.tableOptions[view].columnDefs);
 		this.gridOptions.api.setFilterModel(this.options.data.filterParams[view]);
 	};

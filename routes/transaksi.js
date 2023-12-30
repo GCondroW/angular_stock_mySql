@@ -3,7 +3,7 @@ var router = express.Router();
 var app = express();
 var db = require('../db/mysql');
 
-const defaultTableName="transaksi_view_1";
+const defaultTableName="transaksi";
 const defaultDbName="test";
 const handleErrorAsync = func => (req, res, next) => {
     func(req, res, next).catch((error) => next(error));
@@ -34,24 +34,29 @@ const outputDebug=(req)=>{
 };
 
 router.get('/', handleErrorAsync(async(req, res, next)=>{
-	console.log('get transaksi');
 	let q="";
 	let params=req.params;
 	let dbName=params.dbName;
-	console.log("params",params);
 	if(!dbName)dbName=defaultTableName;
 	let query=req.query;
 	let id=!!query.id?query.id:"";
-	q+="select * from "+dbName;
-	if(!!id)q+=" where id_daftar in ("+id+")";
-	let resVar={
-		dbKey:req.app.dbKey.value,
-		data:await db.singleQ(q),
+	let resVar=null;
+	if(!!id){
+		q+="select * from "+dbName+"_view_1";
+		q+=" where id_daftar in ("+id+")";
+		console.log("router>get>sql")
+		resVar={
+			data:await db.singleQ(q),
+		};
+	}else{
+		console.log("router>get>tableViewCache")
+		resVar={
+			data:req.app.tableViewCache[dbName],
+		};
 	};
 	console.log("EMIT_AT_GET",
-		req.app.io.emit("GET",resVar)
+
 	);
-	//console.log("resVar",resVar);
 	res.json(resVar);
 }));
 
@@ -59,20 +64,16 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 	let params=req.params;
 	let body=req.body;
 	let user=req.get('user')?req.get('user'):'Guest-1';
-	console.log("params ", params);
-	console.log("body ", body);
-	let dbName="TRANSAKSI";
-	if(!dbName)throw new Error("DB_NAME_NOT_SPECIFIED");
 	if(body.length===1){
 		body=body[0];
 		//let currentTime=await db.singleQ("SELECT NOW()")[0]["NOW()"];
 		let currentTime=new Date();
 		console.log("currentTime",currentTime)
-		let q="INSERT INTO TRANSAKSI(JUMLAH,USER,TANGGAL,JENIS,KETERANGAN,ID_DAFTAR) VALUES(?,?,?,?,?,?)";
+		let q="INSERT INTO transaksi(JUMLAH,USER,TANGGAL,JENIS,KETERANGAN,ID_DAFTAR) VALUES(?,?,?,?,?,?)";
 		let v=[body.JUMLAH,user,currentTime,body.JENIS,body.KETERANGAN,body.ID_DAFTAR];
 		let resVar=await db.preSttQ(q,v);
 		let insertedData=await db.singleQ("SELECT * FROM "+defaultTableName+" WHERE ID_TRANSAKSI="+resVar.insertId);
-		console.log("DEBUG ",resVar);
+		console.log("DEBUG ",insertedData);
 		let emitVar={
 			dbKey:req.app.dbKey.up(),
 			data:insertedData,

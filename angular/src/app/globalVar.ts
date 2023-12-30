@@ -443,16 +443,12 @@ export const GlobalVar ={
 					field: "NAMA",
 					sort: "asc",
 					pinned:'left',
-					maxWidth:144,
-					minWidth:72,
 				},
 				{
 					field: "QTY",
-					maxWidth:50,
 				},
 				{
 					field: "STN",
-					maxWidth:50,
 				},
 				{
 					field: "SUPPLIER",
@@ -467,7 +463,6 @@ export const GlobalVar ={
 					filter:"agNumberColumnFilter",
 					pinned:'left',
 					type:"numericColumn",
-					maxWidth:60,
 				},
 				
 			],
@@ -531,8 +526,6 @@ export const GlobalVar ={
 					field: "NAMA",
 					autoHeight: true,
 					pinned:'left',
-					maxWidth:144,
-					minWidth:72,
 				},
 				{
 					field: "JUMLAH",

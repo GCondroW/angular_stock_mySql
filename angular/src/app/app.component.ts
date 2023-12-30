@@ -14,6 +14,18 @@ export class AppComponent {
 	dynamicRoutes=this.appRoutingModule.dynamicRoutes;
 	constructor(){
 		console.log("APP_BASE_HREF",inject(APP_BASE_HREF));
+		let devObj:any={
+			devMode:true,
+			//devIteration:Number(localStorage.getItem('devIteration')||1),
+			devRoutine:async()=>{
+				console.log("start devMode routine");
+				let localStorageRemovedArr=["name","dbKey","options","tableData"];
+				await localStorageRemovedArr.map(item=>localStorage.removeItem(item));
+				//this.devObj.devIteration=this.devObj.devIteration++;
+				//localStorage.setItem("devIteration",this.devObj.devIteration);
+			},
+		};
+		devObj.devMode?devObj.devRoutine():"";
 		GlobalVar.pages=this.dynamicRoutes;
 	};
 	ngOnInit() {

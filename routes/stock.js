@@ -41,8 +41,6 @@ router.get('/', handleErrorAsync(async(req, res, next)=>{
 	let query=req.query;
 	let id=!!query.id?query.id:"";
 	let resVar=null;
-	console.log("dbName : ",dbName);
-	console.log("query : ",query);
 	if(!!id){
 		q+="select * from "+dbName+"_view_1";
 		q+=" where id_daftar in ("+id+")";
@@ -348,7 +346,6 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	console.log(q_DAFTAR.value);
 	let q=[];
 	q=[
-		"use "+defaultDbName+";",
 		"DELETE FROM daftar;",
 		"ALTER TABLE daftar AUTO_INCREMENT = 1;",
 		"DELETE FROM transaksi;",
