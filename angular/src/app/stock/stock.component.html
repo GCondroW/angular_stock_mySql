@@ -155,21 +155,16 @@
 					[attr.for]="'inlineCheckbox'+item.field"
 					value={{!item.hide}}
 					[checked]="!item.hide"
-					(change)="
-						
+					(change)="				
 						gridOptions.columnApi.setColumnVisible(item.field,!!item.hide);
 						console.log('item.field',item.field);
 						console.log('item.hide',!item.hide);
 						misc.showHiddenColumn(item.field,!item.hide);
-						gridOptions.columnApi.autoSizeAllColumns();
-						adjustTableContainerSize();
-						
+						//gridOptions.columnApi.autoSizeAllColumns();
+						//adjustTableContainerSize();	
 					"
 				>
-				<label 
-					class="form-check-label" 
-					[attr.for]="'inlineCheckbox'+item.field"
-				>
+				<label class="form-check-label" [attr.for]="'inlineCheckbox'+item.field">
 					{{item.field|titlecase}}
 				</label>
 			</div>
@@ -185,6 +180,7 @@
 		<span>{{version}}</span>
 	</div>
 </ng-template>
+
 <ng-template #filterOffcanvassContent let-filterCanvas>
 	<div class="offcanvas-header">
 		<h3>Filter</h3>
@@ -198,7 +194,7 @@
 			<div class="col-8">
 				<select class="form-select form-select-sm">
 					<option
-						(click)="filter.setFilter('STOCK','','number','greaterThanOrEqual')"
+						(click)="filter.setFilter('STOCK','','number','greaterThanOrEqual');$event.stopPropagation()"
 						[selected]="options.data.filterParams[activeView].STOCK.filter===''"
 					>
 						Semua
@@ -225,7 +221,7 @@
 			</div>
 		</div>	
 		<div>
-			<pre>
+			<!--<pre>
 debug
 
 filter defaultFilterParams
@@ -250,7 +246,7 @@ conditional
 							&&
 							options.data.filterParams[activeView].STOCK.type==='lessThan'}}
 
-			</pre>
+			</pre>-->
 		</div>
 		<hr>
 		<div class="row mb-1" *ngFor="let header of Object.keys(stock.daftar[activeView].filterData)">
@@ -392,6 +388,44 @@ conditional
 	></app-dynamic-modal>
 </ng-template>
 <ng-template #modalBody1>
+
+	<div class="d-flex justify-content-start">
+		<div class="container me-3" [style.width]="'auto'">
+			<div class="row" *ngFor="let item of Object.keys(modal.modal_1.data)">
+				<label for="{{item+'Id'}}" class="col-form-label-sm">
+					{{item}}
+				</label>
+			</div>
+		</div>
+		<div class="container">
+			<div class="row" *ngFor="let item of Object.keys(modal.modal_1.data)">
+				<p id="{{item+'Id'}}" class="form-control form-control-plaintext form-control-sm" >
+					{{"	:	"+modal.modal_1.data[item]}}
+				</p>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<div class="container">
+		<div class="row">
+			<h4>Riwayat</h4>
+		</div>
+		<div class="my-3 d-flex justify-content-center" *ngIf="modal.modal_1.isLoading">
+			<div class="spinner-border" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+		</div>
+		<div class="row" 
+			[hidden]="!!modal.modal_1.isLoading"
+			[style.height]="'200px'"
+		>
+			<app-data-table 
+				[gridOptions]="modal.modal_1.grid.gridOptions"
+				[rowData]="null"
+			></app-data-table>
+		</div>
+	</div>
+	<!--
 	<div>
 		<div class="container-fluid">
 			<div *ngFor="let item of Object.keys(modal.modal_1.data)" class="row mb-1">
@@ -408,40 +442,11 @@ conditional
 						id="{{item+'Id'}}"
 						class="form-control form-control-plaintext form-control-sm col-8" 
 					>{{modal.modal_1.data[item]}}</p>
-					<!--
-					<input 
-						style="{border:none;}" 
-						type="text" 
-						id="{{item+'Id'}}"
-						readonly
-						class="form-control form-control-plaintext form-control-sm" 
-						value="{{modal.modal_1.data[item]}}"
-					>
-					-->
 				</div>
-			</div>
-		</div>
-		<hr>
-		<div class="container">
-			<div class="row">
-				<h4>Riwayat</h4>
-			</div>
-			<div class="my-3 d-flex justify-content-center" *ngIf="modal.modal_1.isLoading">
-				<div class="spinner-border" role="status">
-					<span class="visually-hidden">Loading...</span>
-				</div>
-			</div>
-			<div class="row" 
-				[hidden]="!!modal.modal_1.isLoading"
-				[style.height]="'200px'"
-			>
-				<app-data-table 
-					[gridOptions]="modal.modal_1.grid.gridOptions"
-					[rowData]="null"
-				></app-data-table>
 			</div>
 		</div>
 	</div>
+	-->
 </ng-template>
 <ng-template #modalFooter1>
 	<button type="button" class="btn btn-danger me-auto" (click)="modal.modal_1.deleteFunct(modal.modal_1.data)">Hapus</button>
@@ -459,6 +464,145 @@ conditional
 	></app-dynamic-modal>
 </ng-template>
 <ng-template #modalBody2>
+	<form [formGroup]="modal.modal_2.form" (ngSubmit)="modal.modal_2.newTransactionSubmit()">
+		<button id="submitButtonId" type="submit" hidden></button>
+		<div class="d-flex justify-content-start">
+			<div class="container me-3" [style.width]="'auto'">
+				<div class="row">
+					<label for="" class="col-form-label-sm">Nama</label>
+				</div>
+				<div class="row">
+					<label for="" class="col-form-label-sm">Supplier</label>
+				</div>
+				<div class="row">
+					<label for="" class="col-form-label-sm">Kategori</label>
+				</div>
+				<div class="row">
+					<label for="" class="col-form-label-sm">Satuan</label>
+				</div>
+			</div>
+			<div class="container">
+				<div class="row">
+					<p id="" class="form-control-plaintext form-control-sm">{{modal.modal_2.data.NAMA}}</p>
+				</div>
+				<div class="row">
+					<p id="" class="form-control-plaintext form-control-sm">{{modal.modal_2.data.SUPPLIER}}</p>
+				</div>
+				<div class="row">
+					<p id="" class="form-control-plaintext form-control-sm">{{modal.modal_2.data.KATEGORI}}</p>
+				</div>
+				<div class="row">
+					<p id="" class="form-control-plaintext form-control-sm">{{+modal.modal_2.data.QTY+' '+modal.modal_2.data.STN+'/ Ctn'}}</p>
+				</div>
+			</div>
+		</div>
+		
+		<hr>
+		
+		<div class="container">
+			<div class="d-flex justify-content-start">
+				<h6>Jumlah</h6>
+			</div>
+		</div>
+		<div class="d-flex justify-content-start">
+			<div class="container me-3" [style.width]="'auto'">
+				<div class="row">
+					<label for="" class="col-form-label-sm">Awal</label>
+				</div>
+				<div class="row">
+					<label for="" class="col-form-label-sm">Akhir</label>
+				</div>
+			</div>
+			<div class="container">
+				<div class="row">
+					<input 
+						type="text" 
+						readonly
+						class="form-control-plaintext form-control-sm ms-2" 
+						value="{{modal.modal_2.data.STOCK}}"
+					>
+				</div>
+				<div class="row">
+					<input
+						onclick="this.select()" 
+						type="number" 
+						class="form-control form-control-sm"
+						[class.is-invalid]="
+							!modal.modal_2.form.get('final').valid 
+							&& 
+							modal.modal_2.isInteracted
+						"
+						[class.is-valid]="
+							modal.modal_2.form.get('final').valid 
+							&& 
+							modal.modal_2.isInteracted
+						"
+						formControlName="final"
+					>
+					<div class="invalid-feedback">
+						{{modal.modal_2.form.controls.final.errors?.message}}
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<hr>
+
+		<div class="d-flex justify-content-start">
+			<div class="container me-3" [style.width]="'auto'">
+				<div class="row">
+					<label class="col-form-label-sm">Perubahan</label>
+				</div>
+				<div class="row">
+					<label class="col-form-label-sm">Jenis</label>
+				</div>
+				<div class="row">
+					<label class="col-form-label-sm">Keterangan</label>
+				</div>
+			</div>
+			<div class="container">
+				<div class="row">
+					<input
+						type="number"
+						class="form-control form-control-sm ms-2"						
+						[class.is-invalid]="
+							!modal.modal_2.form.get('update').valid
+							&& 
+							modal.modal_2.isInteracted"
+						[class.is-valid]="
+							modal.modal_2.form.get('update').valid
+							&& 
+							modal.modal_2.isInteracted
+						"
+						formControlName="update"
+					>
+					<div class="invalid-feedback">
+						{{modal.modal_2.form.controls.update.errors?.message}}
+					</div>
+				</div>
+				<div class="row">
+					<input
+						style="{border:none;}" 
+						type="text"
+						readonly
+						class="form-control-plaintext form-control-sm ms-2"
+						formControlName="jenis"
+					>
+				</div>
+				<div class="row">
+					<input
+						onclick="this.select()" 
+						type="text"
+						class="form-control form-control-sm ms-2"
+						formControlName="keterangan"
+					>
+				</div>
+			</div>
+		</div>
+	</form>
+	
+	<!--<hr><hr>-->
+	<!--
 	<div>
 		<div class="container">
 			<div class="row">
@@ -597,8 +741,10 @@ conditional
 			</form>
 		</div>
 	</div>
+	-->
 </ng-template>
 <ng-template #modalFooter2>
+
 	<button type="button" class="btn btn-outline-dark" 
 		[disabled]="!modal.modal_2.form.valid"
 		onclick="(()=>document.getElementById('submitButtonId').click())()"
@@ -811,7 +957,7 @@ conditional
 		[modalBody]="modalBody4"
 		[modalFooter]="modalFooter4"
 		[modal]="modal4"
-		[modalTitle]="'Tambah'"
+		[modalTitle]="'Edit'"
 	></app-dynamic-modal>
 </ng-template>
 <ng-template #modalBody4>
@@ -827,7 +973,6 @@ conditional
 			</label>
 			<div class="col-9">
 				<input
-					onclick="this.select()" 
 					type="text"
 					id="l_10"
 					class="form-control form-control-sm"
@@ -850,7 +995,6 @@ conditional
 			<div class="col-7">
 				<div class="input-group ">
 					<input
-						onclick="this.select()" 
 						type="text"
 						id="l_11"
 						class="form-control form-control-sm"
@@ -894,7 +1038,6 @@ conditional
 			</label>
 			<div class="col-4">
 				<input
-					onclick="this.select()" 
 					type="text"
 					id="l_12"
 					class="form-control form-control-sm"
@@ -918,7 +1061,6 @@ conditional
 			<div class="col-4">
 				<div class="input-group">
 					<input
-						onclick="this.select()" 
 						type="text"
 						id="l_13"
 						class="form-control form-control-sm"
@@ -975,7 +1117,7 @@ conditional
 				</select>
 				<div class="invalid-feedback" *ngIf="formKategori.errors && (formKategori.dirty || formKategori.touched)">
 					{{formKategori.errors?.message}}
-				</div>
+				</div>		
 			</div>
 		</div>
 		<button button id="submitButtonId" hidden type="submit">submit</button>

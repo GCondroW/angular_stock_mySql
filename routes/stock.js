@@ -33,6 +33,25 @@ const outputDebug=(req)=>{
 	return temp;
 };
 
+const getData=async(dbName,id)=>{
+	let q="";
+	q+="select * from "+dbName+"_view_1";
+	if(!!id)q+=" where id_daftar in ("+id+")"
+	let returnVar=await db.singleQ(q);
+	return returnVar;
+};
+
+const updateAllData=async(dbNameArr)=>{
+	let temp=[];
+
+	dbNameArr.map(async (dbName)=>{
+		getData(dbName).then(x=>{
+			temp[dbName]=x
+		});
+	});
+	return await temp;
+};
+
 router.get('/', handleErrorAsync(async(req, res, next)=>{
 	let q="";
 	let params=req.params;
@@ -42,16 +61,14 @@ router.get('/', handleErrorAsync(async(req, res, next)=>{
 	let id=!!query.id?query.id:"";
 	let resVar=null;
 	if(!!id){
-		q+="select * from "+dbName+"_view_1";
-		q+=" where id_daftar in ("+id+")";
 		console.log("router>get>sql")
 		resVar={
-			data:await db.singleQ(q),
+			data:await getData(dbName,id)
 		};
 	}else{
 		console.log("router>get>tableViewCache")
 		resVar={
-			data:req.app.tableViewCache[dbName],
+			data:req.app.tableViewCache.data[dbName],
 		};
 	};
 	resVar.data.map(item=>item.STOCK=Number(item.STOCK));
@@ -94,6 +111,9 @@ router.delete('/', handleErrorAsync(async(req, res, next)=>{
 	console.log("SQL QUERY : ",q);
 	
 	let resVar=await db.multQ(q);
+	console.log("delete resVar",resVar);
+	await req.app.tableViewCache.delete(idArray);
+		
 	let emitVar={
 		dbKey:req.app.dbKey.up(),
 		deletedDataId:resVar.map(item=>item.ID_DAFTAR),
@@ -235,11 +255,14 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 	]
 	console.log("SQL QUERY : ",q);
 	//console.log("q_DAFTAR : ",q_DAFTAR.values);
-	let resVar=await db.multQ(q);
-	resVar.map(item=>item.STOCK=Number(item.STOCK));
+	let resVar={};
+	resVar['stock']=await db.multQ(q);
+	resVar['transaksi']=await db.singleQ("SELECT * FROM transaksi_view_1 WHERE ID_DAFTAR="+resVar.stock[0].ID_DAFTAR);
+	resVar.stock.map(item=>item.STOCK=Number(item.STOCK));
+	await req.app.tableViewCache.addStock(resVar);
 	let emitVar={
 		dbKey:req.app.dbKey.up(),
-		data:resVar,
+		data:resVar.stock,
 		message:"POST_UPDATED_MESSAGE",
 	};
 	console.log('EMIT_AT_POST',req.app.io.emit('post',emitVar));
@@ -302,6 +325,7 @@ router.put('/', handleErrorAsync(async(req, res, next)=>{
 
 	let resVar=await db.multQ(q);
 	resVar.map(item=>item.STOCK=Number(item.STOCK));
+	await req.app.tableViewCache.editStock(resVar)
 	//if(!!resVar.STOCK)resVar.STOCK=number(resVar.STOCK);//convert string to number
 	let emitVar={
 		dbKey:req.app.dbKey.up(),

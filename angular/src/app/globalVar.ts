@@ -1,6 +1,6 @@
 import { ColDef } from 'ag-grid-community';
 const domainName="cwtest.biz.id";
-const defaultDomainName="http://localhost:3420"
+const devDomainName="https://localhost:3420"
 export const GlobalVar ={
 	_var:{
 		socketConfig:"",
@@ -18,7 +18,7 @@ export const GlobalVar ={
 		adm:["guest42","a89",",./`"],
 		defaultValue:{
 			cors:{
-				url:window.location.hostname===domainName?window.location.origin:defaultDomainName,
+				url:window.location.hostname===domainName?window.location.origin:devDomainName,
 				options:{withCredentials: true},
 			},
 		},
@@ -211,9 +211,9 @@ export const GlobalVar ={
 			if(Array.isArray(body)){
 				let i=0;
 				body.map(item=>{
-					alertString+="["+(i+1)+"]"+"\n:";
+					alertString+="["+(i+1)+"]"+"\n";
 					Object.keys(item).map((pointer:any)=>{
-						alertString+=pointer+"\t:"+item[pointer]+"\n";
+						alertString+=pointer+" : "+item[pointer]+"\n";
 					});
 					i++;
 					alertString+="====================\n";

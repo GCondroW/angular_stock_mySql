@@ -127,8 +127,6 @@ export class StockComponent {
 		},
 	};
 	constructor(){
-
-		
 			this.navigationPages=GlobalVar.pages;
 			this.operation.active=Object.keys(this.operation.mode)[0];
 			let defaultActiveViewValue='stock';
@@ -352,21 +350,21 @@ export class StockComponent {
 								this.user.setTableData(dbKey,oldDataTransaksi,'transaksi');
 							};
 							if(oldDataStock.length>0){
-								let newAndUpdatedData=oldDataStock;
+								let newAndUpdatedData=this.misc.copy(oldDataStock);
 								data.map((item:any)=>{
 									let updatedDataIndex=oldDataStock.findIndex((item2:any)=>item2.ID_DAFTAR===item.ID_DAFTAR);
 									newAndUpdatedData[updatedDataIndex].STOCK+=item.JUMLAH;
+									alertArr.push({
+										id:newAndUpdatedData[updatedDataIndex].ID_DAFTAR,
+										Nama:newAndUpdatedData[updatedDataIndex].NAMA,
+										Supplier:newAndUpdatedData[updatedDataIndex].SUPPLIER,
+										"Stock Awal":oldDataStock[updatedDataIndex].STOCK,
+										"Stock Akhir":newAndUpdatedData[updatedDataIndex].STOCK,
+										"Perubahan Stock":newAndUpdatedData[updatedDataIndex].STOCK-oldDataStock[updatedDataIndex].STOCK,
+									});
 								});
 								this.user.setTableData(dbKey,newAndUpdatedData,'stock');
 							};
-							
-							data.map((item:any)=>{
-								alertArr.push({
-									id:item.ID_DAFTAR,
-									Nama:item.NAMA,
-									Supplier:item.SUPPLIER,
-								});
-							});
 							this.updateData(this.user.getTableData(this.activeView));
 							alert(GlobalVar.alert(alertArr,message));
 							break;
@@ -929,6 +927,13 @@ export class StockComponent {
 			console.log('filter',filter);
 			console.log('filterType',filterType);
 			console.log('type',type);
+			alert("Filter :"+`
+				getCurrentFilter().STOCK?.filter : `+this.filter.getCurrentFilter().STOCK?.filter+`
+				header : `+header+`
+				filter : `+filter+`
+				filterType : `+filterType+`
+				type : `+type
+			)
 			let filterInstance = this.gridOptions.api.getFilterInstance(header); 
 			let defaultFilterParams=this.misc.copy(this.filter.getDefaultFilterParams());
 			let temp1:any={};
@@ -965,7 +970,7 @@ export class StockComponent {
 		},
 	};
 	private gridTimeoutDelay:number=500;
-	private gridTimeoutContainer:any=undefined;
+	private gridTimeoutContainer:any={};
 	public gridOptions:any= {
 		rowData:null,
 		suppressCellFocus:true,
@@ -986,13 +991,14 @@ export class StockComponent {
 		onFirstDataRendered:(event:any)=>{
 			console.log("grid Event => onFirstDataRendered : ");
 			console.log("onFirstDataRendered timeout start")
+			/*
 			if(!!this.gridTimeoutContainer)clearTimeout(this.gridTimeoutContainer);
 			this.gridTimeoutContainer=setTimeout(async()=>{
 				console.log("onFirstDataRendered timeout finish")
-				this.gridOptions.columnApi.autoSizeAllColumns();
+				//this.gridOptions.columnApi.autoSizeAllColumns();
 				this.gridOptions.api.hideOverlay();
 			},this.gridTimeoutDelay);
-			
+			*/
 			//this.gridOptions.columnApi.autoSizeAllColumns();
 		},
 		onSelectionChanged:(event: any)=>{
@@ -1016,36 +1022,48 @@ export class StockComponent {
 		},
 		onColumnResized: (event:any) => {
 			console.log("grid Event => onColumnResized : ");
-			/*
-			this.misc.loadingWrapper(()=>this.adjustTableContainerSize(),this.gridOptions).then(x=>{
-				console.log("-----------------------------------------------------")
-				this.gridOptions.api.hideOverlay();
-			});
-			*/
-			this.adjustTableContainerSize();
+			if (event.source==="autosizeColumns"||event.source==="api")return this.adjustTableContainerSize();
+			if(!!this.gridTimeoutContainer["onColumnResized"])clearTimeout(this.gridTimeoutContainer["onColumnResized"]);
+			this.gridTimeoutContainer["onColumnResized"]=setTimeout(async()=>{
+				console.log("onColumnResized timeout finish")
+				let temp=this.options.data.tableOptions;
+				temp[this.activeView].columnDefs.find((item:any)=>item.field===event.column.userProvidedColDef.field).width=event.column.actualWidth;
+				this.options.setOptions(temp,'tableOptions')
+				this.adjustTableContainerSize();
+			},this.gridTimeoutDelay);
 		},
 		onModelUpdated: (event:any)=>{
 			console.log("grid Event => onModelUpdated : ");
-			//this.gridOptions.columnApi.autoSizeAllColumns();
-			//this.adjustTableContainerSize();
+			this.gridOptions.api.hideOverlay();
 		},
 		onComponentStateChanged:(event:any)=>{
 			console.log("grid Event => onComponentStateChanged : ");
-			//this.gridOptions.columnApi.autoSizeAllColumns();
-			//this.adjustTableContainerSize();
 			console.log("onComponentStateChanged timeout start")
-			if(!!this.gridTimeoutContainer)clearTimeout(this.gridTimeoutContainer);
-			this.gridTimeoutContainer=setTimeout(async()=>{
+			if(!!this.gridTimeoutContainer["onComponentStateChanged"])clearTimeout(this.gridTimeoutContainer["onComponentStateChanged"]);
+			this.gridTimeoutContainer["onComponentStateChanged"]=setTimeout(async()=>{
 				console.log("onComponentStateChanged timeout finish")
-				this.gridOptions.columnApi.autoSizeAllColumns();
+				this.options.data.tableOptions[this.activeView].columnDefs.map((columnDef:any)=>{
+					if(columnDef.width){
+					
+						this.gridOptions.columnApi.setColumnWidth(columnDef.field,columnDef.width);
+						console.log("columnDef.width applied",columnDef.field,columnDef.width);
+					}else{
+						this.gridOptions.columnApi.autoSizeColumn(columnDef.field);
+					};
+				});
 				this.gridOptions.api.hideOverlay();
 			},this.gridTimeoutDelay);
-			
 		},
 		onColumnVisible:(event:any)=>{
-			console.log("grid Event => onColumnVisible : ");
-			
-			//this.adjustTableContainerSize();
+			console.log("grid Event => onColumnVisible : ",event);
+			this.options.data.tableOptions[this.activeView].columnDefs.map((columnDef:any)=>{
+				if(columnDef.width){
+					this.gridOptions.columnApi.setColumnWidth(columnDef.field,columnDef.width);
+					console.log("columnDef.width applied",columnDef.field,columnDef.width);
+				}else{
+					this.gridOptions.columnApi.autoSizeColumn(columnDef.field);
+				};
+			});
 		},
 		onRowDoubleClicked:(event:any)=>{
 			console.log("grid Event => onRowDoubleClicked : ");

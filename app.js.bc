@@ -4,75 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
-var fs = require(`fs`);
 var { createServer } = require("http");
-var https = require('https');
-const httpsOptions = {
-  key: `-----BEGIN RSA PRIVATE KEY-----
-MIIEowIBAAKCAQEA2a24PUUQtYjCJ3KiTvYFfN4c47hW6UBCY28mJByPhLf3/wp2
-YzoDkI8i+1gOTHOQK6bT3bXIVvshtuQmgb461MU7MDu+2rWdt4k8N+gXkE5haZuL
-SJ1exhGpFrygwLD4E1bYhWCv8OB7X5xXBCt2GvR/Y9r6D2mzZ3NkcngVL5Omk5sI
-sjE9A6B2U7R28tZyd6VgFM975uh/DQo9C0On8X6xJZ5WS5rwzAJwvY/B+lcSOFoh
-wtoz9stFmscfxjgVqt0tQwvm4Vo9ejuicbM+cx3Eojqepd2tO/4n/Ko2rjjhIxv8
-6wjpiwz0p4USVCowMWqCUTCpjKhlxMAqzTv3sQIDAQABAoIBAQChUe49cgbNEloZ
-FAqXjBpLDOzKEt5OJLJOsJvKnWP7Tr+6wk00glUL+BhLv1lxbR+GSi+vmr2rQJge
-y3yCILHG55hSyaRKv9fvogP/xsBX0M6+jmit2vrWvVXbpNVZmI1w/6adSid501N7
-awjN7Uus9E/IeAtkCsjLPShO8RF6XIs16udl37XtBOHNJXS3udNA8qYyhqeh5m5d
-kvdvTbHFwBTcXPU0vC0039Va9cFR7vu3JkZGCP5lrWCIveZkpzpfP7hEDHjcuNLe
-IWQPxqcPdnfNgaOqYckaTsFqsHNi936vtJx0lb54RtttxgYraEk5nJm8mjVBKCwd
-frz8++FBAoGBAPR5eNZj7AziFDeqoqXUDu1M+Fg3bPzgnTWn9WkHJl5y5alB+ryu
-OSDh3Idel6BBopu2mljMLSFZpPfp6LLW0XepiQRAVIb8fZVrKup9vUrxQWnt+db2
-UaxX8I8TCspO5lkZ+5IhSNK2sdgxuo3R6/x3ehNBE5y896VHE/7V93dJAoGBAOPw
-2ga+SoXub/kNrEkBOmYEZOtf+eUydqdj0eNpKp83ob2FOoBlNr/mylRP98Q9Q+fd
-yJci9zMe9hsO95Jx5LDJud5+FlWwSBV4r8FFXYOFqzZ3lqbeihfGwNF6HlsHb9Qf
-5oFky/LEKCd1AjRXlAuKuUyERy+c4I6er0YS6fUpAoGAIAZdjvAN9u4SqewfXEu4
-HNvNWHkCPOoLjgDPhA+cthik/xQWjWrhLu6HXfBFOof+jhlQhLtSWiENHDC2+95q
-GBvMSBNJP1mJ9e3Q9GC+UDfkUsUKyl7/+eyXJZbf/fpx8FAYBV9406l9CI4TGwrZ
-t/vKsQUAVbLnWe5Cr0pGHYkCgYACsEOSEsqEO+S8NkoS7l3G+ERMdmxXJLo7jTTb
-jtD+4cQZnSmsfAUiTFGUnwDYIrTbVkVYawQpaTMT7KBE7Oz6nNaBZlFTH2oqPqss
-B2pr87aqRMzVGQjd8O0zS1JyVmseQGYSnqK9MU0b8ghdn67SWAeJfIHucNZBOGPu
-2qhByQKBgBsjqrmxh+xLokxNY8XNk70ke0w+6Y+bdvlnXlC1G/RXQwYezcHYAqHE
-TjuWV26SHNeg7MQfimX1EiZEJi62kqiMQ+/qmcRw9qu/Hhi8V00iZEXBMDEu/riF
-MM4Wn0DflqWCp/j03v/LEcxBIx1DdnWLpyTt3IRZMlx6Fps6wOEG
------END RSA PRIVATE KEY-----`,
-  cert: `-----BEGIN CERTIFICATE-----
-MIIGdTCCBV2gAwIBAgIQKez5kpokTtiU9KH1wWnEnjANBgkqhkiG9w0BAQsFADBy
-MQswCQYDVQQGEwJVUzELMAkGA1UECBMCVFgxEDAOBgNVBAcTB0hvdXN0b24xFTAT
-BgNVBAoTDGNQYW5lbCwgSW5jLjEtMCsGA1UEAxMkY1BhbmVsLCBJbmMuIENlcnRp
-ZmljYXRpb24gQXV0aG9yaXR5MB4XDTIzMTIyNjAwMDAwMFoXDTI0MDMyNTIzNTk1
-OVowGDEWMBQGA1UEAxMNY3d0ZXN0LmJpei5pZDCCASIwDQYJKoZIhvcNAQEBBQAD
-ggEPADCCAQoCggEBANmtuD1FELWIwidyok72BXzeHOO4VulAQmNvJiQcj4S39/8K
-dmM6A5CPIvtYDkxzkCum0921yFb7IbbkJoG+OtTFOzA7vtq1nbeJPDfoF5BOYWmb
-i0idXsYRqRa8oMCw+BNW2IVgr/Dge1+cVwQrdhr0f2Pa+g9ps2dzZHJ4FS+TppOb
-CLIxPQOgdlO0dvLWcnelYBTPe+bofw0KPQtDp/F+sSWeVkua8MwCcL2PwfpXEjha
-IcLaM/bLRZrHH8Y4FardLUML5uFaPXo7onGzPnMdxKI6nqXdrTv+J/yqNq444SMb
-/OsI6YsM9KeFElQqMDFqglEwqYyoZcTAKs0797ECAwEAAaOCA18wggNbMB8GA1Ud
-IwQYMBaAFH4DWmVBa6d+CuG4nQjqHY4dasdlMB0GA1UdDgQWBBSjIIJBi8GzbDzR
-PPBh1fMvzMZfkDAOBgNVHQ8BAf8EBAMCBaAwDAYDVR0TAQH/BAIwADAdBgNVHSUE
-FjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwSQYDVR0gBEIwQDA0BgsrBgEEAbIxAQIC
-NDAlMCMGCCsGAQUFBwIBFhdodHRwczovL3NlY3RpZ28uY29tL0NQUzAIBgZngQwB
-AgEwTAYDVR0fBEUwQzBBoD+gPYY7aHR0cDovL2NybC5jb21vZG9jYS5jb20vY1Bh
-bmVsSW5jQ2VydGlmaWNhdGlvbkF1dGhvcml0eS5jcmwwfQYIKwYBBQUHAQEEcTBv
-MEcGCCsGAQUFBzAChjtodHRwOi8vY3J0LmNvbW9kb2NhLmNvbS9jUGFuZWxJbmND
-ZXJ0aWZpY2F0aW9uQXV0aG9yaXR5LmNydDAkBggrBgEFBQcwAYYYaHR0cDovL29j
-c3AuY29tb2RvY2EuY29tMIIBBQYKKwYBBAHWeQIEAgSB9gSB8wDxAHYAdv+IPwq2
-+5VRwmHM9Ye6NLSkzbsp3GhCCp/mZ0xaOnQAAAGMpz7pEwAABAMARzBFAiBPJrJL
-xvqeJdZYzpK8YY+cUCeVo0ExY0otGOhlTmVO1gIhANhEDWvZzJaGjQ/S7FliAlnd
-G0BMWAtOBy6KuJThrkbSAHcAO1N3dT4tuYBOizBbBv5AO2fYT8P0x70ADS1yb+H6
-1BcAAAGMpz7ovwAABAMASDBGAiEA8C2o/4yhcz0kRyIQHaRezC1ccZjLakFqDVo1
-vyp074sCIQDAoDH8Ev+NBzHpP+FRWWkh0W4eLXPvj6DDGywgLM5seDCBugYDVR0R
-BIGyMIGvgg1jd3Rlc3QuYml6LmlkghRjcGFuZWwuY3d0ZXN0LmJpei5pZIIZY3Bj
-YWxlbmRhcnMuY3d0ZXN0LmJpei5pZIIYY3Bjb250YWN0cy5jd3Rlc3QuYml6Lmlk
-ghJtYWlsLmN3dGVzdC5iaXouaWSCFXdlYmRpc2suY3d0ZXN0LmJpei5pZIIVd2Vi
-bWFpbC5jd3Rlc3QuYml6LmlkghF3d3cuY3d0ZXN0LmJpei5pZDANBgkqhkiG9w0B
-AQsFAAOCAQEAU03XIlDyygozUKR23dVEoRqksqUYuahDVKiA2CzWcDUcZeXWMjlI
-Fgw3Fv5DrvOIlRBx0zE3K4yl5hqeJk5tE6ueWfq3V3S0lgobCM4/9nB6q2ORbnFj
-NFJ9x/sOArMU4SqbqNTZ1yiI4++ymaUXF7rumFTVvUWO8yEIT+fn2fBCoTcfb/NO
-O1sylIXi1Ltc4Uzcy3KEyHy1qwKNlxfYkzRml/KdTK8Yr22rw0yweRdIKf2uNWoA
-tsYavHD6iYM1iNsRjI5xCKtxM9pLEeD6gVpVtqmk0v0GQiw01fmP9Ff17E1VVLEl
-SGA1uPrw/RZCjQT44LCUC4hVLPwX3mb+NQ==
------END CERTIFICATE-----`,
-};
 var stockRouter = require('./routes/stock');
 var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
@@ -83,27 +15,17 @@ var localDb=new LocalStorage("./db/localDb");
 let portNumber=process.env.PORT || '3420';
 let originArr=[
 	"http://localhost:4200",
+	"http://localhost:3420",
 	"https://gcondrow.github.io",
 	"http://192.168.1.111:3420",
+	"http://cwtest.biz.id",
 ];
 
 var app = express();
 
-/*
-https.createServer(options, (req, res) => {
-  res.writeHead(200);
-  res.end(`hello world\n`);
-}).listen(8000);
-*/
-
-const httpsServer = https.createServer(httpsOptions,app);
+const httpServer = createServer(app);
 const { Server } = require("socket.io");
-let corsOptions={
-	credentials: true,
-	origin:originArr,
-};
-app.use(cors(corsOptions));
-const io = new Server(httpsServer, { 
+const io = new Server(httpServer, { 
 	cors:{
 		credentials: true,
 		origin:originArr,
@@ -141,18 +63,22 @@ class idPrototype{
 let dbKey=new idPrototype("dbKey");
 let userId=new idPrototype("userId");
 let dbParity={};
+let corsOptions={
+	credentials: true,
+	origin:originArr,
+};
 let tableViewCache=new class tableViewCache{
 	constructor(){
 		this.getView().then(x=>{
 			console.log("isReady");
-			httpsServer.listen(portNumber,()=>{
+			httpServer.listen(portNumber,()=>{
 				//console.log(this.data);
 				console.log("Start, port :",portNumber);
 			});
 		});
 	};
 	delete=async(idArr)=>{
-		console.log("tableViewCache>delete>idArr>",idArr);
+		console.log("tableViewCache>delete>idArr>",idArr)
 		let data=await this.getData();
 		//let data=this.data;
 		idArr.map(id=>{
@@ -163,34 +89,15 @@ let tableViewCache=new class tableViewCache{
 		});
 		this.data=data;
 		localDb.setItem('localTableViewCache',JSON.stringify(data));
-		return idArr;
+		//console.log("tableViewCache>delete>data>",data)
 	};
-	addStock=async(newData)=>{
-		console.log("tableViewCache>addStock>newData>",newData);
+	add=async(newData)=>{
+		console.log("tableViewCache>add>newData>",newData)
 		let data=await this.getData();
-		Object.keys(newData).map(pointer=>{
-			newData[pointer].map(item=>data[pointer].push(item));
-		})
+		newData.map(item=>data.stock.push(item));
 		this.data=data;
 		localDb.setItem('localTableViewCache',JSON.stringify(data));
-		return newData;
-	};
-	editStock=async(updatedData)=>{
-		console.log("tableViewCache>editStock>updatedData>",updatedData);
-		let data=await this.getData();
-		let dataIndex
-		updatedData.map(item=>{
-			dataIndex=data.stock.findIndex(x=>x.ID_DAFTAR===item.ID_DAFTAR);
-			console.log("dataIndex = ",dataIndex);
-			console.log("data.stock[dataIndex]",data.stock[dataIndex]);
-			console.log("updateData",item);
-			data.stock[dataIndex]=item;
-		})
-		
-		console.log("dataIndex =>",dataIndex);
-		this.data=data;
-		localDb.setItem('localTableViewCache',JSON.stringify(data));
-		return updatedData;
+		//console.log("tableViewCache>add>data>",data)
 	};
 	getData=async()=>await JSON.parse(localDb.getItem('localTableViewCache'));
 	getView=async()=>{
@@ -227,12 +134,22 @@ let tableViewCache=new class tableViewCache{
 		//return data;
 	};
 };
-
+app.use(cors(corsOptions));
 app.use(logger('dev'));
 app.use(express.json({limit:'8mb'}));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+/*app.get('/home', function(req, res,next) {
+	try{
+		console.log("AT /home")
+		console.log("=>",path.join(__dirname + '/dist/app-angular-json-server/'))
+		res.sendFile(path.join(__dirname + '/dist/app-angular-json-server/index.html'));
+	}catch(e){
+		
+	};
+});*/
+//app.use(express.static(path.join(__dirname + '/dist/app-angular-json-server/')));
 app.get('*.*',express.static(path.join(__dirname + '/dist/')));
 app.use('/key/:c?',function(req, res, next) {
 	let debug=true;
@@ -298,10 +215,6 @@ app.get('/tableviewcache/reset',async(req,res,next)=>{
 app.use(middlewareArr,(req,res,next)=>{
 	console.log("middleware");
 	next();
-});
-
-app.get('/corsTest',async(req,res,next)=>{
-	res.send({cors:"cors"});
 });
 
 app.use('/stock', stockRouter);
