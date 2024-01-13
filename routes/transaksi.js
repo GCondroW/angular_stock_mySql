@@ -51,7 +51,7 @@ router.get('/', handleErrorAsync(async(req, res, next)=>{
 	}else{
 		console.log("router>get>tableViewCache")
 		resVar={
-			data:req.app.tableViewCache[dbName],
+			data:req.app.tableViewCache.data[dbName],
 		};
 	};
 	console.log("EMIT_AT_GET",

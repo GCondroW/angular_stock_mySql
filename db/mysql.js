@@ -55,8 +55,10 @@ let singleQ=async(sql)=>{
 	console.log("query : ",sql);
 	try{
 		const [rows, fields] = await connection.query(sql);
+		await connection.end();
 		return rows;
 	}catch(e){
+		await connection.end();
 		throw new Error(e);
 	}
 };
@@ -136,5 +138,5 @@ async function doStuff(items) {
   }
 }
 module.exports = {
-  preSttQ,singleQ,multQ
+  preSttQ,singleQ,multQ,config
 }

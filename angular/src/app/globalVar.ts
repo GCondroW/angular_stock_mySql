@@ -99,7 +99,6 @@ export const GlobalVar ={
 		public set=(data:Array<any>,dbName:string,options:any)=>{
 			this.raw=data;
 			console.log("==>SET ",data,dbName)
-			console.log
 			this.daftar[dbName].createView(JSON.parse(JSON.stringify((data))),options[dbName]);
 			/*Object.keys(this.stock).map(pointer=>{
 				this.stock[pointer].createView(JSON.parse(JSON.stringify((data))));
@@ -488,7 +487,7 @@ export const GlobalVar ={
 				JUMLAH:{
 					filterType: 'number',
 					type:'greaterThanOrEqual',
-					filter:0,
+					filter:'',
 				},
 				USER:{
 					filterType: 'text',
@@ -525,6 +524,7 @@ export const GlobalVar ={
 				{
 					field: "NAMA",
 					autoHeight: true,
+					sort:false,
 					pinned:'left',
 				},
 				{
@@ -542,14 +542,6 @@ export const GlobalVar ={
 					field: "TANGGAL",
 					sort: "desc",
 					autoHeight: true,
-					valueFormatter: (params:any)=>{
-						console.log("globalVar Params");
-						return params.value? new Date(params.value).toLocaleString('id',{
-							year: "numeric",
-							month: "numeric",
-							day: "numeric",
-						}):"";
-					},
 				},
 				{
 					field: "JENIS",

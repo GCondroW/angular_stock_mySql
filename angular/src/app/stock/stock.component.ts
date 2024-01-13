@@ -1289,6 +1289,9 @@ export class StockComponent {
 	private getPage=()=>{
 		this.globalService.getData(this.activeView).subscribe((x:any)=>{
 			x.data.map((item:any)=>item.STOCK=Number(item.STOCK));
+			x.data.map((item:any)=>{
+				item.TANGGAL=this.misc.convertDate(item.TANGGAL);
+			});
 			let tableData=this.user.setTableData(this.user.getDbKey(),x.data,this.activeView);
 			this.updateData(tableData);
 		});

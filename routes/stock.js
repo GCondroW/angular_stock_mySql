@@ -190,10 +190,11 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 		LEFT JOIN transaksi ON daftar.ID_DAFTAR = transaksi.ID_DAFTAR
 		LIMIT 0;`,
 		"ALTER TABLE TEMP_TABLE CHANGE ID_DAFTAR ID_DAFTAR INT( 11 ) NOT NULL AUTO_INCREMENT PRIMARY KEY;",
+		"ANALYZE TABLE `daftar`;", 
 		`SET @max_id =(
 			SELECT T.AUTO_INCREMENT 
 			FROM information_schema.TABLES T 
-			WHERE T.TABLE_SCHEMA = 'test' 
+			WHERE T.TABLE_SCHEMA = '`+db.config.database+`' 
 			AND T.TABLE_NAME = 'daftar'
 		);`,
 		'-- "SET @max_id =(SELECT MAX(ID_DAFTAR) FROM daftar);", --',
@@ -228,6 +229,7 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 			KATEGORI,
 			ID_SUPPLIER 
 		FROM TEMP_TABLE;`,
+		
 		`INSERT INTO transaksi (
 			JUMLAH,
 			USER,
@@ -256,7 +258,13 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 	console.log("SQL QUERY : ",q);
 	//console.log("q_DAFTAR : ",q_DAFTAR.values);
 	let resVar={};
+	let resetVar={
+		daftar:await db.singleQ("ALTER TABLE `daftar` CHANGE `ID_DAFTAR` `ID_DAFTAR` INT UNSIGNED NOT NULL AUTO_INCREMENT;"),
+		transaksi:await db.singleQ("ALTER TABLE `transaksi` CHANGE `ID_TRANSAKSI` `ID_TRANSAKSI` INT UNSIGNED NOT NULL AUTO_INCREMENT;"),
+	}
+	console.log("reset autoIncrement",resetVar)
 	resVar['stock']=await db.multQ(q);
+	console.log("resVar['stock']",resVar['stock'])
 	resVar['transaksi']=await db.singleQ("SELECT * FROM transaksi_view_1 WHERE ID_DAFTAR="+resVar.stock[0].ID_DAFTAR);
 	resVar.stock.map(item=>item.STOCK=Number(item.STOCK));
 	await req.app.tableViewCache.addStock(resVar);
