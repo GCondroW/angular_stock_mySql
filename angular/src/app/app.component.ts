@@ -19,7 +19,7 @@ export class AppComponent {
 			//devIteration:Number(localStorage.getItem('devIteration')||1),
 			devRoutine:async()=>{
 				console.log("start devMode routine");
-				let localStorageRemovedArr=["name","dbKey","tableData"];
+				let localStorageRemovedArr=["dbKey","tableData"];
 				await localStorageRemovedArr.map(item=>localStorage.removeItem(item));
 				//this.devObj.devIteration=this.devObj.devIteration++;
 				//localStorage.setItem("devIteration",this.devObj.devIteration);

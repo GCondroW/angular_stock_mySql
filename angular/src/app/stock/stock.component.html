@@ -138,6 +138,7 @@
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refreshPage()">Refresh</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="delete(getAllAgGridRows(),'stock')">Delete All</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.modal_3.openModal()">Tambah Data</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="misc.reset()">Reset</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="console.log('debugThis : ',debugThis)"><-></button>
 		</div>
 	</div>
@@ -1140,4 +1141,29 @@ conditional
 		Submit
 	</button>
 	<button type="button" class="btn btn-outline-dark" (click)="modal.modal_4.closeModal()">Close</button>
+</ng-template>
+<ng-template #modal_5 let-modal5>
+	<app-dynamic-modal 
+		[modalBody]="modalBody5"
+		[modalFooter]="modalFooter5"
+		[modal]="modal5"
+		[modalTitle]="'Detail'"
+	></app-dynamic-modal>
+</ng-template>
+<ng-template #modalBody5>
+	<div class="d-flex justify-content-start">
+		<div class="container me-3" [style.width]="'auto'">
+			<div *ngFor="let Key of Object.keys(modal.modal_5.data)" class="row">
+				<label for="" class="col-form-label-sm">{{Key|titlecase}}</label>
+			</div>
+		</div>
+		<div class="container">
+			<div *ngFor="let detailKey of Object.keys(modal.modal_5.data)" class="row">
+				<p id="" class="form-control-plaintext form-control-sm"> : {{modal.modal_5.data[detailKey]}}</p>
+			</div>
+		</div>
+	</div>
+</ng-template>
+<ng-template #modalFooter5>
+	<button type="button" class="btn btn-danger me-auto" (click)="modal.modal_5.deleteFunct()">Hapus</button>
 </ng-template>

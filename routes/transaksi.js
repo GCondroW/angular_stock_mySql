@@ -54,9 +54,7 @@ router.get('/', handleErrorAsync(async(req, res, next)=>{
 			data:req.app.tableViewCache.data[dbName],
 		};
 	};
-	console.log("EMIT_AT_GET",
-
-	);
+	console.log("EMIT_AT_GET",);
 	res.json(resVar);
 }));
 
@@ -72,7 +70,8 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 		let q="INSERT INTO transaksi(JUMLAH,USER,TANGGAL,JENIS,KETERANGAN,ID_DAFTAR) VALUES(?,?,?,?,?,?)";
 		let v=[body.JUMLAH,user,currentTime,body.JENIS,body.KETERANGAN,body.ID_DAFTAR];
 		let resVar=await db.preSttQ(q,v);
-		let insertedData=await db.singleQ("SELECT * FROM "+defaultTableName+" WHERE ID_TRANSAKSI="+resVar.insertId);
+		let insertedData=await db.singleQ("SELECT * FROM "+defaultTableName+"_view_1 WHERE ID_TRANSAKSI="+resVar.insertId);
+		insertedData=await req.app.tableViewCache.addTransaksi(insertedData);
 		console.log("DEBUG ",insertedData);
 		let emitVar={
 			dbKey:req.app.dbKey.up(),
@@ -95,6 +94,40 @@ router.get('/test',(req,res,next)=>{
 	res.status(202);
 	res.send({success:true,resVar:resVar});
 });
+
+router.delete('/', handleErrorAsync(async(req, res, next)=>{
+	try{
+		let params=req.params;
+		let body=req.body;
+		let query=req.query;
+		let id=query.id;
+		let idArr=JSON.parse("["+id+"]");
+		let i=0
+		let idQ="";
+		idArr.map(x=>{
+			i++;
+			if(i===idArr.length)return idQ+="?";
+			return idQ+="?,";
+		});
+		let q="DELETE FROM transaksi where ID_DAFTAR in "+"("+idQ+")";
+		let newlyDeletedData=await db.preSttQ("SELECT * FROM transaksi WHERE ID_DAFTAR in "+"("+idQ+")",idArr);
+		console.log("idQ",idQ);
+		console.log("newlyDeletedData",newlyDeletedData);
+		if(await db.preSttQ(q,idArr)){
+			idArr=await req.app.tableViewCache.deleteTransaksi(idArr);
+			let emitVar={
+				dbKey:req.app.dbKey.up(),
+				data:newlyDeletedData,
+				message:"TRANSACTION DELETED MESSAGE",
+			};
+			res.status(202);
+			res.send({success:true,data:emitVar});
+			console.log('EMIT_AT_DELETE_TRANSAKSI',req.app.io.emit('deleteTransaksi',emitVar));
+		}else throw new Error("transaksi delete sql error");
+	}catch(e){
+		throw new Error(e);
+	};
+}));
 
 module.exports = router;
 

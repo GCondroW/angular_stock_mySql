@@ -6,6 +6,7 @@ import { read, utils, writeFile } from "xlsx";
 import { GlobalErrorHandlerService } from '../../global-error-handler.service';
 import { DynamicModalComponent } from '../../misc/dynamic-modal/dynamic-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -20,6 +21,7 @@ export class GlobalService {
 	private dbKey = localStorage.getItem('dbKey')||"-1";
 	private headers=new HttpHeaders();
 	constructor() { 
+		console.log("url",this.url);
 		this.setHeaders('dbKey',this.dbKey.toString());
 	};
 	_modal={

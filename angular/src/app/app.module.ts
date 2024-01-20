@@ -33,8 +33,7 @@ const corsOptions={
 	withCredentials: true,
 };
 const options=JSON.parse(localStorage.getItem('options')||"{}");
-const corsConfig=options.corsConfig||GlobalVar.config.defaultValue.cors;
-console.log("corsConfig",corsConfig);
+const corsConfig=JSON.parse(JSON.stringify(options.corsConfig||GlobalVar.config.defaultValue.cors));
 const config: SocketIoConfig = { url: corsConfig.url, options:corsConfig.options };
 
 @NgModule({

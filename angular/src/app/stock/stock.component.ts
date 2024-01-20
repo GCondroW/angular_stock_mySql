@@ -77,15 +77,16 @@ export class StockComponent {
 				gridOptions:{
 					onRowDoubleClicked:(event:any)=>{
 						if(this.activeView==='stock'){
-							console.log("event.data",event.data);
 							let index=this.user.tableData.stock[this.user.dbKey].findIndex((item:any)=>event.data.ID_DAFTAR===item.ID_DAFTAR)
-							console.log("stock data");
 							let modalData=this.user.tableData.stock[this.user.dbKey][index];
-							console.log("index",index);
-							console.log("modalData",modalData);
 							this.modal.modal_1.openModal(modalData);
 						};
-						if(this.activeView==='transaksi')return alert(GlobalVar.alert(event.data));
+						if(this.activeView==='transaksi'){
+							//alert(GlobalVar.alert();
+							let temp=Object.assign(event.data,{STOCK:this.gridOptions.rowData.filter((x:any)=>x.ID_DAFTAR===event.data.ID_DAFTAR).reduce((a:any,b:any)=>a+b.JUMLAH,0)});
+							alert(GlobalVar.alert(temp));
+							//this.modal.modal_5.openModal(temp)
+						};
 					},
 				},
 			},
@@ -138,13 +139,11 @@ export class StockComponent {
 					this.options.setOptions(this.activeView,"activeView");
 			};
 			let localDefaultFilterObj=this.localOptions.filterParams;
-			console.log("localDefaultFilterObj",localDefaultFilterObj);
 			this.misc.setFilterParams(
 				localDefaultFilterObj?
 				localDefaultFilterObj:
 				this.misc.getDefaultFilterObj()
 			);
-			console.log("localDefaultFilterObj",this.options.data.filterParams);
 			this.globalService.setHeaders("user",this.user.name);
 	};
 	
@@ -153,9 +152,6 @@ export class StockComponent {
 			console.log('SWITCH_EXCEPTION_ERROR')
 			this.refreshPage();
 		};
-		this.socket.on("debug",(arg1:any)=>{
-			console.log("debug : ",arg1);
-		});
 		this.socket.on("connect", () => {
 			this.misc.loadingWrapper(
 				()=>{
@@ -211,54 +207,28 @@ export class StockComponent {
 					let message=emittedData.message;
 					let deletedDataId=emittedData.deletedDataId;	
 					let oldData=this.user.getTableData(this.activeView);
-						let alertArr:Array<any>=[];
-						let deletedData = oldData.filter((item:any)=>deletedDataId.includes(item.ID_DAFTAR));
-						deletedData.map((item:any)=>{
-							alertArr.push({
-								id:item.ID_DAFTAR,
-								Nama:item.NAMA,
-								Supplier:item.SUPPLIER,
-							});
+					let alertArr:Array<any>=[];
+					let deletedData=oldData.filter((item:any)=>deletedDataId.includes(item.ID_DAFTAR));
+					deletedData.map((item:any)=>{
+						alertArr.push({
+							id:item.ID_DAFTAR,
+							Nama:item.NAMA,
+							Supplier:item.SUPPLIER,
 						});
-						this.user.setTableData(emittedData.dbKey,this.user.deleteById(deletedDataId,this.activeView),this.activeView);
-						this.setDbKey(emittedData.dbKey);
-						this.updateData(this.user.getTableData(this.activeView));
-						alert(GlobalVar.alert(alertArr,message));
+					});
+					console.log(
+						"this.user.setTableData(emittedData.dbKey,this.user.deleteById(deletedDataId,this.activeView),this.activeView",
+						this.user.setTableData(emittedData.dbKey,this.user.deleteById(deletedDataId,this.activeView),this.activeView)
+						);
+					this.setDbKey(emittedData.dbKey);
+					this.updateData(this.user.getTableData(this.activeView));
+					alert(GlobalVar.alert(alertArr,message));
 				},this.gridOptions
 			);
 		});
 		this.socket.on("get",(emittedData:any)=>{
 			alert('get emit');
 			console.log("emittedData : ",emittedData);
-		});
-		this.socket.on("init",(emittedData:any)=>{
-			this.misc.loadingWrapper(
-				()=>{
-					console.log("EMIT RECEIVED: INIT =>",emittedData);
-					let data=emittedData.data;
-					let message=emittedData.message;
-					let dbKey=emittedData.dbKey;
-					let alertArr:Array<any>=[];
-					
-					switch(this.activeView){
-						case 'stock':	
-							data.map((item:any)=>{
-								alertArr.push({
-									id:item.ID_DAFTAR,
-									Nama:item.NAMA,
-									Supplier:item.SUPPLIER,
-								});
-							});
-							this.user.setTableData(emittedData.dbKey,data,this.activeView);
-							this.setDbKey(emittedData.dbKey);
-							alert(GlobalVar.alert(alertArr,message));
-							this.updateData(this.user.getTableData(this.activeView));
-							break;
-						default:
-							switchFallbackFunct();
-					};
-				},this.gridOptions
-			)
 		});
 		this.socket.on("put",(emittedData:any)=>{
 			this.misc.loadingWrapper(
@@ -308,6 +278,7 @@ export class StockComponent {
 					let alertArr:Array<any>=[];
 					switch(this.activeView){
 						case 'stock':
+							console.log("stock switch =>" );
 							let oldData=this.user.getTableData(this.activeView);
 							data.map((item:any)=>{
 								alertArr.push({
@@ -324,6 +295,7 @@ export class StockComponent {
 							alert(GlobalVar.alert(alertArr,message));
 							break;
 						default:
+							console.log("stock exception =>" );
 							switchFallbackFunct();
 					};
 				},this.gridOptions	
@@ -345,6 +317,7 @@ export class StockComponent {
 							this.setDbKey(dbKey);
 							if(oldDataTransaksi.length>0){
 								data.map((item:any)=>{
+									console.log("convertDate(ITEM.TANGGAL) = ",item.TANGGAL=this.misc.convertDate(item.TANGGAL));
 									oldDataTransaksi.push(item);
 								});
 								this.user.setTableData(dbKey,oldDataTransaksi,'transaksi');
@@ -373,6 +346,30 @@ export class StockComponent {
 					};
 				},this.gridOptions
 			);	
+		});
+		this.socket.on("deleteTransaksi",(emittedData:any)=>{
+			/*
+			console.log("EMIT RECEIVED: deleteTransaksi =>",emittedData);
+			let key="transaksi";
+			let oldData=this.user.getTableData();
+			let data=emittedData.data;
+			let message=emittedData.message;
+			let dbKey=emittedData.dbKey;
+			let alertArr:Array<any>=[];
+			let deletedDataId=data.map((x:any)=>x.ID_TRANSAKSI);
+			
+			console.log("oldData",oldData);
+			console.log("deletedDataId",deletedDataId);
+			console.log("===>",
+				oldData.transaksi.filter((item2:any)=>deletedDataId.includes(item2.ID_TRANSAKSI)))
+			
+			if(oldData.length<1){
+				
+				
+			}else{
+
+			};
+			*/
 		});
 		this.debugThis=this;
 	};
@@ -407,21 +404,18 @@ export class StockComponent {
 	@ViewChild('modal_2') modal_2!:DynamicModalComponent;//modal transaksi
 	@ViewChild('modal_3') modal_3!:DynamicModalComponent;//modal add stock
 	@ViewChild('modal_4') modal_4!:DynamicModalComponent;//modal edit stock
+	@ViewChild('modal_5') modal_5!:DynamicModalComponent;//modal detail transaksi
 	public activeModal:string='';
 	public modal:any={
 		modal_1:{
 			openModal:(modalData:any)=>{
-				//this.modal.modal_1.isLoading=true;
 				this.modal.modal_1.data=modalData;
 				this.modal.modal_1.modalRef=this.modalService.open(this.modal_1);
-				//this.modal.modal_1.updateTransactionData(modalData);
-				
 			},
 			isLoading:false,
 			updateTransactionData:(modalData:any)=>{
 				this.globalService.getData('transaksi',[modalData.ID_DAFTAR]).subscribe(
 					(x:any)=>{
-						//this.modal.modal_1.transactionData=x.data;
 						x.data.map((item:any)=>{
 							item.TANGGAL=this.misc.convertDate(item.TANGGAL);
 						});
@@ -437,18 +431,15 @@ export class StockComponent {
 			},
 			grid:{
 				gridOptions:{
-					pagination: true,
-					paginationPageSize:5,	
-					paginationAutoPageSize:true,
+					pagination: false,
+					//paginationPageSize:5,	
+					paginationAutoPageSize:false,
 					accentedSort:true,
 					onGridReady:(params:any)=>{
 						console.log("grid Event => onGridReady : ");
 						let modalData=this.modal.modal_1.data;
-						//console.log("resize",this.modal.modal_1.grid.gridOptions.columnApi.autoSizeAllColumns());
-						//this.modal.modal_1.isLoading=false;
 						this.globalService.getData('transaksi',[modalData.ID_DAFTAR]).subscribe(
 							(x:any)=>{
-								//this.modal.modal_1.transactionData=x.data;
 								x.data.map((item:any)=>{
 									item.TANGGAL=this.misc.convertDate(item.TANGGAL);
 								});
@@ -457,14 +448,11 @@ export class StockComponent {
 									this.modal.modal_1.grid.columnDefs.map(
 										(item:any)=>
 											Object.assign(item,this.modal.modal_1.grid.defaultColumnDefs)
-									)		
+									)
 								);
-								//this.modal.modal_1.grid.gridOptions.columnApi.sizeColumnsToFit()
 								this.modal.modal_1.grid.gridOptions.columnApi.autoSizeAllColumns();
 							}
 						);
-						
-						
 					},
 					onModelUpdated: (event:any)=>{
 						console.log("grid Event => onModelUpdated : ");
@@ -485,7 +473,7 @@ export class StockComponent {
 				},
 				defaultColumnDefs:{
 					resizable:false,
-					sortable: false,
+					sortable: true,
 					filter: false,
 					editable:false,
 				},
@@ -855,6 +843,27 @@ export class StockComponent {
 			},
 			getDatalist:(pointer:string)=>this.stock.daftar.stock.filterData[pointer.toUpperCase()],
 		},
+		modal_5:{
+			openModal:(detailData:any)=>{
+				this.activeModal='modal_5';
+				this.modal.modal_5.modalRef=this.modalService.open(this.modal_5);
+				this.modal.modal_5.data=detailData
+			},
+			closeModal:()=>{
+				this.modal.modal_5.modalRef.close();
+				this.activeModal='';				
+			},
+			data:{},
+			deleteFunct:()=>{
+				let temp=this.modal.modal_5.data;
+				console.log("data to delete",temp);
+				this.globalService.deleteData("transaksi",[temp.ID_TRANSAKSI]).subscribe(x=>{
+					console.log(x);
+				})
+			},
+			submit:()=>{},
+			modalRef:undefined,
+		},
 	};
 	get formNama() { return this.modal[this.activeModal].form.get('formNama'); }
 	get formSupplier() { return this.modal[this.activeModal].form.get('formSupplier'); }
@@ -989,8 +998,8 @@ export class StockComponent {
 			
 		},
 		onFirstDataRendered:(event:any)=>{
-			console.log("grid Event => onFirstDataRendered : ");
-			console.log("onFirstDataRendered timeout start")
+			//console.log("grid Event => onFirstDataRendered : ");
+			//console.log("onFirstDataRendered timeout start")
 			/*
 			if(!!this.gridTimeoutContainer)clearTimeout(this.gridTimeoutContainer);
 			this.gridTimeoutContainer=setTimeout(async()=>{
@@ -1014,11 +1023,11 @@ export class StockComponent {
 			//console.log("grid Event => onPaginationChanged : ");
 		},
 		onRowDataUpdated:async(event:any)=>{
-			console.log("grid Event => onRowDataUpdated : ");
+			//console.log("grid Event => onRowDataUpdated : ");
 			
 		},
 		onFilterChanged:(event:any)=>{
-			console.log("grid Event => onFilterChanged : ");
+			//console.log("grid Event => onFilterChanged : ");
 		},
 		onColumnResized: (event:any) => {
 			console.log("grid Event => onColumnResized : ");
@@ -1182,6 +1191,10 @@ export class StockComponent {
 		};
 	};
 	public misc={
+		reset:()=>{
+			localStorage.clear();
+			location.reload();
+		},
 		copy:(x:any)=>JSON.parse(JSON.stringify(x)),
 		showHiddenColumn:(columnName:string,value:boolean)=>{
 			//console.log("columnName",columnName);
@@ -1256,9 +1269,11 @@ export class StockComponent {
 					let dbKey=Number(x.value);
 					console.log("TABLEDATA = > ",tableData)
 					if(tableData!=null && tableData.length>0 && (clientKey===dbKey)){
+						console.log("(tableData!=null && tableData.length>0 && (clientKey===dbKey))",true);
 						this.activeView=tableName;
 						this.updateData(tableData);
 					}else{
+						console.log("(tableData!=null && tableData.length>0 && (clientKey===dbKey))",false);
 						this.activeView=tableName;
 						this.refreshPage();
 					};
@@ -1270,11 +1285,7 @@ export class StockComponent {
 	public changeView=async(view:string)=>{
 		console.log("===>changeView ",view);
 		//console.log("this.stock.daftar[view].colDef ",this.stock.daftar[view].colDef);
-		if(this.activeView===view){
-			console.log("changeView literally do NOTHING");
-		}else{
-			this.activeView=view;
-		};
+		this.activeView=view;
 		this.gridOptions.api.deselectAll();
 		//this.gridOptions.api.setColumnDefs(null);
 		//this.gridOptions.api.setFilterModel(null);
@@ -1288,10 +1299,8 @@ export class StockComponent {
 	};
 	private getPage=()=>{
 		this.globalService.getData(this.activeView).subscribe((x:any)=>{
-			x.data.map((item:any)=>item.STOCK=Number(item.STOCK));
-			x.data.map((item:any)=>{
-				item.TANGGAL=this.misc.convertDate(item.TANGGAL);
-			});
+			if(!!x.data[0].STOCK) x.data.map((item:any)=>item.STOCK=Number(item.STOCK));
+			if(!!x.data[0].TANGGAL)x.data.map((item:any)=>item.TANGGAL=this.misc.convertDate(item.TANGGAL));
 			let tableData=this.user.setTableData(this.user.getDbKey(),x.data,this.activeView);
 			this.updateData(tableData);
 		});

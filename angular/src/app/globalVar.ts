@@ -1,6 +1,12 @@
 import { ColDef } from 'ag-grid-community';
+import { isDevMode } from '@angular/core';
+import { environment } from '../environments/environment';
+//let serverConfig 
+//console.log(async()=>serverConfig = await import (environment.serverConfigDir)());
 const domainName="cwtest.biz.id";
-const devDomainName="https://localhost:3420"
+const prodDomainName="https://cwtest.biz.id"+":"+environment.PORT;
+const devDomainName="https://localhost"+":"+environment.PORT;
+const url = new URL("https://"+window.location.hostname+":"+environment.PORT);
 export const GlobalVar ={
 	_var:{
 		socketConfig:"",
@@ -18,7 +24,7 @@ export const GlobalVar ={
 		adm:["guest42","a89",",./`"],
 		defaultValue:{
 			cors:{
-				url:window.location.hostname===domainName?window.location.origin:devDomainName,
+				url:url,
 				options:{withCredentials: true},
 			},
 		},
@@ -65,18 +71,18 @@ export const GlobalVar ={
 						item.TANGGAL=this.convertDate(item.TANGGAL);
 					});
 					let temp:Array<any>=data;
-					console.log('transaksi => ',JSON.parse(JSON.stringify((temp))))
+					//console.log('transaksi => ',JSON.parse(JSON.stringify((temp))))
 					this.daftar.transaksi.data=JSON.parse(JSON.stringify((temp)));
 					this.daftar.transaksi.maxCharLength=this.getMaxCharLength(temp);
 					this.daftar.transaksi.colDef=options.columnDefs;
 					this.daftar.transaksi.header={};
 					if(!!temp[0])this.daftar.transaksi.header=Object.keys(temp[0]);
 					if(!!temp[0])
-					console.log("EXCLUDE COL",options);
+					//console.log("EXCLUDE COL",options);
 					this.daftar.transaksi.filterData=this.generateFilterData(JSON.parse(JSON.stringify((temp))),
 						options.excludedTableColumn
 					);
-					console.log(temp);
+					//console.log(temp);
 				},
 			},
 		};
@@ -98,7 +104,7 @@ export const GlobalVar ={
 		public length=this.raw.length;
 		public set=(data:Array<any>,dbName:string,options:any)=>{
 			this.raw=data;
-			console.log("==>SET ",data,dbName)
+			//console.log("==>SET ",data,dbName)
 			this.daftar[dbName].createView(JSON.parse(JSON.stringify((data))),options[dbName]);
 			/*Object.keys(this.stock).map(pointer=>{
 				this.stock[pointer].createView(JSON.parse(JSON.stringify((data))));
@@ -133,8 +139,8 @@ export const GlobalVar ={
 		};
 		public get=()=>this.raw;
 		public generateFilterData=(data:Array<any>,excludedCol:Array<any>)=>{
-			console.log("generteFilterData",data);
-			console.log("excludedCol",excludedCol);
+			//console.log("generteFilterData",data);
+			//console.log("excludedCol",excludedCol);
 			let temp:any={};
 			data.map(item=>{
 				excludedCol.map(excludedColItem=>{
@@ -220,9 +226,10 @@ export const GlobalVar ={
 				return alertString;
 			}else{
 				Object.keys(body).map((pointer:any)=>{
-					alertString+=pointer+"\t:\t"+body[pointer]+"\n";
+					let temp=body[pointer]?body[pointer]:"-";
+					alertString+=pointer+" : "+temp+"\n";
 				});
-				return "<a>"+alertString+"</a>";
+				return alertString;
 			}
 		}catch(e){
 			alert("ERR")
@@ -281,6 +288,9 @@ export const GlobalVar ={
 			return dbKey;
 		};
 		public setTableData=(dbKey:number,data:Array<any>,tableName:string)=>{
+			//console.log("dbKey",dbKey);
+			//console.log("data",data);
+			//console.log("tableName",tableName);
 			let temp=JSON.parse(localStorage.getItem('tableData')||'{}');
 			if(!temp[tableName]){
 				temp[tableName]={};
@@ -305,15 +315,13 @@ export const GlobalVar ={
 		public getName=()=>localStorage.getItem('name');
 		public getDbKey=()=>Number(localStorage.getItem('dbKey'));
 		public getTableData=(tableName:any)=>{
-			console.log("===================================================");
-			console.log("tableName",tableName)
 			let temp=JSON.parse(localStorage.getItem('tableData')||'{}');
-			console.log("temp",temp)
-			console.log("this.getDbKey()",this.getDbKey())
 			if(temp[tableName])return temp[tableName][this.getDbKey()];
-			return [];
-			//return Object.assign(temp,{[tableName]:[]})
-			
+			let allTableVar:any={};
+			Object.keys(temp).map(tableName=>{
+				allTableVar[tableName]=temp[tableName][this.getDbKey()];
+			});;
+			return allTableVar;
 		};
 		public prompt=()=>{
 			let newName=window.prompt('ganti',this.name);
@@ -347,7 +355,7 @@ export const GlobalVar ={
 		setOptions=(data:any,index:string)=>{
 			this.data[index]=data
 			localStorage.setItem('options',JSON.stringify(this.data));
-			console.log("localStorage",JSON.parse(localStorage.getItem('options')||'{}'));
+			//console.log("localStorage",JSON.parse(localStorage.getItem('options')||'{}'));
 			return this.data[index];
 		};
 		unsetOptions=(key:string)=>{
@@ -425,7 +433,7 @@ export const GlobalVar ={
 				STOCK:{
 					filterType: 'number',
 					type:'greaterThanOrEqual',
-					filter:1,
+					filter:"",
 				},
 				STN:{
 					filterType: 'text',

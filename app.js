@@ -79,9 +79,8 @@ var agRouter = require('./routes/ag');
 var mySqlDb=require("./db/mysql")
 var LocalStorage = require('node-localstorage').LocalStorage;
 var localDb=new LocalStorage("./db/localDb");
-
-let portNumber=process.env.PORT || '3420';
 let originArr=[
+	"https://cwtest.biz.id",
 	"http://localhost:4200",
 	"https://gcondrow.github.io",
 	"http://192.168.1.111:3420",
@@ -138,20 +137,41 @@ class idPrototype{
 	};
 };
 
+let cc=0;
 let dbKey=new idPrototype("dbKey");
 let userId=new idPrototype("userId");
+class intervalFunct{
+	constructor(x,y){
+		this.count=new idPrototype("updateCount");
+		this.main(x,y)
+	};
+	main=(x,y)=>{
+		setTimeout(()=>{
+			setInterval(()=>{
+				x().then(x=>console.log("update interval : ",this.count.up()));
+			},y);
+		},y);
+	};
+};
 let dbParity={};
 let tableViewCache=new class tableViewCache{
 	constructor(){
 		this.getView().then(x=>{
+			//let serverConfigFileName="serverConfig.json";
+			//let serverConfig = JSON.parse(fs.readFileSync(serverConfigFileName).toString());
+			let portNumber=process.env.PORT || '2125';
+			//serverConfig.PORT=portNumber;
+			//fs.writeFileSync(serverConfigFileName, JSON.stringify(serverConfig));
 			console.log("isReady");
+			console.log("process.env.PORT",process.env.PORT);
 			httpsServer.listen(portNumber,()=>{
 				//console.log(this.data);
 				console.log("Start, port :",portNumber);
+				console.log(new intervalFunct(this.getView,1000*60*10));
 			});
 		});
 	};
-	delete=async(idArr)=>{
+	delete=async(idArr)=>{//delete using ID_DAFTAR
 		console.log("tableViewCache>delete>idArr>",idArr);
 		let data=await this.getData();
 		//let data=this.data;
@@ -159,7 +179,19 @@ let tableViewCache=new class tableViewCache{
 			Object.keys(data).map(key=>{
 				let index=data[key].findIndex(x=>x.ID_DAFTAR===id);
 				data[key].splice(index,1);
-			})
+			});
+		});
+		this.data=data;
+		localDb.setItem('localTableViewCache',JSON.stringify(data));
+		return idArr;
+	};
+	deleteTransaksi=async(idArr)=>{
+		console.log("tableViewCache>deleteTransaksi>idArr>",idArr);
+		let data=await this.getData();
+		let key="transaksi";
+		idArr.map(id=>{
+			let index=data[key].findIndex(x=>x.ID_TRANSAKSI===id);
+			data[key].splice(index,1);
 		});
 		this.data=data;
 		localDb.setItem('localTableViewCache',JSON.stringify(data));
@@ -170,7 +202,7 @@ let tableViewCache=new class tableViewCache{
 		let data=await this.getData();
 		Object.keys(newData).map(pointer=>{
 			newData[pointer].map(item=>data[pointer].push(item));
-		})
+		});
 		this.data=data;
 		localDb.setItem('localTableViewCache',JSON.stringify(data));
 		return newData;
@@ -185,14 +217,31 @@ let tableViewCache=new class tableViewCache{
 			console.log("data.stock[dataIndex]",data.stock[dataIndex]);
 			console.log("updateData",item);
 			data.stock[dataIndex]=item;
-		})
-		
+		});
 		console.log("dataIndex =>",dataIndex);
 		this.data=data;
 		localDb.setItem('localTableViewCache',JSON.stringify(data));
 		return updatedData;
 	};
-	getData=async()=>await JSON.parse(localDb.getItem('localTableViewCache'));
+	addTransaksi=async(newData)=>{
+		console.log("tableViewCache>adTransaksi>newData>",newData);
+		let data=await this.getData();
+		
+		newData.map(item1=>{
+			let changedStockDataIndex=data.stock.findIndex(item2=>item2.ID_DAFTAR===item1.ID_DAFTAR);
+			data.stock[changedStockDataIndex].STOCK+=item1.JUMLAH;
+			data.transaksi.push(item1);
+		});
+		
+		this.data=data;
+		localDb.setItem('localTableViewCache',JSON.stringify(data));
+		return newData;
+	};	
+	getData=async()=>await JSON.parse(localDb.getItem('localTableViewCache'),(key,value)=>{
+		if(key==="STOCK"){
+			return Number(value)
+		}else return value;
+	});
 	getView=async()=>{
 		let temp={};
 		let localTableViewCache=await this.getData();
@@ -227,6 +276,7 @@ let tableViewCache=new class tableViewCache{
 		//return data;
 	};
 };
+
 
 app.use(logger('dev'));
 app.use(express.json({limit:'8mb'}));
@@ -317,7 +367,6 @@ app.use('/dbParity/',function(req, res, next) {
 	};
 	res.json(dbParity);
 });
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
