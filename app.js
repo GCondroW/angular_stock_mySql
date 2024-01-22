@@ -78,7 +78,7 @@ var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
 var mySqlDb=require("./db/mysql")
 var LocalStorage = require('node-localstorage').LocalStorage;
-var localDb=new LocalStorage("./db/localDb");
+var localDb=new LocalStorage("./localDb");
 let originArr=[
 	"https://cwtest.biz.id",
 	"http://localhost:4200",
@@ -330,8 +330,19 @@ app.get('/:path?',(req,res,next)=>{
 	next()
 });
 app.get('/test',async(req,res,next)=>{
-	let temp=await tableViewCache.test();
-	res.send(temp);
+	var db = require('./db/mysql');
+	let i=1;
+	let max=5000;
+	let x;
+	while (i<max){
+		x=await db.singleQ("select * from transaksi where ID_TRANSAKSI="+i);	
+		console.log("iteration :",i);
+		console.log("x :",x);
+		i++
+	};
+	
+	
+	res.send(x);
 });
 
 app.get('/tableviewcache',(req,res,next)=>{

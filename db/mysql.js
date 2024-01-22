@@ -3,7 +3,7 @@ const {config,poolConfig} = require('./config');
 const pool = mysql.createPool(poolConfig);
 
 let singleQ=async(sql)=>{
-	const connection = await mysql.createConnection(config);
+	//const connection = await mysql.createConnection(config);
 	console.log("query : ",sql);
 	try{
 		const [rows, fields] = await pool.query(sql);
