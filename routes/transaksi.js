@@ -72,7 +72,6 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 		let resVar=await db.preSttQ(q,v);
 		let insertedData=await db.singleQ("SELECT * FROM "+defaultTableName+"_view_1 WHERE ID_TRANSAKSI="+resVar.insertId);
 		insertedData=await req.app.tableViewCache.addTransaksi(insertedData);
-		console.log("DEBUG ",insertedData);
 		let emitVar={
 			dbKey:req.app.dbKey.up(),
 			data:insertedData,

@@ -1,12 +1,3 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var cors = require('cors');
-var fs = require(`fs`);
-var { createServer } = require("http");
-var https = require('https');
 const httpsOptions = {
   key: `-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEA2a24PUUQtYjCJ3KiTvYFfN4c47hW6UBCY28mJByPhLf3/wp2
@@ -73,28 +64,29 @@ tsYavHD6iYM1iNsRjI5xCKtxM9pLEeD6gVpVtqmk0v0GQiw01fmP9Ff17E1VVLEl
 SGA1uPrw/RZCjQT44LCUC4hVLPwX3mb+NQ==
 -----END CERTIFICATE-----`,
 };
+const originArr=[
+	"https://cwtest.biz.id",
+	"http://localhost:4200",
+	"https://gcondrow.github.io",
+	"http://192.168.1.111:3420",
+];
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+var cors = require('cors');
+var fs = require(`fs`);
+var { createServer } = require("http");
+var https = require('https');
+var usersRouter = require('./routes/users');
 var stockRouter = require('./routes/stock');
 var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
 var mySqlDb=require("./db/mysql")
 var LocalStorage = require('node-localstorage').LocalStorage;
 var localDb=new LocalStorage("./localDb");
-let originArr=[
-	"https://cwtest.biz.id",
-	"http://localhost:4200",
-	"https://gcondrow.github.io",
-	"http://192.168.1.111:3420",
-];
-
 var app = express();
-
-/*
-https.createServer(options, (req, res) => {
-  res.writeHead(200);
-  res.end(`hello world\n`);
-}).listen(8000);
-*/
-
 const httpsServer = https.createServer(httpsOptions,app);
 const { Server } = require("socket.io");
 let corsOptions={
@@ -136,7 +128,6 @@ class idPrototype{
 		return this.value;
 	};
 };
-
 let cc=0;
 let dbKey=new idPrototype("dbKey");
 let userId=new idPrototype("userId");
@@ -148,7 +139,7 @@ class intervalFunct{
 	main=(x,y)=>{
 		setTimeout(()=>{
 			setInterval(()=>{
-				x().then(x=>console.log("update interval : ",this.count.up()));
+				x().then(x=>console.log("DB UPDATE ITERATION : ",this.count.up()));
 			},y);
 		},y);
 	};
@@ -156,20 +147,23 @@ class intervalFunct{
 let dbParity={};
 let tableViewCache=new class tableViewCache{
 	constructor(){
-		this.getView().then(x=>{
-			//let serverConfigFileName="serverConfig.json";
-			//let serverConfig = JSON.parse(fs.readFileSync(serverConfigFileName).toString());
+		console.log("process.env.PORT",process.env.PORT);
+		//console.log("CLEAR CACHE",localDb.clear("localTableViewCache"));
+		let init = async()=>{
+			console.log("INIT CACHE");
+			let localTableViewCache=await this.getData();
+			if(!!localTableViewCache){
+				this.data=localTableViewCache;
+			}else{
+				await this.getView();
+			};
 			let portNumber=process.env.PORT || '2125';
-			//serverConfig.PORT=portNumber;
-			//fs.writeFileSync(serverConfigFileName, JSON.stringify(serverConfig));
-			console.log("isReady");
-			console.log("process.env.PORT",process.env.PORT);
 			httpsServer.listen(portNumber,()=>{
-				//console.log(this.data);
-				console.log("Start, port :",portNumber);
-				console.log(new intervalFunct(this.getView,1000*60*10));
+				console.log("START, PORT :",portNumber);
+				new intervalFunct(this.getView,1000*60*5);
 			});
-		});
+		};
+		init();
 	};
 	delete=async(idArr)=>{//delete using ID_DAFTAR
 		console.log("tableViewCache>delete>idArr>",idArr);
@@ -225,14 +219,12 @@ let tableViewCache=new class tableViewCache{
 	};
 	addTransaksi=async(newData)=>{
 		console.log("tableViewCache>adTransaksi>newData>",newData);
-		let data=await this.getData();
-		
+		let data=await this.getData();	
 		newData.map(item1=>{
 			let changedStockDataIndex=data.stock.findIndex(item2=>item2.ID_DAFTAR===item1.ID_DAFTAR);
 			data.stock[changedStockDataIndex].STOCK+=item1.JUMLAH;
 			data.transaksi.push(item1);
 		});
-		
 		this.data=data;
 		localDb.setItem('localTableViewCache',JSON.stringify(data));
 		return newData;
@@ -244,9 +236,6 @@ let tableViewCache=new class tableViewCache{
 	});
 	getView=async()=>{
 		let temp={};
-		let localTableViewCache=await this.getData();
-		//await console.log("clearCache",localDb.clear("localTableViewCache"));
-		//if(!!localTableViewCache)return this.data=localTableViewCache;
 		temp['stock']=await mySqlDb.singleQ("select * from "+"stock"+"_view_1");
 		temp['transaksi']=await mySqlDb.singleQ("select * from "+"transaksi"+"_view_1");
 		localDb.setItem('localTableViewCache',JSON.stringify(temp));
@@ -276,8 +265,6 @@ let tableViewCache=new class tableViewCache{
 		//return data;
 	};
 };
-
-
 app.use(logger('dev'));
 app.use(express.json({limit:'8mb'}));
 app.use(express.urlencoded({ extended: false }));
@@ -295,7 +282,6 @@ app.use('/key/:c?',function(req, res, next) {
 });
 let middlewareArr=[async(req,res,next)=>{
 		console.log("MIDDLEWARE 1 => INIT FUNCT");
-
 		next();
 	},
 	(req,res,next)=>{
@@ -306,7 +292,7 @@ let middlewareArr=[async(req,res,next)=>{
 			//console.log("AUTH FAIL ",next(createError(401)));
 			io.emit('login');
 			console.log("AUTH FAIL ");
-			//throw new Error ("AUTHENTICATION_FAILED");
+			res.send("AUTH FAIL ");
 		}else{
 			console.log("AUTH SUCCESS ",next());
 		};
@@ -319,8 +305,9 @@ app.use((req,res,next)=>{
 	console.log("test))394012");
 	req.app.dbKey=dbKey;
 	next();
-})
+});
 
+app.use("/users", usersRouter);
 app.use('/ag', agRouter);
 app.get('/:path?',(req,res,next)=>{
 	//res.json({path:req.params.path});
@@ -340,50 +327,38 @@ app.get('/test',async(req,res,next)=>{
 		console.log("x :",x);
 		i++
 	};
-	
-	
 	res.send(x);
 });
-
 app.get('/tableviewcache',(req,res,next)=>{
 	console.log("tableViewCache",tableViewCache.data);
 	res.send(tableViewCache.data);
 });
-
 app.get('/tableviewcache/reset',async(req,res,next)=>{
 	let temp=await tableViewCache.getView();
 	console.log("tableViewCache",temp);
 	res.send(temp);
 });
-
 app.use(middlewareArr,(req,res,next)=>{
 	console.log("middleware");
 	next();
 });
-
 app.get('/corsTest',async(req,res,next)=>{
 	res.send({cors:"cors"});
 });
-
 app.use('/stock', stockRouter);
 app.use('/transaksi', transaksiRouter);
-
 //app.use('/stock/key', (req,res,next)=>res.json({id:12}));
 //app.use('/', (req,res,next)=>res.redirect('/stock'));
-
 app.use('/dbParity/',function(req, res, next) {
 	let debug=true;
 	if (debug===true){
-		
 	};
 	res.json(dbParity);
 });
-
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404));
+	next(createError(404));
 });
-
 // error handler
 app.use(function(err, req, res, next) {
 	// set locals, only providing error in development
@@ -398,7 +373,6 @@ app.use(function(err, req, res, next) {
 	console.log("Error App Level: ",temp)
 	res.json({Error:temp});
 });
-
 io.on('connection', socket => {
 	console.log(" ")
 	console.log("====================================================")
@@ -416,7 +390,6 @@ io.on('connection', socket => {
 		};
 	});
 });
-
 module.exports = app,io;
 /*
 <minor bug>
