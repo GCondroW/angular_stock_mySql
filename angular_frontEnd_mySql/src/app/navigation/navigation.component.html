@@ -1,0 +1,7 @@
+<div>
+	<ul class="horizontal-list">
+		<li *ngFor="let page of pages;" class="horizontal-list" [ngClass]="{'active':isActive(page.path)}">
+			<a class="horizontal-list" routerLink={{page.path}} [ngClass]="{'active':isActive(page.path)}" > {{page.path}} </a>
+		</li>
+	</ul>
+</div>

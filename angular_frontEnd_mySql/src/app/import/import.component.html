@@ -1,0 +1,284 @@
+
+
+<ng-template #offcanvasContent>
+	<div class="container-fluid">
+		<app-upload 
+			[currentPage]="currentPage"
+			[uploadHandler]="postExcel"
+		></app-upload>
+		<button (click)="deleteAll(currentPage)">deleteAll</button>
+		<!--<button (click)="alert('testButtonClicked')">TEST</button>-->
+	</div>
+	<div class="container-fluid">
+		<span style="margin-left:0px;margin-right:2px;">
+			<div class="btn-group btn-group-sm" role="group">
+				<button 
+					type="button"
+					class="btn btn-outline-secondary btn-sm"
+					*ngFor="let navState of navStates;" 
+					(click)="navState.funct()"
+					[ngClass]="{'active':navIsActive(navState.name,activeNav)}"
+				>{{navState.name}}
+				</button>
+			</div>
+		</span>
+		<span> | </span>
+		<div class="btn-group btn-group-sm" role="group">
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="downloadExcel(currentPage)">Download</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refresh()">Refresh</button>
+		</div>
+		<span> | </span>
+		<span> | </span>
+		<span style="margin:0 2px">
+			<button (click)="precisionDelete(selectedDataId)">Delete</button>
+		</span>
+	</div>
+</ng-template>
+
+<ng-template #mainContent>
+	<div id="gridTable" class="max-container table-container" style="width:50%"
+		[style.width]="tableContainerStyle.width"
+		[style.height]="tableContainerStyle.height"
+	>
+		<div id="navContainerId" class="container mb-1">	
+			<div class="row">
+				<div class="col px-0">
+					<button class="btn btn-outline-secondary btn-sm" type="button" (click)="openOffcanvas(offcanvasContent)">offcanvas</button>
+				</div>
+				<div class="input-group col px-0">
+					<input 
+						(input)="gridSearch($event)"
+						type="text" class="form-control form-control-sm" placeholder="Search.." aria-describedby="button-addon2">
+						<!--
+							<button (click)="_modal.filterModal.open(filterModal,excludeCol(_modal.filterModal.getDisplayData(),_modal.filterModal.excludedColArray))" class="btn btn-outline-secondary btn-sm" type="button" id="button-addon2">Filter</button>
+						-->
+						<button (click)="_modal.filterModal.open()"class="btn btn-outline-secondary btn-sm" type="button" id="button-addon2">Filter</button>
+				</div>
+			</div>
+		</div>
+		<ng-container *ngIf="!!_modal.filterModal.filterElementIsActive;then filterModalBody" ></ng-container>
+		<ng-template #filterModalBody>
+			<div class="container  mb-1" id="nonModalFilterId">
+				<form>
+					<div class="row">
+						<div class="col px-0" *ngFor="let pointer of Object.keys(_modal.filterModal.filterData)">
+							<select class="form-select form-select-sm">
+								<option 
+									(click)="_modal.filterModal.addFilter(pointer,$event)"
+									[attr.selected]="this._modal.filterModal.getFilterModel()[pointer]?null:'selected'"
+									value=''
+								>{{pointer}}</option>
+								<ng-container *ngFor="let item of _modal.filterModal.filterData[pointer]">
+									<option 
+										[attr.selected]="this._modal.filterModal.getFilterModel()[pointer]?.filter===item?'selected':null"
+										(click)="_modal.filterModal.addFilter(pointer,$event)"
+										value={{item}} 
+									>{{item}}</option>
+								</ng-container>
+							</select>
+						</div>
+						<div class="col-auto ms-auto pe-0">
+							<button type="reset"(click)="_modal.filterModal.resetFilter()" class="btn btn-outline-secondary btn-sm" type="button" id="button-addon2">Reset</button>
+						</div>
+				</div>
+				</form>
+			</div>
+		</ng-template>
+		<app-data-table *ngIf="isLoaded && dataIsNotEmpty &&!errMessage" 
+			[gridOptions]="gridOptions"
+			[rowData]="rowData"
+			[defaultColDef]="defaultColDef"
+		></app-data-table>
+		<div *ngIf="!isLoaded" class="spinner-border m-1" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+		<div *ngIf="isLoaded && !dataIsNotEmpty &&!errMessage">
+			<p>{{message.dataIsEmpty}}</p>
+		</div>
+		<div *ngIf="isLoaded && errMessage">
+			<h1>{{errMessage.message}}</h1>
+			<h2>{{errMessage.status}}</h2>
+			<pre>{{errMessage.stack}}</pre>
+		</div>
+		
+		<ng-template #filterModal let-filterModal let-c="close" let-d="dismiss">
+			<app-dynamic-modal 
+				[modalBody]="filterModalBody"
+				[modalFooter]="filterModalFooter"
+				[modal]="filterModal"
+				[modalTitle]="'Filter'"
+			></app-dynamic-modal>
+			<ng-template #filterModalBody>
+				<div class="container">
+					<div class="row">
+						<div class="col" *ngFor="let pointer of Object.keys(_modal.filterModal.filterData)">
+							<label>{{pointer}}</label>
+							<select class="form-select form-select-sm">
+									<option 
+										[attr.selected]="this._modal.filterModal.getFilterModel()[pointer]?null:'selected'"
+									>-</option>
+									<ng-container *ngFor="let item of _modal.filterModal.filterData[pointer]">
+										<option 
+											[attr.selected]="this._modal.filterModal.getFilterModel()[pointer]?.filter===item?'selected':null"
+											(click)="_modal.filterModal.addFilter(pointer,$event)"
+											value={{item}} 
+										>{{item}}</option>
+									</ng-container>
+							</select>
+						</div>
+					</div>
+				</div>
+			</ng-template>
+			<ng-template #filterModalFooter>
+				<button type="button" class="btn btn-outline-dark" (click)="console.log(_modal.filterModal.filterData)">Test</button>
+				<button type="button" class="btn btn-outline-dark" (click)="c('close')">Close</button>
+			</ng-template>
+		</ng-template>
+	</div>
+</ng-template>
+<ng-container *ngTemplateOutlet="mainContent"></ng-container>
+
+<ng-template #mainModal let-modal>
+	<app-dynamic-modal 
+		[modalBody]="modalBody"
+		[modalFooter]="modalFooter"
+		[modal]="modal"
+		[modalTitle]="'Transaksi'"
+	></app-dynamic-modal>
+</ng-template>
+<ng-template #modalBody>
+	<div>
+		<div class="container">
+			<div class="row">
+				<div class="col-auto">
+					<ul class="list-unstyled">
+						<li>Seri</li>
+						<li>Jenis</li>
+						<li>Qty</li>
+						<li>Kode</li>
+						<li>Ctn</li>
+					</ul>
+				</div>
+				<div class="col-auto">
+					<ul class="list-unstyled">
+						<li>:</li>
+						<li>:</li>
+						<li>:</li>
+						<li>:</li>
+						<li>:</li>
+					</ul>
+				</div>
+				<div class="col">
+					<ul class="list-unstyled">
+						<li>{{modalData.Seri}}</li>
+						<li>{{modalData.Jenis}}</li>
+						<li>{{modalData.Qty}}</li>
+						<li>{{modalData.Kode}}</li>
+						<li>{{modalData.Ctn}}</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<h6>Riwayat Transaksi</h6>
+			<div class="row">
+				<app-dynamic-table
+					[data]="modalData.transaction"
+					[defaultColumnDefs]="defaultTransactionTableColumnDefs"
+				></app-dynamic-table>
+			</div>
+		</div>
+	</div>
+</ng-template>
+<ng-template #modalFooter>
+	<button type="button" class="btn btn-outline-dark" (click)="openNewTransactionModal(modalData)">Baru</button>
+	<button type="button" class="btn btn-outline-dark" (click)="closeModal()">Save</button>
+</ng-template>
+
+<ng-template #newTransactionModal let-newTransactionModal>
+	<app-dynamic-modal 
+		[modalBody]="newTransactionModalBody"
+		[modalFooter]="newTransactionModalFooter"
+		[modal]="newTransactionModal"
+		[modalTitle]="'Tambah Transaksi'"
+	></app-dynamic-modal>
+</ng-template>
+<ng-template #newTransactionModalBody>
+	<form [formGroup]="formTest" (ngSubmit)="newTransactionSubmit()">
+		<button id="submitButton" type="submit" hidden></button>
+		<!--
+			<ngb-alert *ngIf="!formTest.valid" [dismissible]="false" type='danger'>{{message.inputInvalid}}</ngb-alert>
+			<p hidden><label>id : </label><input formControlName="_id"></p>
+		-->
+		<div class="form-group row mb-1">
+			<label for="formControlInit" class="col-sm-2 col-form-label col-form-label-sm">Awal</label>
+			<div class="col-sm-4">
+				<input id="formControlInit" class="form-control form-control-sm" type="number" formControlName="init">
+			</div>
+		</div>
+		<div class="form-group row mb-1">
+			<label for="formControlUpdate" class="col-sm-2 col-form-label col-form-label-sm">Selisih</label>
+			<div class="col-sm-4">
+				<div class="input-group">
+					<input 
+						onclick="this.select()" 
+						id="formControlUpdate"  
+						class="form-control form-control-sm" 
+						[class.is-invalid]="!formTest.get('update').valid"
+						type="number" 
+						formControlName="update"
+					>
+					<div class="input-group=append">
+						<button type="button" class="btn btn-outline-secondary" (click)="resetTransactionValue()">reset</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="form-group row mb-1">
+			<label for="formControlFinal" class="col-sm-2 col-form-label col-form-label-sm">Akhir</label>
+			<div class="col-sm-4">
+				<div class="input-group">
+					<input 
+						onclick="this.select()" 
+						id="formControlFinal" 
+						class="form-control form-control-sm"
+						[class.is-invalid]="!formTest.get('final').valid"
+						type="number" 
+						formControlName="final"
+					>
+					<div class="input-group=append">
+						<button type="button" class="btn btn-outline-secondary" (click)="resetTransactionValue()">reset</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--KETERANGAN-->
+			<div class="form-group row mb-1">
+				<label for="formControlKeterangan" class="col-sm-2 col-form-label col-form-label-sm">Keterangan</label>
+				<div class="col-sm-10">
+					<div class="input-group">
+						<input onclick="this.select()" id="formControlKeterangan" class="form-control" type="text" formControlName="keterangan">
+					</div>
+				</div>
+			</div>
+		<!--/KETERANGAN-->
+		<!--QUERY-->
+			<ng-container *ngIf="(queryUpdateValue)">
+				<div class="form-group row mb-1">
+					<label for="keteranganP" class="col-sm-2 col-form-label col-form-label-sm">Query</label>
+					<div class="col-sm-10">
+						<input style="{border:none;}" type="text" readonly class="form-control-plaintext" id="keteranganP" *ngIf="queryUpdateValue>0" value="Masuk : {{queryUpdateValue}} Ctn">
+						<p id="keteranganP" *ngIf="queryUpdateValue<0" >Keluar : {{(queryUpdateValue)*-1}} Ctn</p>
+					</div> 
+				</div>
+			</ng-container>
+		<!--/QUERY-->
+	</form>
+</ng-template>
+<ng-template #newTransactionModalFooter>
+	<button type="button" class="btn btn-outline-dark" 
+		[disabled]="!formTest.valid"
+		onclick="(()=>document.getElementById('submitButton').click())()"
+	>Submit</button>
+	<button type="button" class="btn btn-outline-dark" (click)="newTransactionModalRef.close()">Save</button>
+</ng-template>

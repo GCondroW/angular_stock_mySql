@@ -1,0 +1,12 @@
+{
+  "as": [
+    { "id": 1, "title": "json-server", "author": "typicode" },
+	{ "id": 2, "title": "json-server 2", "author": "typicode 2" }
+  ],
+  "comments": [
+    { "id": 1, "body": "some comment", "aId": 1 },
+	{ "id": 2, "body": "some comment2", "aId": 1 },
+	{ "id": 3, "body": "some comment3", "aId": 2 }
+  ],
+  "profile": { "name": "typicode" }
+}
