@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/cwtestb2/deploy/
+    - /repositories -R express_server_mySql $DEPLOYPATH
