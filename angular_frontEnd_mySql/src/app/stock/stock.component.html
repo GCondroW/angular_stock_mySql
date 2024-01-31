@@ -166,7 +166,7 @@
 	<div class="container-fluid" >
 		<div class="btn-group btn-group-sm" role="group">
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="_excel.downloadExcel(activeView)">Download</button>
-			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refreshPage()">Refresh</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="refreshPage(activeView)">Refresh</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="delete(getAllAgGridRows(),'stock')">Delete All</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="modal.modal_3.openModal()">Tambah Data</button>
 			<button type="button" class="btn btn-outline-secondary btn-sm" (click)="misc.reset()">Reset</button>

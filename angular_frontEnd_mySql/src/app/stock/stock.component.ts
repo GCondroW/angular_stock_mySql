@@ -152,7 +152,7 @@ export class StockComponent {
 	ngOnInit(){
 		let switchFallbackFunct=()=>{
 			console.log('SWITCH_EXCEPTION_ERROR')
-			this.refreshPage();
+			this.refreshPage(this.activeView);
 		};
 		this.socket.on("connect", () => {
 			this.misc.loadingWrapper(
@@ -168,11 +168,11 @@ export class StockComponent {
 						console.log("tableDataNull?"+"=>",tableData);
 						if(!!response.success&&!!tableData){
 							//console.log("LOGIN SUCCESS = > ",response);
-							this.updateData(tableData);
+							this.updateData(tableData,this.activeView);
 						}else{
 							//console.log("LOGIN FAILED = > ",response);
 							//console.log("response.dbKey",response.dbKey)
-							this.refreshPage();
+							this.refreshPage(this.activeView);
 						};
 					});
 				},this.gridOptions
@@ -192,11 +192,11 @@ export class StockComponent {
 					this.socket.emit("login",clientData,(response:any)=>{
 						if(!!response.success&&!!this.user.getTableData(this.activeView)){
 							console.log("LOGIN SUCCESS = > ",response);
-							this.updateData(this.user.getTableData(this.activeView));
+							this.updateData(this.user.getTableData(this.activeView),this.activeView);
 						}else{
 							console.log("LOGIN FAILED = > ",response);
 							console.log("response.dbKey",response.dbKey)
-							this.refreshPage();
+							this.refreshPage(this.activeView);
 						};
 					});
 				},this.gridOptions
@@ -224,7 +224,7 @@ export class StockComponent {
 						this.user.setTableData(emittedData.dbKey,this.user.deleteById(deletedDataId,this.activeView),this.activeView)
 						);
 					this.setDbKey(emittedData.dbKey);
-					this.updateData(this.user.getTableData(this.activeView));
+					this.updateData(this.user.getTableData(this.activeView),this.activeView);
 					alert(GlobalVar.alert(alertArr,message));
 				},this.gridOptions
 			);
@@ -262,7 +262,7 @@ export class StockComponent {
 							let newAndUpdatedData=oldData;
 							this.setDbKey(dbKey);
 							this.user.setTableData(dbKey,newAndUpdatedData,this.activeView);
-							this.updateData(this.user.getTableData(this.activeView));
+							this.updateData(this.user.getTableData(this.activeView),this.activeView);
 							alert(GlobalVar.alert(alertArr,message));
 							break;
 						default:
@@ -294,7 +294,7 @@ export class StockComponent {
 							newAndUpdatedData.push(...data);
 							this.setDbKey(dbKey);
 							this.user.setTableData(dbKey,newAndUpdatedData,this.activeView);
-							this.updateData(this.user.getTableData(this.activeView));
+							this.updateData(this.user.getTableData(this.activeView),this.activeView);
 							alert(GlobalVar.alert(alertArr,message));
 							break;
 						default:
@@ -341,7 +341,7 @@ export class StockComponent {
 								});
 								this.user.setTableData(dbKey,newAndUpdatedData,'stock');
 							};
-							this.updateData(this.user.getTableData(this.activeView));
+							this.updateData(this.user.getTableData(this.activeView),this.activeView);
 							alert(GlobalVar.alert(alertArr,message));
 							break;
 						default:
@@ -983,7 +983,7 @@ export class StockComponent {
 			},this.filter.searchDelay);	
 		},
 	};
-	private gridTimeoutDelay:number=500;
+	private gridTimeoutDelay:number=200;
 	private gridTimeoutContainer:any={};
 	public gridOptions:any= {
 		rowData:null,
@@ -998,12 +998,15 @@ export class StockComponent {
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
 			window.addEventListener('resize', (event)=>this.adjustTableContainerSize());
-			this.adjustTableContainerSize();
+			
 			//this.adjustTableContainerSize();
 		},
 		onFirstDataRendered:(event:any)=>{
-			//console.log("grid Event => onFirstDataRendered : ");
-			//console.log("onFirstDataRendered timeout start")
+			console.log("grid Event => onFirstDataRendered : ");
+			console.log("onFirstDataRendered timeout start");
+
+			//console.log("this.gridOptions.columnApi.getColumns()",this.gridOptions.columnApi.getColumns());
+
 			/*
 			if(!!this.gridTimeoutContainer)clearTimeout(this.gridTimeoutContainer);
 			this.gridTimeoutContainer=setTimeout(async()=>{
@@ -1027,7 +1030,7 @@ export class StockComponent {
 			//console.log("grid Event => onPaginationChanged : ");
 		},
 		onRowDataUpdated:async(event:any)=>{
-			//console.log("grid Event => onRowDataUpdated : ");
+			console.log("grid Event => onRowDataUpdated : ");
 			
 		},
 		onFilterChanged:(event:any)=>{
@@ -1035,10 +1038,10 @@ export class StockComponent {
 		},
 		onColumnResized: (event:any) => {
 			console.log("grid Event => onColumnResized : ");
-			if (event.source==="autosizeColumns"||event.source==="api")return this.adjustTableContainerSize();
 			if(!!this.gridTimeoutContainer["onColumnResized"])clearTimeout(this.gridTimeoutContainer["onColumnResized"]);
 			this.gridTimeoutContainer["onColumnResized"]=setTimeout(async()=>{
 				console.log("onColumnResized timeout finish")
+				if (event.source==="autosizeColumns"||event.source==="api")return this.adjustTableContainerSize();
 				let temp=this.options.data.tableOptions;
 				temp[this.activeView].columnDefs.find((item:any)=>item.field===event.column.userProvidedColDef.field).width=event.column.actualWidth;
 				this.options.setOptions(temp,'tableOptions')
@@ -1046,18 +1049,28 @@ export class StockComponent {
 			},this.gridTimeoutDelay);
 		},
 		onModelUpdated: (event:any)=>{
-			console.log("grid Event => onModelUpdated : ");
+			//Displayed rows have changed. Triggered after sort, filter or tree expand / collapse events.
+			console.log("grid Event => onModelUpdated : ",event);
 			console.log("onModelUpdated timeout start")
-			if(!!this.gridTimeoutContainer["a"])clearTimeout(this.gridTimeoutContainer["onComponentStateChanged"]);
-			this.gridTimeoutContainer["a"]=setTimeout(async()=>{
-				console.log("a timeout finish")
+			if(!!this.gridTimeoutContainer["onComponentStateChanged"])clearTimeout(this.gridTimeoutContainer["onComponentStateChanged"]);
+			this.gridTimeoutContainer["onComponentStateChanged"]=setTimeout(async()=>{
+				console.log("onComponentStateChanged, timeout finish")
+				console.log("this.options.data.tableOptions",this.options.data.tableOptions)
 				this.options.data.tableOptions[this.activeView].columnDefs.map((columnDef:any)=>{
 					if(columnDef.width){
-					
+						//if(this.gridOptions.columnApi.getColumn(columnDef.field).actualWidth===columnDef.width) return console.log("skip")
 						this.gridOptions.columnApi.setColumnWidth(columnDef.field,columnDef.width);
 						console.log("columnDef.width applied",columnDef.field,columnDef.width);
 					}else{
+						let temp=this.options.data.tableOptions;
 						this.gridOptions.columnApi.autoSizeColumn(columnDef.field);
+						
+						if(this.gridOptions.columnApi.getColumn(columnDef.field)?.actualWidth){
+							
+							let width=this.gridOptions.columnApi.getColumn(columnDef.field).actualWidth	
+							console.log("actualWidth "+width+" "+JSON.stringify(this.user.tableData?.[this.activeView][this.user.dbKey]))
+							temp[this.activeView].columnDefs.find((item:any)=>item.field===columnDef.field).width=width;
+						};	
 					};
 				});
 				this.gridOptions.api.hideOverlay();
@@ -1065,32 +1078,25 @@ export class StockComponent {
 		},
 		onComponentStateChanged:(event:any)=>{
 			console.log("grid Event => onComponentStateChanged : ");
-			console.log("onComponentStateChanged timeout start")
-			if(!!this.gridTimeoutContainer["a"])clearTimeout(this.gridTimeoutContainer["onComponentStateChanged"]);
-			this.gridTimeoutContainer["a"]=setTimeout(async()=>{
-				console.log("a timeout finish")
-				this.options.data.tableOptions[this.activeView].columnDefs.map((columnDef:any)=>{
-					if(columnDef.width){
-					
-						this.gridOptions.columnApi.setColumnWidth(columnDef.field,columnDef.width);
-						console.log("columnDef.width applied",columnDef.field,columnDef.width);
-					}else{
-						this.gridOptions.columnApi.autoSizeColumn(columnDef.field);
-					};
-				});
-				this.gridOptions.api.hideOverlay();
-			},this.gridTimeoutDelay);
+			
 		},
 		onColumnVisible:(event:any)=>{
 			console.log("grid Event => onColumnVisible : ",event);
+			if(event.visible===false)return this.adjustTableContainerSize();
+			let columnHeaderArr=event.columns.map((item:any)=>item.colId);
+			columnHeaderArr.map((item:any)=>{
+				this.gridOptions.columnApi.autoSizeColumn(item);
+			});
+			/*
 			this.options.data.tableOptions[this.activeView].columnDefs.map((columnDef:any)=>{
 				if(columnDef.width){
 					this.gridOptions.columnApi.setColumnWidth(columnDef.field,columnDef.width);
 					console.log("columnDef.width applied",columnDef.field,columnDef.width);
 				}else{
-					this.gridOptions.columnApi.autoSizeColumn(columnDef.field);
+					
 				};
 			});
+			*/
 		},
 		onRowDoubleClicked:(event:any)=>{
 			console.log("grid Event => onRowDoubleClicked : ");
@@ -1360,12 +1366,12 @@ export class StockComponent {
 					console.log("TABLEDATA = > ",tableData)
 					if(tableData!=null && tableData.length>0 && (clientKey===dbKey)){
 						console.log("(tableData!=null && tableData.length>0 && (clientKey===dbKey))",true);
-						this.activeView=tableName;
-						this.updateData(tableData);
+						//this.activeView=tableName;
+						this.updateData(tableData,viewName);
 					}else{
 						console.log("(tableData!=null && tableData.length>0 && (clientKey===dbKey))",false);
-						this.activeView=tableName;
-						this.refreshPage();
+						//this.activeView=tableName;
+						this.refreshPage(tableName);
 					};
 				});
 			},
@@ -1382,79 +1388,39 @@ export class StockComponent {
 		this.gridOptions.api.setColumnDefs(this.options.data.tableOptions[view].columnDefs);
 		this.gridOptions.api.setFilterModel(this.options.data.filterParams[view]);
 	};
-	public updateData=async(tableData:any)=>{
-		this.stock.set(tableData,this.activeView,this.options.data.tableOptions);
-		this.changeView(this.activeView);
-		//this.changeView(this.activeView);
+	public updateData=async(tableData:any,tableName:string)=>{
+		await this.stock.set(tableData,tableName,this.options.data.tableOptions);
+		
+		console.log("===>changeView ",tableName);
+		//console.log("this.stock.daftar[view].colDef ",this.stock.daftar[view].colDef);
+		
+		this.activeView=tableName;
+		this.gridOptions.api.deselectAll();
+		//this.gridOptions.api.setColumnDefs(null);
+		//this.gridOptions.api.setFilterModel(null);
+		this.gridOptions.api.setColumnDefs(this.options.data.tableOptions[tableName].columnDefs);
+		this.gridOptions.api.setFilterModel(this.options.data.filterParams[tableName]);
 	};
-	private getPage=()=>{
-		this.globalService.getData(this.activeView).subscribe((x:any)=>{
+	private getPage=(tableName:string)=>{
+		this.globalService.getData(tableName).subscribe((x:any)=>{
 			if(!!x.data[0].STOCK) x.data.map((item:any)=>item.STOCK=Number(item.STOCK));
 			if(!!x.data[0].TANGGAL)x.data.map((item:any)=>item.TANGGAL=this.misc.convertDate(item.TANGGAL));
-			let tableData=this.user.setTableData(this.user.getDbKey(),x.data,this.activeView);
-			this.updateData(tableData);
+			let tableData=this.user.setTableData(this.user.getDbKey(),x.data,tableName);
+			this.updateData(tableData,tableName);
 		});
 	};
-	public refreshPage=()=>{
+	public refreshPage=(tableName:string)=>{
+		//if(!tableName)tableName=this.activeView;
 		try{
-			let tableName=this.activeView;
 			let tableData=this.user.getTableData(tableName)
 			let clientKey=this.user.getDbKey();
 			this.globalService.getDbKey().subscribe((x:any)=>{
 				let dbKey=Number(x.value);
 				this.setDbKey(x.value);
-				return this.getPage();
+				return this.getPage(tableName);
 			});
 		}catch(e){
 			console.log("checkDbParity=()=> dbCheckParity Error : ",e);
 		};
 	};
-	public old_refreshPage=()=>{
-		console.log("checkDbParity=()=> Start");
-		try{
-			let tableName=this.activeView;
-			let tableData=this.user.getTableData(tableName);
-			console.log("checkDbParity=()=> tableData : ",tableData);
-			if(!tableData||tableData.length<1){//table didnt exist on client
-				this.globalService.getDbKey().subscribe((x:any)=>{
-					console.log("checkDbParity=()=> dbCheckParity Failed");
-					this.setDbKey(x.value);
-					this.getPage();
-				});
-			}else{//table exist on client
-				this.globalService.getDbKey().subscribe((x:any)=>{
-					let clientKey=this.user.getDbKey();
-					let dbKey=Number(x.value);
-					console.log("checkDbParity=()=> dbKey : ",clientKey===dbKey,clientKey,dbKey);
-					if (clientKey===dbKey){
-						console.log("checkDbParity=()=> dbCheckParity Success");
-						this.getPage();
-					}else {
-						console.log("checkDbParity=()=> dbCheckParity Failed");
-						this.setDbKey(x.value);
-						this.getPage();
-					};
-				});
-			};
-		}catch(e){
-			console.log("checkDbParity=()=> dbCheckParity Error : ",e);
-		};
-	};
-	/*
-	public old_refreshPage=()=>{
-		let temp=this.checkDbParity();
-		console.log("parity temp =<",temp);
-		if(temp){
-			console.log("refreshPage true")
-			this.getPage();
-		}else{
-			console.log("refreshPage false")
-			this.globalService.getDbKey().subscribe((x:any)=>{
-				console.log("x.value,this.user.getDbKey()",x.value,this.user.getDbKey())
-				this.setDbKey(x.value);
-				this.getPage();
-			});
-		};
-	};
-	*/
 }

@@ -57,6 +57,7 @@ export const GlobalVar ={
 					this.daftar.stock.filterData=this.generateFilterData(JSON.parse(JSON.stringify((temp))),
 						options.excludedTableColumn
 					);
+					
 				},
 			},
 			transaksi:{
