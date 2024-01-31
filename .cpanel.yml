@@ -12,7 +12,7 @@ deployment:
     - /bin/cp -R ${REPOPATH}/node_modules ${DEPLOYPATH}
     - /bin/cp -R ${REPOPATH}/public ${DEPLOYPATH}
     - /bin/cp -R ${REPOPATH}/routes ${DEPLOYPATH}
-    - /bin/cp -R ${REPOPATH}/view ${DEPLOYPATH}
+    - /bin/cp -R ${REPOPATH}/views ${DEPLOYPATH}
     - /bin/cp -R ${REPOPATH}/app.js ${DEPLOYPATH}
     - /bin/cp -R ${REPOPATH}/package-lock.json ${DEPLOYPATH}
     - /bin/cp -R ${REPOPATH}/package.json ${DEPLOYPATH}
