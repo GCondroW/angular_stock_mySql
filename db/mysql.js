@@ -19,7 +19,7 @@ let multQ=async(qArr)=>{
 	const connection = await mysql.createConnection(config);
 	let [rows, fields]=[];	
 	let iteration=1;
-	
+	console.log("qArr : ",qArr);
 	try {
 		await connection.beginTransaction();
 		//const queryPromises = []
@@ -50,7 +50,9 @@ let preSttQ=async(stt,values)=>{
 	let iteration=1;
 	try {
 		await connection.beginTransaction();
-		[rows, fields]=(await connection.query(stt,values));
+		[rows, fields]=(await connection.execute(stt,values));
+		console.log("iteration : ",iteration++);
+		console.log("query : ",stt,JSON.stringify(values));
 		await connection.commit();
 		await connection.end();
 	}catch(error){

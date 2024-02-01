@@ -118,6 +118,7 @@
 		<div class="row">
 			<div class="col">
 				<app-upload 
+					[buttonLabel]="'Upload '+activeView"
 					[currentPage]="activeView"
 					[uploadHandler]="_excel.postExcel"
 				></app-upload>

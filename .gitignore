@@ -6,5 +6,5 @@ npm-debug.log
 yarn-error.log
 
 # Miscellaneous
-localDb/localTableViewCache
-localDb/updateCount
+localDb/
+localDb/

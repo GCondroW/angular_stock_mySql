@@ -128,6 +128,110 @@ router.delete('/', handleErrorAsync(async(req, res, next)=>{
 	};
 }));
 
+router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
+	let data=req.body;
+	data=JSON.parse(JSON.stringify(data).toUpperCase());
+	let userName=req.get('user')?req.get('user'):'Guest-1';
+	let q_SUPPLIER=new qValues();
+	data.map(item=>item.SUPPLIER).forEach(item=>
+		item!=""?
+		q_SUPPLIER.add(
+			`(SELECT id_supplier FROM supplier WHERE nama ="`+item+`"),"`+item+`"`
+		)
+		:""
+	);
+	q_DAFTAR=new qValues();
+	data.map(item=>{return {NAMA:item.NAMA,SUPPLIER:item.SUPPLIER,JUMLAH:item.JUMLAH}}).forEach(item=>
+		item!=""?
+		q_DAFTAR.add(
+			`(SELECT ID_DAFTAR FROM DAFTAR WHERE nama ="`+item.NAMA+`"),"`+item.NAMA+`",`+`(SELECT ID_SUPPLIER FROM SUPPLIER WHERE nama ="`+item.SUPPLIER+`"),`+item.JUMLAH
+		)
+		:""
+	);
+	let q=[
+		`CREATE TEMPORARY TABLE TEMP_TABLE_SUPPLIER(
+			ID_SUPPLIER INT,
+			NAMA VARCHAR(64)
+		);`,
+		`INSERT INTO TEMP_TABLE_SUPPLIER(ID_SUPPLIER, NAMA) VALUES `+q_SUPPLIER.values+`;`,
+		`REPLACE
+			INTO supplier(ID_SUPPLIER, NAMA)
+			SELECT DISTINCT
+			ID_SUPPLIER,
+			NAMA
+		FROM
+			TEMP_TABLE_SUPPLIER;`,
+			
+			
+		`CREATE TEMPORARY TABLE TEMP_TABLE_DAFTAR(
+			ID_DAFTAR INT,
+			NAMA VARCHAR(64),
+			ID_SUPPLIER INT,
+			JUMLAH INT (16)
+		);`,
+		`INSERT INTO TEMP_TABLE_DAFTAR(ID_DAFTAR, NAMA, ID_SUPPLIER, JUMLAH)VALUES `+q_DAFTAR.values+`;`,
+		`REPLACE
+			INTO DAFTAR(ID_DAFTAR, NAMA, ID_SUPPLIER)
+			SELECT DISTINCT
+			id_daftar,
+			NAMA,
+			id_supplier
+		FROM
+			TEMP_TABLE_DAFTAR;`,	
+		`select ID_DAFTAR, JUMLAH from TEMP_TABLE_DAFTAR;`
+	];
+	let temp=await db.multQ(q);
+	if(!temp)throw new Error("excelUpload transaction step 1 failed")
+	console.log("excelUpload transaction step 1 succes, commence step 2")
+		let ID_DAFTAR;
+		let JUMLAH;
+		let USER=userName;
+		let TANGGAL=new Date();
+		let JENIS="";
+		let KETERANGAN="";
+		q="insert into transaksi (ID_DAFTAR,jumlah, user, tanggal, jenis, keterangan) values (?,?,?,?,?,?);"
+		let v=[];
+		let i=0;
+	temp.map(item=>{
+		ID_DAFTAR=item.ID_DAFTAR;
+		JUMLAH=item.JUMLAH;
+		//USER;
+		//TANGGAL;
+		//JENIS;
+		//KETERANGAN;
+		v[i]=[];
+		v[i].push(ID_DAFTAR,JUMLAH,USER,TANGGAL,JENIS,KETERANGAN);
+		i++;
+	});
+	i=0;
+	
+	//let insertedIdArr=temp.map(item=>{id_daftar});
+	let b=[];
+	temp=temp.map(async (item)=>{
+		let temp=await db.preSttQ(q,v[i]);
+		b[i]=await db.singleQ("select LAST_INSERT_ID()")
+		i++;
+		return temp
+	});
+	
+	await Promise.all(temp);
+	//let insertedData=await db.singleQ("SELECT * FROM "+defaultTableName+"_view_1 WHERE ID_TRANSAKSI="+insertedIdArr);
+	//insertedData=await req.app.tableViewCache.addTransaksi(insertedData);
+	/*
+	let emitVar={
+		dbKey:req.app.dbKey.up(),
+		data:insertedData,
+		message:"POST_UPDATED_MESSAGE",
+	};
+	*/
+	//console.log('EMIT_AT_POST_TRANSAKSI',req.app.io.emit('transaksi',emitVar));
+	res.status(202);
+	console.log(temp[0].insertId )
+	console.log("b",b);
+	res.send({success:true,temp:temp});
+	
+}));
+
 module.exports = router;
 
 

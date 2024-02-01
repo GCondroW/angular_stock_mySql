@@ -139,7 +139,7 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 		)
 		:""
 	);
-	console.log("q_xupplier",q_SUPPLIER.value);
+	console.log("q_xupplier",q_SUPPLIER.values);
 	let q_DAFTAR=new qValues();
 	data.forEach(item=>{
 		q_DAFTAR.add(

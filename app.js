@@ -148,7 +148,7 @@ let dbParity={};
 let tableViewCache=new class tableViewCache{
 	constructor(){
 		console.log("process.env.PORT",process.env.PORT);
-		console.log("CLEAR CACHE",localDb.clear("localTableViewCache"));
+		//console.log("CLEAR CACHE",localDb.clear("localTableViewCache"));
 		let init = async()=>{
 			console.log("INIT CACHE");
 			let localTableViewCache=await this.getData();
