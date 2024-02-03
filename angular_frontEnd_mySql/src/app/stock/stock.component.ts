@@ -1213,6 +1213,8 @@ export class StockComponent {
 				this.user.setId(id);
 				this.user.setPriviledge(priviledge);
 				this.user.setLogin(true);
+				//set header
+				this.globalService.setHeaders("user",this.user.name);
 				//cleanup
 				this.userAuth.formVisibility=false;
 				this.userAuth.isLogin=true;

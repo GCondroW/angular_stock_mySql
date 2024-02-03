@@ -181,8 +181,9 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		`select ID_DAFTAR, JUMLAH from TEMP_TABLE_DAFTAR;`
 	];
 	let temp=await db.multQ(q);
-	if(!temp)throw new Error("excelUpload transaction step 1 failed")
-	console.log("excelUpload transaction step 1 succes, commence step 2")
+	if(!temp)throw new Error("excelUpload transaction step 1 failed");
+	console.log("excelUpload transaction step 1 succes, commence step 2");
+	console.log("temp",temp);
 		let ID_DAFTAR;
 		let JUMLAH;
 		let USER=userName;
@@ -197,38 +198,50 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		JUMLAH=item.JUMLAH;
 		//USER;
 		//TANGGAL;
-		//JENIS;
+		JENIS=JUMLAH>0?"MASUK":JUMLAH<0?"KELUAR":"";
 		//KETERANGAN;
 		v[i]=[];
 		v[i].push(ID_DAFTAR,JUMLAH,USER,TANGGAL,JENIS,KETERANGAN);
 		i++;
 	});
-	i=0;
 	
-	//let insertedIdArr=temp.map(item=>{id_daftar});
-	let b=[];
-	temp=temp.map(async (item)=>{
-		let temp=await db.preSttQ(q,v[i]);
-		b[i]=await db.singleQ("select LAST_INSERT_ID()")
-		i++;
-		return temp
-	});
+	let insertedId=await Promise.all(v.map(async(item)=>{
+		let b=await db.preSttQ(q,item);
+		return b.insertId;
+	}));
 	
-	await Promise.all(temp);
-	//let insertedData=await db.singleQ("SELECT * FROM "+defaultTableName+"_view_1 WHERE ID_TRANSAKSI="+insertedIdArr);
-	//insertedData=await req.app.tableViewCache.addTransaksi(insertedData);
-	/*
-	let emitVar={
-		dbKey:req.app.dbKey.up(),
-		data:insertedData,
-		message:"POST_UPDATED_MESSAGE",
+	console.log(insertedId);
+	
+	let insertedData=async()=>{
+		let qq="";
+		let q="";
+		let v=[];
+		let i=0;
+		insertedId.forEach(item=>{
+			if(i<insertedId.length-1){
+				qq+="?,"
+			}else{
+				qq+="?"
+			};
+			console.log(qq,i,insertedId[i]);
+			i++;
+		});
+		q="select * from "+defaultTableName+"_view_1 where ID_TRANSAKSI in("+qq+")";
+		return await db.preSttQ(q,insertedId);
+		
+		//console.log(qq,q,v,result);
 	};
-	*/
-	//console.log('EMIT_AT_POST_TRANSAKSI',req.app.io.emit('transaksi',emitVar));
-	res.status(202);
-	console.log(temp[0].insertId )
-	console.log("b",b);
-	res.send({success:true,temp:temp});
+	
+
+		insertedData=await req.app.tableViewCache.addTransaksi(await insertedData());
+		let emitVar={
+			dbKey:req.app.dbKey.up(),
+			data:insertedData,
+			message:"POST_UPDATED_MESSAGE",
+		};
+		console.log('EMIT_AT_POST_TRANSAKSI',req.app.io.emit('transaksi',emitVar));
+		res.status(202);
+		res.send({success:true});
 	
 }));
 
