@@ -177,8 +177,8 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			NAMA,
 			id_supplier
 		FROM
-			TEMP_TABLE_DAFTAR;`,	
-		`select ID_DAFTAR, JUMLAH from TEMP_TABLE_DAFTAR;`
+			TEMP_TABLE_DAFTAR;`,
+		`select DAFTAR.ID_DAFTAR, TEMP_TABLE_DAFTAR.JUMLAH from DAFTAR right JOIN TEMP_TABLE_DAFTAR on DAFTAR.NAMA=TEMP_TABLE_DAFTAR.NAMA;`
 	];
 	let temp=await db.multQ(q);
 	if(!temp)throw new Error("excelUpload transaction step 1 failed");
@@ -190,7 +190,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		let TANGGAL=new Date();
 		let JENIS="";
 		let KETERANGAN="";
-		q="insert into transaksi (ID_DAFTAR,jumlah, user, tanggal, jenis, keterangan) values (?,?,?,?,?,?);"
+		q="insert into transaksi (ID_DAFTAR,jumlah, user, tanggal, jenis, keterangan) values (?,?,?,?,?,?)"
 		let v=[];
 		let i=0;
 	temp.map(item=>{
@@ -234,6 +234,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	
 
 		insertedData=await req.app.tableViewCache.addTransaksi(await insertedData());
+		console.log("insertedData",insertedData);
 		let emitVar={
 			dbKey:req.app.dbKey.up(),
 			data:insertedData,

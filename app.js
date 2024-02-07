@@ -222,7 +222,25 @@ let tableViewCache=new class tableViewCache{
 		let data=await this.getData();	
 		newData.map(item1=>{
 			let changedStockDataIndex=data.stock.findIndex(item2=>item2.ID_DAFTAR===item1.ID_DAFTAR);
-			data.stock[changedStockDataIndex].STOCK+=item1.JUMLAH;
+			console.log(changedStockDataIndex);
+			if(changedStockDataIndex>=0){
+				//if index found => if data is already exist
+				data.stock[changedStockDataIndex].STOCK+=item1.JUMLAH;
+			}else{
+				//data is new
+				//data.stock[changedStockDataIndex].STOCK+=item1.JUMLAH;
+				let newDataTemp={
+					ID_DAFTAR:item1.ID_DAFTAR,
+					NAMA:item1.NAMA,
+					SUPPLIER:item1.SUPPLIER,
+					QTY:item1.QTY | "",
+					STN:item1.STN | "",
+					KATEGORI:item1.KATEGORI,
+					STOCK:item1.JUMLAH, 
+				};
+				data.stock.push(newDataTemp);
+			};
+			
 			data.transaksi.push(item1);
 		});
 		this.data=data;
