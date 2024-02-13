@@ -1,5 +1,6 @@
-let devMode=true;
-
+var fs = require(`fs`);
+let devMode=fs.existsSync("loc");
+console.log("- devMode = ",devMode)
 const config=devMode?{
 	host     : 'localhost',
 	user     : 'root',

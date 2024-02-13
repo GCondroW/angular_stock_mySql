@@ -76,16 +76,19 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
-var fs = require(`fs`);
 var { createServer } = require("http");
 var https = require('https');
+var fs = require(`fs`);
+
+var LocalStorage = require('node-localstorage').LocalStorage;
+var localDb=new LocalStorage("./localDb");
+
 var usersRouter = require('./routes/users');
 var stockRouter = require('./routes/stock');
 var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
 var mySqlDb=require("./db/mysql")
-var LocalStorage = require('node-localstorage').LocalStorage;
-var localDb=new LocalStorage("./localDb");
+
 var app = express();
 const httpsServer = https.createServer(httpsOptions,app);
 const { Server } = require("socket.io");
@@ -152,10 +155,12 @@ class intervalFunct{
 let dbParity={};
 let tableViewCache=new class tableViewCache{
 	constructor(){
-		console.log("process.env.PORT",process.env.PORT);
-		//console.log("CLEAR CACHE",localDb.clear("localTableViewCache"));
+		console.log("- process.env.PORT = ",process.env.PORT);
+		if(!(fs.existsSync("loc"))){
+			console.log("- devMode ? false : > CLEAR CACHE",localDb.clear("localTableViewCache"));
+		}else console.log("- devMode ? true : > USE CACHE");
 		let init = async()=>{
-			console.log("INIT CACHE");
+			console.log("> INIT CACHE");
 			let localTableViewCache=await this.getData();
 			if(!!localTableViewCache){
 				this.data=localTableViewCache;
@@ -164,14 +169,15 @@ let tableViewCache=new class tableViewCache{
 			};
 			let portNumber=process.env.PORT || '2125';
 			httpsServer.listen(portNumber,()=>{
-				console.log("START, PORT :",portNumber);
+				console.log("> START SERVER");
+				console.log("	-portNumber = ",portNumber);
 				new intervalFunct(this.getView,1000*60*5);
 			});
 		};
 		init();
 	};
 	delete=async(idArr)=>{//delete using ID_DAFTAR
-		console.log("tableViewCache>delete>idArr>",idArr);
+		console.log("> tableViewCache>delete>idArr>",idArr);
 		let data=await this.getData();
 		//let data=this.data;
 		idArr.map(id=>{
@@ -324,7 +330,6 @@ let middlewareArr=[async(req,res,next)=>{
 app.use((req,res,next)=>{
 	req.app.io=io;
 	req.app.tableViewCache=tableViewCache;
-	console.log("test))394012");
 	req.app.dbKey=dbKey;
 	next();
 });
@@ -339,18 +344,9 @@ app.get('/:path?',(req,res,next)=>{
 	next()
 });
 app.get('/test',async(req,res,next)=>{
-	var db = require('./db/mysql');
-	let i=1;
-	let max=5000;
-	let x;
-	while (i<max){
-		x=await db.singleQ("select * from transaksi where ID_TRANSAKSI="+i);	
-		console.log("iteration :",i);
-		console.log("x :",x);
-		i++
-	};
-	res.send(x);
+
 });
+
 app.get('/tableviewcache',(req,res,next)=>{
 	console.log("tableViewCache",tableViewCache.data);
 	res.send(tableViewCache.data);
@@ -363,9 +359,6 @@ app.get('/tableviewcache/reset',async(req,res,next)=>{
 app.use(middlewareArr,(req,res,next)=>{
 	console.log("middleware");
 	next();
-});
-app.get('/corsTest',async(req,res,next)=>{
-	res.send({cors:"cors"});
 });
 app.use('/stock', stockRouter);
 app.use('/transaksi', transaksiRouter);
@@ -396,18 +389,18 @@ app.use(function(err, req, res, next) {
 	res.json({Error:temp});
 });
 io.on('connection', socket => {
-	console.log(" ")
-	console.log("====================================================")
-	console.log("SOCKET CONNECTED = > ",socket.id);
+	console.log("> SOCKET CONNECTED");
+	console.log("	-socket.id = ",socket.id)
 	socket.on("login",(clientData,cb) => {
-		console.log("CLIENTDATA = >",clientData);
-		console.log("DBKEY = >",dbKey.value);
-		console.log("LOGIN VALIDATION = >",clientData.dbKey,dbKey.value);
+		
+		console.log("	-clientData = ",clientData);
+		console.log("	-dbKey.value = ",dbKey.value);
+		console.log("> LOGIN VALIDATION = ",clientData.dbKey," : ",dbKey.value);
 		if(clientData.dbKey!=dbKey.value){
-			console.log("LOGIN FAILED");
+			console.log("> LOGIN FAILED");
 			cb({success:false,dbKey:dbKey.value});
 		}else{
-			console.log("LOGIN SUCCESS");
+			console.log("> LOGIN SUCCESS");
 			cb({success:true,dbKey:dbKey.value});
 		};
 	});
