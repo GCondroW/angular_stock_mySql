@@ -333,7 +333,7 @@ router.put('/', handleErrorAsync(async(req, res, next)=>{
 
 	let resVar=await db.multQ(q);
 	resVar.map(item=>item.STOCK=Number(item.STOCK));
-	await req.app.tableViewCache.editStock(resVar)
+	await req.app.tableViewCache.editStock(resVar);
 	//if(!!resVar.STOCK)resVar.STOCK=number(resVar.STOCK);//convert string to number
 	let emitVar={
 		dbKey:req.app.dbKey.up(),
@@ -483,21 +483,27 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		);`,
 		"SELECT @sql;",
 		"PREPARE st FROM @sql;",
-		"EXECUTE st;",
-		"SELECT * FROM stock_view_1;"
+		"EXECUTE st;"
 	]
+	//,
+	//	"SELECT * FROM stock_view_1;"
 	//console.log("SQL QUERY : ",q);
 	//console.log("q_DAFTAR : ",q_DAFTAR.values);
-	let resVar=await db.multQ(q);
-	resVar.map(item=>item.STOCK=Number(item.STOCK));
-	let emitVar={
-		dbKey:req.app.dbKey.up(),
-		data:resVar,
-		message:"POST_UPDATED_MESSAGE",
+	
+	if(!!await db.multQ(q)){
+		await req.app.tableViewCache.getView();
+		req.app.dbKey.resetValue();
+		let resVar={
+			message:"DATA_UPDATED_FROM_EXCELUPLOAD",
+		};
+		console.log('EMIT_AT_EXELUPLOAD',req.app.io.emit('init',resVar));
+		res.status(202);
+		res.send({success:true});
+	}else{
+		throw new Error("multi query failed");
 	};
-	console.log('EMIT_AT_POST',req.app.io.emit('init',emitVar));
-	res.status(202);
-	res.send({success:true});
+	
+
 	//res.json(await db.multQ(q));
 }));
 

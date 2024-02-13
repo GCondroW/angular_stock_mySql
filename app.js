@@ -122,6 +122,11 @@ class idPrototype{
 		this.value=localDb.getItem(this.key);
 		return this.value;
 	};
+	resetValue=()=>{
+			localDb.setItem(this.key, '1');
+			this.value=this.getValue();
+			return this.value;
+	};
 	clearValue=()=>{
 		localDb.clear(this.key);
 		delete(this.value);
@@ -222,7 +227,6 @@ let tableViewCache=new class tableViewCache{
 		let data=await this.getData();	
 		newData.map(item1=>{
 			let changedStockDataIndex=data.stock.findIndex(item2=>item2.ID_DAFTAR===item1.ID_DAFTAR);
-			console.log(changedStockDataIndex);
 			if(changedStockDataIndex>=0){
 				//if index found => if data is already exist
 				data.stock[changedStockDataIndex].STOCK+=item1.JUMLAH;

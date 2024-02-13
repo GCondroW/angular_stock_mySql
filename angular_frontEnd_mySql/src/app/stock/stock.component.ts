@@ -178,7 +178,12 @@ export class StockComponent {
 				},this.gridOptions
 			);
 		});
-		this.socket.on("init",this.misc.reset);
+		this.socket.on("init",(emittedData:any)=>{
+			console.log("EMIT RECEIVED: init");
+			let message=emittedData.message;
+			alert(message);
+			this.refreshPage(this.activeView);
+		});
 		this.socket.on("login", () => {
 			//console.log("socket connected, socket : ");
 			this.misc.loadingWrapper(
@@ -1405,6 +1410,7 @@ export class StockComponent {
 	};
 	private getPage=(tableName:string)=>{
 		this.globalService.getData(tableName).subscribe((x:any)=>{
+			console.log("funct getPage var x =>",x)
 			if(!!x.data[0].STOCK) x.data.map((item:any)=>item.STOCK=Number(item.STOCK));
 			if(!!x.data[0].TANGGAL)x.data.map((item:any)=>item.TANGGAL=this.misc.convertDate(item.TANGGAL));
 			let tableData=this.user.setTableData(this.user.getDbKey(),x.data,tableName);
