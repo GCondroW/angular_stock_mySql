@@ -137,8 +137,8 @@ class idPrototype{
 	};
 };
 let cc=0;
-let dbKey=new idPrototype("dbKey");
-let userId=new idPrototype("userId");
+let dbKey=-1;
+//let userId=new idPrototype("userId");
 class intervalFunct{
 	constructor(x,y){
 		this.count=new idPrototype("updateCount");
@@ -155,11 +155,11 @@ class intervalFunct{
 let dbParity={};
 let tableViewCache=new class tableViewCache{
 	constructor(){
-		console.log("- process.env.PORT = ",process.env.PORT);
-		if(!(fs.existsSync("loc"))){
-			console.log("- devMode ? false : > CLEAR CACHE",localDb.clear("localTableViewCache"));
-		}else console.log("- devMode ? true : > USE CACHE");
+
 		let init = async()=>{
+			if(!(fs.existsSync("loc"))){
+				console.log("- devMode ? false : > CLEAR CACHE",localDb.clear("localTableViewCache"));
+			}else console.log("- devMode ? true : > USE CACHE");
 			console.log("> INIT CACHE");
 			let localTableViewCache=await this.getData();
 			if(!!localTableViewCache){
@@ -168,10 +168,12 @@ let tableViewCache=new class tableViewCache{
 				await this.getView();
 			};
 			let portNumber=process.env.PORT || '2125';
+
 			httpsServer.listen(portNumber,()=>{
 				console.log("> START SERVER");
 				console.log("	-portNumber = ",portNumber);
 				new intervalFunct(this.getView,1000*60*5);
+				dbKey=new idPrototype("dbKey");
 			});
 		};
 		init();
@@ -293,6 +295,12 @@ let tableViewCache=new class tableViewCache{
 		//return data;
 	};
 };
+app.use((req,res,next)=>{
+	req.app.io=io;
+	req.app.tableViewCache=tableViewCache;
+	req.app.dbKey=dbKey;
+	next();
+});
 app.use(logger('dev'));
 app.use(express.json({limit:'8mb'}));
 app.use(express.urlencoded({ extended: false }));
@@ -308,6 +316,13 @@ app.use('/key/:c?',function(req, res, next) {
 	};
 	res.json(dbKey);
 });
+app.use('/dbKey/',async function(req, res, next) {
+	res.json({
+		"req.app.dbKey":req.app.dbKey,
+		dnKey:dbKey,
+		localDb:await localDb.getItem("dbKey"),
+	});
+});
 let middlewareArr=[async(req,res,next)=>{
 		console.log("MIDDLEWARE 1 => INIT FUNCT");
 		next();
@@ -316,23 +331,18 @@ let middlewareArr=[async(req,res,next)=>{
 		console.log("MIDDLEWARE 2 => AUTH");
 		let clientDbKey=req.get('dbKey');
 		console.log("clientDbKey | dbKey => ",clientDbKey+" | "+dbKey.value);
-		if(clientDbKey!=dbKey.value){
+		if(clientDbKey=!dbKey.value){
 			//console.log("AUTH FAIL ",next(createError(401)));
 			io.emit('login');
 			console.log("AUTH FAIL ");
-			res.send("AUTH FAIL ");
+			res.status(202);
 		}else{
 			console.log("AUTH SUCCESS ",next());
 		};
 	},
 ];
 
-app.use((req,res,next)=>{
-	req.app.io=io;
-	req.app.tableViewCache=tableViewCache;
-	req.app.dbKey=dbKey;
-	next();
-});
+
 
 app.use("/users", usersRouter);
 app.use('/ag', agRouter);
