@@ -1328,7 +1328,6 @@ export class StockComponent {
 		closeAllModals:()=>console.log(this.offcanvasService),
 		convertDate:(dateString:string)=>{
 			let temp=new Date(dateString).toLocaleString('id');
-			//let temp=new Date(dateString);
 			return temp;
 		},
 		checkAdm:()=>{

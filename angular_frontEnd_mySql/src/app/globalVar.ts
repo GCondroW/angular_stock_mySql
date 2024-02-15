@@ -588,6 +588,33 @@ export const GlobalVar ={
 					field: "TANGGAL",
 					sort: "desc",
 					autoHeight: true,
+					valueFormatter: (params:any)=>{
+						try{
+							var dateAsString = params.data.TANGGAL;
+							
+							var localeDatePart = dateAsString.split(',');
+							let part={
+								datePart:localeDatePart[0],
+								timePart:localeDatePart[1],
+							};
+							let datePart=part.datePart.split("/");
+							let timePart=part.timePart.split(".");
+							let newDate=new Date(datePart[2],datePart[1]-1,datePart[0],timePart[0],timePart[1],timePart[2])
+							/*
+							console.log(" 	-localeDatePart+",localeDatePart)
+							console.log(" 	-part.datePart+",part.datePart)
+							console.log(" 	-part.timePart+",part.timePart)
+							console.log(" 	-datePart+",datePart)
+							console.log(" 	-timePart+",timePart)
+							*/
+							console.log(" 	-dateAsString",dateAsString)
+							console.log("	-newDate",newDate)
+							return newDate.toLocaleString("id");
+							//return `${dateParts[0]} - ${dateParts[1]} - ${dateParts[2]}`;
+						}catch(e){
+							return "";
+						}
+					},
 				},
 				{
 					field: "JENIS",
