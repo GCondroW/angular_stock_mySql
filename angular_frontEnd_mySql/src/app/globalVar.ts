@@ -237,7 +237,6 @@ export const GlobalVar ={
 			return
 		};
 	},
-	
 	user:class user{
 		name:string='';
 		id:string='';
@@ -262,7 +261,6 @@ export const GlobalVar ={
 			if(tableData){
 				tableData=JSON.parse(tableData);
 				Object.keys(tableData).map((tableName:string)=>{
-					
 					this.setTableData(this.getDbKey(),tableData[tableName][this.getDbKey()],tableName)
 				});
 			}else{
@@ -385,7 +383,6 @@ export const GlobalVar ={
 		data:any={};
 		constructor(optionsData:any){
 			//optionsData=JSON.parse(optionsData||'{}');
-			
 			Object.keys(optionsData).map((pointer:any)=>{
 				this.setOptions(optionsData[pointer],pointer);
 			});
@@ -409,9 +406,7 @@ export const GlobalVar ={
 			localStorage.setItem('options',JSON.stringify('{}'));
 			this.data={};
 		};
-		
 	},
-	
 	counter:class counter{
 		private startNumber:number;
 		private count:number;
@@ -430,7 +425,6 @@ export const GlobalVar ={
 			return this.count;
 		};
 	},
-	
 	socketConfig:class socketConfig{
 		private defaultValue:{
 			url:string,
@@ -453,6 +447,36 @@ export const GlobalVar ={
 		public setUrl=(url:string)=>{
 			return this.url=url;
 		};
+	},
+	agGridLocaleDateComparator:(date1:any,date2:any)=>{
+		try{
+			let toNumber=(x:any)=>{
+				var dateAsString = x;
+				var localeDatePart = dateAsString.split(',');
+				let part={
+					datePart:localeDatePart[0],
+					timePart:localeDatePart[1],
+				};
+				let datePart=part.datePart.split("/");
+				let timePart=part.timePart.split(".");
+				let newDate=new Date(datePart[2],datePart[1]-1,datePart[0],timePart[0],timePart[1],timePart[2])
+				return Date.parse(newDate.toString());
+			};
+			date1=toNumber(date1);
+			date2=toNumber(date2);
+			if (date1 === null && date2 === null) {
+				return 0;
+			}
+			if (date1 === null) {
+				return -1;
+			}
+			if (date2 === null) {
+				return 1;
+			}
+			return date1 - date2;
+		}catch(e){
+			return 0;
+		}
 	},
 	defaultColumnDefs:{
 		stock:{
@@ -509,7 +533,9 @@ export const GlobalVar ={
 					pinned:'left',
 					type:"numericColumn",
 				},
-				
+				{
+					field:"AKSI",
+				}
 			],
 		},
 		transaksi:{
@@ -610,7 +636,7 @@ export const GlobalVar ={
 						}
 					},
 					*/
-					comparator: (date1:any,date2:any)=>{
+					comparator:(date1:any,date2:any)=>{
 						try{
 							let toNumber=(x:any)=>{
 								var dateAsString = x;

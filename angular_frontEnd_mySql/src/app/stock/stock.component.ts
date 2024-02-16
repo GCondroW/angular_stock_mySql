@@ -400,6 +400,17 @@ export class StockComponent {
 	};
 	/// \APIURL ///
 	
+	/// QUICKEDIT ///
+	quickEdit=new class quickEdit{
+		isActive:boolean;
+		constructor(){
+			this.isActive=false;
+		};
+		toggleIsActive=()=>{
+			return this.isActive=!this.isActive;
+		};
+	}();
+	/// \QUICKEDIT ///
 
 	/// OFFCANVAS ///
 	private offcanvasService:NgbOffcanvas=inject(NgbOffcanvas);
@@ -408,6 +419,7 @@ export class StockComponent {
 		open:(content:any)=>this.offCanvasInstance=this.offcanvasService.open(content),
 	};
 	/// \OFFCANVAS ///
+	
 	/// MODAL ///
 	public modalService:NgbModal=inject(NgbModal);
 	@ViewChild('modal_1') modal_1!:DynamicModalComponent;//modal stock
@@ -433,8 +445,8 @@ export class StockComponent {
 						this.modal.modal_1.grid.gridOptions.api?.setColumnDefs(
 							this.modal.modal_1.grid.columnDefs.map(
 								(item:any)=>
-									Object.assign(item,this.modal.modal_1.grid.defaultColumnDefs)
-							)		
+									Object.assign(item,this.modal.modal_1.grid.defaultColumnDefs);
+							)
 						);
 					}
 				);
@@ -502,6 +514,7 @@ export class StockComponent {
 						headerName:'Tanggal',
 						sort: "desc",
 						autoHeight: true,
+						comparator:GlobalVar.agGridLocaleDateComparator,
 					},	
 					{
 						field:'USER',
@@ -904,7 +917,7 @@ export class StockComponent {
 		resizable:true,
 		sortable: true,
 		filter: true,
-		editable:false,
+		editable:this.quickEdit.isActive,
 		suppressMenu: true,
 		suppressMovable:true,
 		//wrapText: true,
@@ -997,8 +1010,8 @@ export class StockComponent {
 		pagination: true,
 		paginationAutoPageSize:false,	
 		rowSelection: 'single',
-		rowMultiSelectWithClick:true,
-		//paginationPageSize:50,	
+		rowMultiSelectWithClick:!this.quickEdit.isActive,
+		paginationPageSize:50,	
 		accentedSort:true,
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
@@ -1105,7 +1118,16 @@ export class StockComponent {
 		},
 		onRowDoubleClicked:(event:any)=>{
 			console.log("grid Event => onRowDoubleClicked : ");
-			this.operation.mode[this.operation.active].gridOptions.onRowDoubleClicked(event);
+			let callBack;
+			if(!this.quickEdit.isActive){		
+				callBack=this.modal.modal_1.openModal;
+	
+			}else{
+				callBack=this.modal.modal_2.openModal;
+			};
+			let index=this.user.tableData.stock[this.user.dbKey].findIndex((item:any)=>event.data.ID_DAFTAR===item.ID_DAFTAR)
+			let modalData=this.user.tableData.stock[this.user.dbKey][index];
+			callBack(modalData);
 		}
 	};
 	public gridApi:any;//initialize at gridOptions.onGridReady
@@ -1245,6 +1267,8 @@ export class StockComponent {
 		},
 	};
 	/// \userAuth ///
+	
+
 	
 	setDbKey=(dbKey:number)=>{
 		let temp=this.user.setDbKey(dbKey);
