@@ -4,7 +4,7 @@ const pool = mysql.createPool(poolConfig);
 
 let singleQ=async(sql)=>{
 	//const connection = await mysql.createConnection(config);
-	console.log("query : ",sql);
+	console.log("	- query : ",sql);
 	try{
 		const [rows, fields] = await pool.query(sql);
 		//await connection.end();
@@ -19,27 +19,27 @@ let multQ=async(qArr)=>{
 	const connection = await mysql.createConnection(config);
 	let [rows, fields]=[];	
 	let iteration=1;
-	console.log("qArr : ",qArr);
+	console.log("	- qArr : ",qArr);
 	try {
 		await connection.beginTransaction();
 		//const queryPromises = []
 		
 		for (const q of qArr) {
 			//queryPromises.push(connection.query(query);
-			console.log("iteration : ",iteration++);
-			console.log("query : ",q);
+			console.log("	- iteration : ",iteration++);
+			console.log("	- query : ",q);
 			[rows, fields]=(await connection.query(q));
 			//console.log("result : ",rows);
 		};
 		await connection.commit();
 		await connection.end()
 	}catch(error){
-		console.log("ERROR",error);
+		console.log("> ERROR",error);
 		await connection.rollback();
 		await connection.end()
 		throw new Error(error);
 	}finally{
-		console.log("FINALLY");
+		console.log("> FINALLY");
 	};
 	return rows;
 };
@@ -51,16 +51,16 @@ let preSttQ=async(stt,values)=>{
 	try {
 		await connection.beginTransaction();
 		[rows, fields]=(await connection.execute(stt,values));
-		console.log("iteration : ",iteration++);
-		console.log("query : ",stt,JSON.stringify(values));
+		console.log("	- iteration : ",iteration++);
+		console.log("	- query : ",stt,JSON.stringify(values));
 		await connection.commit();
 		await connection.end();
 	}catch(error){
-		console.log("ERROR",error);
+		console.log("> ERROR",error);
 		await connection.rollback();
 		await connection.end();
 	}finally{
-		console.log("FINALLY");
+		console.log("> FINALLY");
 		
 	};
 	//console.log(rows);

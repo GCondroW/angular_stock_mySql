@@ -138,7 +138,6 @@ class idPrototype{
 };
 let cc=0;
 let dbKey=-1;
-//let userId=new idPrototype("userId");
 class intervalFunct{
 	constructor(x,y){
 		this.count=new idPrototype("updateCount");
@@ -155,7 +154,6 @@ class intervalFunct{
 let dbParity={};
 let tableViewCache=new class tableViewCache{
 	constructor(){
-
 		let init = async()=>{
 			if(!(fs.existsSync("loc"))){
 				console.log("- devMode ? false : > CLEAR CACHE",localDb.clear("localTableViewCache"));
@@ -273,7 +271,6 @@ let tableViewCache=new class tableViewCache{
 		return temp;
 	};
 	test=async()=>{
-		//1765627
 		let localTableViewCache=await localDb.getItem('localTableViewCache');
 		let temp={};
 		temp['stock']=await mySqlDb.singleQ("select * from "+"stock"+"_view_1");
@@ -341,9 +338,6 @@ let middlewareArr=[async(req,res,next)=>{
 		};
 	},
 ];
-
-
-
 app.use("/users", usersRouter);
 app.use('/ag', agRouter);
 app.get('/:path?',(req,res,next)=>{
@@ -356,7 +350,6 @@ app.get('/:path?',(req,res,next)=>{
 app.get('/test',async(req,res,next)=>{
 
 });
-
 app.get('/tableviewcache',(req,res,next)=>{
 	console.log("tableViewCache",tableViewCache.data);
 	res.send(tableViewCache.data);

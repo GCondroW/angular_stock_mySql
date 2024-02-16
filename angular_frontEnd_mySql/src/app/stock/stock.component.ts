@@ -1318,11 +1318,7 @@ export class StockComponent {
 			//if(this.user.prompt)true
 		},
 		loadingWrapper:async(_f:any,gridOptions:any,_var?:any)=>{
-			//this.gridOptions.api.setRowData(null);
-			
-
 			this.gridOptions.api.showLoadingOverlay();
-			//if(!!_var)return await _f(_var);
 			return await _f();
 		},
 		closeAllModals:()=>console.log(this.offcanvasService),
@@ -1336,7 +1332,6 @@ export class StockComponent {
 		setFilterParams:(filterObj:any)=>{
 			console.log("setFilterParams:(filterObj)",filterObj)
 			Object.keys(filterObj).map(pointer=>{
-				//this.stock.setFilterParams(filterObj[pointer],pointer);
 			});
 			this.options.setOptions(filterObj,"filterParams");
 			console.log("options.filterParams",this.options.data.filterParams);
