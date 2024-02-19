@@ -401,7 +401,7 @@ export class StockComponent {
 	/// \APIURL ///
 	
 	/// QUICKEDIT ///
-	quickEdit=new class quickEdit{
+	public quickEdit=new class quickEdit{
 		isActive:boolean;
 		constructor(){
 			this.isActive=false;
@@ -444,8 +444,7 @@ export class StockComponent {
 						this.modal.modal_1.grid.gridOptions.api.setRowData(x.data);
 						this.modal.modal_1.grid.gridOptions.api?.setColumnDefs(
 							this.modal.modal_1.grid.columnDefs.map(
-								(item:any)=>
-									Object.assign(item,this.modal.modal_1.grid.defaultColumnDefs);
+								(item:any)=>Object.assign(item,this.modal.modal_1.grid.defaultColumnDefs)
 							)
 						);
 					}
@@ -692,8 +691,7 @@ export class StockComponent {
 				this.modal.modal_2.closeModal();
 				this.modal.modal_1.closeModal();
 			},
-		},
-		modal_3:{
+		},modal_3:{
 			openModal:()=>{
 				this.modal.modal_3.modalRef=this.modalService.open(this.modal_3);
 				this.modal.modal_3.isReadyToSubmit=true;
@@ -1267,9 +1265,6 @@ export class StockComponent {
 		},
 	};
 	/// \userAuth ///
-	
-
-	
 	setDbKey=(dbKey:number)=>{
 		let temp=this.user.setDbKey(dbKey);
 		console.log("set db key ", temp);

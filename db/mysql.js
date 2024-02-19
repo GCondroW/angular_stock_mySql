@@ -50,7 +50,7 @@ let preSttQ=async(stt,values)=>{
 	let iteration=1;
 	try {
 		await connection.beginTransaction();
-		[rows, fields]=(await connection.execute(stt,values));
+		[rows, fields]=(await connection.query(stt,values));
 		console.log("	- iteration : ",iteration++);
 		console.log("	- query : ",stt,JSON.stringify(values));
 		await connection.commit();

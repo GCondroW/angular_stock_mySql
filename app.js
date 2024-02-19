@@ -87,6 +87,7 @@ var usersRouter = require('./routes/users');
 var stockRouter = require('./routes/stock');
 var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
+var nmRouter = require('./routes/notaMasuk');
 var mySqlDb=require("./db/mysql")
 
 var app = express();
@@ -313,6 +314,7 @@ app.use('/key/:c?',function(req, res, next) {
 	};
 	res.json(dbKey);
 });
+
 app.use('/dbKey/',async function(req, res, next) {
 	res.json({
 		"req.app.dbKey":req.app.dbKey,
@@ -338,6 +340,7 @@ let middlewareArr=[async(req,res,next)=>{
 		};
 	},
 ];
+app.use("/nm", nmRouter);
 app.use("/users", usersRouter);
 app.use('/ag', agRouter);
 app.get('/:path?',(req,res,next)=>{
@@ -395,7 +398,6 @@ io.on('connection', socket => {
 	console.log("> SOCKET CONNECTED");
 	console.log("	-socket.id = ",socket.id)
 	socket.on("login",(clientData,cb) => {
-		
 		console.log("	-clientData = ",clientData);
 		console.log("	-dbKey.value = ",dbKey.value);
 		console.log("> LOGIN VALIDATION = ",clientData.dbKey," : ",dbKey.value);
@@ -409,7 +411,61 @@ io.on('connection', socket => {
 	});
 });
 module.exports = app,io;
+
 /*
+nota
+	id_nota 		int primary key auto increment
+	tanggal_masuk	date
+	no_nota			string
+	no_surat_jalan	string
+	pajak			string
+	id_entry		int
+
+	let tanggal_masuk=body.tanggal_masuk;
+	let no_nota=body.no_nota;
+	let no_surat_jalan=body.no_surat_jalan;
+	let pajak=body.pajak;
+	let id_entry=-1;
+	let id_daftar=body.id_daftar;
+	let ctn=body.ctn;
+	let diskon_1=body.diskon_1;
+	let diskon_2=body.diskon_2;
+	let diskon_3=body.diskon_3;
+	let diskon_dll=body.diskon_dll;
+	
+body=
+
+	{
+		"tanggal_masuk"
+		"no_nota"
+		"no_surat_jalan"
+		"pajak"
+		"entry":[{
+			"id_daftar"
+			"ctn"
+			"diskon_1"
+			"diskon_2"
+			"diskon_3"
+			"diskon_dll"
+		}]
+	}
+
+entries
+	id_entry		int primary key auto increment	
+	id_daftar		int join table daftar
+		nama		
+		harga		
+		qty			
+		stn		
+	id_nota			int join table nota
+	ctn				int
+	diskon_1		dec
+	diskon_2		dec
+	diskon_3		dec
+	diskon_dll		dec
+
+
+
 <minor bug>
 +deleteAll routing issues
 	expected=>stock
