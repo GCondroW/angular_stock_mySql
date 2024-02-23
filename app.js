@@ -171,8 +171,9 @@ let tableViewCache=new class tableViewCache{
 			httpsServer.listen(portNumber,()=>{
 				console.log("> START SERVER");
 				console.log("	-portNumber = ",portNumber);
-				new intervalFunct(this.getView,1000*60*5);
 				dbKey=new idPrototype("dbKey");
+				new intervalFunct(this.getView,1000*60*5);
+				
 			});
 		};
 		init();
@@ -268,9 +269,11 @@ let tableViewCache=new class tableViewCache{
 		temp['stock']=await mySqlDb.singleQ("select * from "+"stock"+"_view_1");
 		temp['transaksi']=await mySqlDb.singleQ("select * from "+"transaksi"+"_view_1");
 		localDb.setItem('localTableViewCache',JSON.stringify(temp));
+		
 		this.data=temp;
 		return temp;
 	};
+
 	test=async()=>{
 		let localTableViewCache=await localDb.getItem('localTableViewCache');
 		let temp={};
@@ -315,6 +318,9 @@ app.use('/key/:c?',function(req, res, next) {
 	res.json(dbKey);
 });
 
+app.use('/clearCache',function(req, res, next) {
+	res.json({localDb.clear});
+});
 app.use('/dbKey/',async function(req, res, next) {
 	res.json({
 		"req.app.dbKey":req.app.dbKey,
