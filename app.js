@@ -319,7 +319,7 @@ app.use('/key/:c?',function(req, res, next) {
 });
 
 app.use('/clearCache',function(req, res, next) {
-	res.json({localDb.clear});
+	res.json([localDb.clear('dbKey')]);
 });
 app.use('/dbKey/',async function(req, res, next) {
 	res.json({
