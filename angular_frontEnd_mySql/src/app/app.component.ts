@@ -12,8 +12,10 @@ import { APP_BASE_HREF } from "@angular/common";
 export class AppComponent {
 	appRoutingModule : AppRoutingModule = inject(AppRoutingModule);
 	dynamicRoutes=this.appRoutingModule.dynamicRoutes;
+	
 	constructor(){
-		console.log("APP_BASE_HREF",inject(APP_BASE_HREF));
+		console.log("	-this.dynamicRoutes",this.dynamicRoutes);
+		console.log("	-APP_BASE_HREF",inject(APP_BASE_HREF));
 		let devObj:any={
 			devMode:false,
 			//devIteration:Number(localStorage.getItem('devIteration')||1),

@@ -4,13 +4,13 @@ import { BrowserModule } from '@angular/platform-browser';
 import { APP_BASE_HREF } from "@angular/common";
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HomeComponent } from './home/home.component';
+//import { HomeComponent } from './home/home.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { UploadComponent } from './misc/upload/upload.component';
 import { HttpClientModule } from '@angular/common/http';
 import { GlobalService } from './service/global/global.service';
-import { ImportComponent } from './import/import.component';
-import { DaftarComponent } from './daftar/daftar.component';
+//import { ImportComponent } from './import/import.component';
+//import { DaftarComponent } from './daftar/daftar.component';
 import { DataTableComponent } from './misc/data-table/data-table.component';
 import { DynamicTableComponent } from './misc/dynamic-table/dynamic-table.component';
 
@@ -27,7 +27,9 @@ import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 
 import { GlobalVar } from './globalVar'
 
-import { GlobalErrorHandlerService  } from './global-error-handler.service'
+import { GlobalErrorHandlerService  } from './global-error-handler.service';
+import { NmComponent } from './nm/nm.component';
+import { NotFoundComponent } from './not-found/not-found.component'
 
 const corsOptions={
 	withCredentials: true,
@@ -39,24 +41,26 @@ const config: SocketIoConfig = { url: corsConfig.url, options:corsConfig.options
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent,
+    //HomeComponent,
     NavigationComponent,
     UploadComponent,
-    ImportComponent,
-    DaftarComponent,
+    //ImportComponent,
+    //DaftarComponent,
     DataTableComponent,
     DynamicModalComponent,
     DynamicTableComponent,
     StockComponent,
+    NmComponent,
+    NotFoundComponent,
   ],
   imports: [
   	BrowserModule,
-		SocketIoModule.forRoot(config),
+	SocketIoModule.forRoot(config),
     AppRoutingModule,
-		HttpClientModule,
-		AgGridModule,
-		ReactiveFormsModule,
-		NgbModule,
+	HttpClientModule,
+	AgGridModule,
+	ReactiveFormsModule,
+	NgbModule,
   ],
   providers: [
 		GlobalService,
@@ -66,7 +70,8 @@ const config: SocketIoConfig = { url: corsConfig.url, options:corsConfig.options
 		},
 		{
 			provide: APP_BASE_HREF,
-			useValue: "/" + (window.location.pathname.split("/")[1] || ""),
+			//useValue: "/" + (window.location.pathname.split("/")[1] || ""),
+			useValue: "/",
 		},
 	],
   bootstrap: [AppComponent]
