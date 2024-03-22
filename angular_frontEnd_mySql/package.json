@@ -12,6 +12,7 @@
   "dependencies": {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "@angular/animations": "^17.3.1",
     "@angular/common": "^17.3.1",
     "@angular/compiler": "^17.3.1",
@@ -25,6 +26,8 @@
     "ag-grid-angular": "^31.2.0",
     "ag-grid-community": "^31.2.0",
 =======
+=======
+>>>>>>> parent of 47db3727 (wip:update cli + node pending core)
 =======
 >>>>>>> parent of 47db3727 (wip:update cli + node pending core)
     "@angular/animations": "^16.0.0",
@@ -53,12 +56,15 @@
   "devDependencies": {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "@angular-devkit/build-angular": "^17.3.1",
     "@angular/cli": "~17.3.1",
     "@angular/compiler-cli": "^17.3.1",
     "@angular/localize": "^17.3.1",
     "@types/jasmine": "~5.1.4",
 =======
+=======
+>>>>>>> parent of 47db3727 (wip:update cli + node pending core)
 =======
 >>>>>>> parent of 47db3727 (wip:update cli + node pending core)
     "@angular-devkit/build-angular": "^16.0.2",
@@ -75,8 +81,13 @@
     "karma-jasmine": "~5.1.0",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.4.3"
+=======
+    "karma-jasmine-html-reporter": "~2.0.0",
+    "typescript": "~5.0.2"
+>>>>>>> parent of 47db3727 (wip:update cli + node pending core)
 =======
     "karma-jasmine-html-reporter": "~2.0.0",
     "typescript": "~5.0.2"
