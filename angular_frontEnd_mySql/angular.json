@@ -61,10 +61,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "app_angular_jsonServer:build:production"
+              "browserTarget": "app_angular_jsonServer:build:production"
             },
             "development": {
-              "buildTarget": "app_angular_jsonServer:build:development"
+              "browserTarget": "app_angular_jsonServer:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -72,7 +72,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "app_angular_jsonServer:build"
+            "browserTarget": "app_angular_jsonServer:build"
           }
         },
         "test": {

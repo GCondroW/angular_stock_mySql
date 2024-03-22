@@ -10,6 +10,7 @@
   },
   "private": true,
   "dependencies": {
+<<<<<<< HEAD
     "@angular/animations": "^17.3.1",
     "@angular/common": "^17.3.1",
     "@angular/compiler": "^17.3.1",
@@ -22,6 +23,20 @@
     "@popperjs/core": "^2.11.8",
     "ag-grid-angular": "^31.2.0",
     "ag-grid-community": "^31.2.0",
+=======
+    "@angular/animations": "^16.0.0",
+    "@angular/common": "^16.0.0",
+    "@angular/compiler": "^16.0.0",
+    "@angular/core": "^16.0.0",
+    "@angular/forms": "^16.0.0",
+    "@angular/platform-browser": "^16.0.0",
+    "@angular/platform-browser-dynamic": "^16.0.0",
+    "@angular/router": "^16.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^15.0.1",
+    "@popperjs/core": "^2.11.6",
+    "ag-grid-angular": "^29.3.5",
+    "ag-grid-community": "^29.3.5",
+>>>>>>> parent of 47db3727 (wip:update cli + node pending core)
     "angular-notifier": "^14.0.0",
     "bootstrap": "^5.3.3",
     "ngx-socket-io": "^4.6.1",
@@ -30,21 +45,34 @@
     "tslib": "^2.6.2",
     "url": "^0.11.3",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz",
-    "zone.js": "~0.14.4"
+    "zone.js": "~0.13.0"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@angular-devkit/build-angular": "^17.3.1",
     "@angular/cli": "~17.3.1",
     "@angular/compiler-cli": "^17.3.1",
     "@angular/localize": "^17.3.1",
     "@types/jasmine": "~5.1.4",
+=======
+    "@angular-devkit/build-angular": "^16.0.2",
+    "@angular/cli": "~16.0.2",
+    "@angular/compiler-cli": "^16.0.0",
+    "@angular/localize": "^16.0.0",
+    "@types/jasmine": "~4.3.0",
+>>>>>>> parent of 47db3727 (wip:update cli + node pending core)
     "angular-cli-ghpages": "^1.0.7",
     "jasmine-core": "~5.1.2",
     "karma": "~6.4.3",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.1",
     "karma-jasmine": "~5.1.0",
+<<<<<<< HEAD
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.4.3"
+=======
+    "karma-jasmine-html-reporter": "~2.0.0",
+    "typescript": "~5.0.2"
+>>>>>>> parent of 47db3727 (wip:update cli + node pending core)
   }
 }
