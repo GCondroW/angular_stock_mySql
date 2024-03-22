@@ -1,0 +1,26 @@
+<div *ngIf="data!=null">
+	<span class="d-flex flex_row">
+		<!--<label for="list">List:</label>-->
+		<input 
+			[attr.list]="id"
+			id="list" 
+			name="list" 
+			value="{{value}}"
+			(input)="changeFunction($event)"
+			onclick="this.select()"
+		/>
+		<datalist [style.display]="'block'" [attr.id]="id">
+			<select [style.width]="'25px'">
+				<option ></option>
+				<option 
+					*ngFor="let x of data" 
+					[selected]="selectedId===x.id"
+					value="{{x.value}}"
+					(click)="
+						value=x.value;
+						idCallback(x.id);" 
+				>{{x.value}}</option>
+			</select>
+		</datalist>
+	</span>
+</div>

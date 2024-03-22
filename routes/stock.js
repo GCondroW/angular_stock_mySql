@@ -52,6 +52,12 @@ const updateAllData=async(dbNameArr)=>{
 	return await temp;
 };
 
+function upsert(array, element) { // (1)
+  const i = array.findIndex(_element => _element.nama === element.NAMA);
+  if (i > -1) array[i] = element; // (2)
+  else array.push(element);
+}
+
 router.get('/', handleErrorAsync(async(req, res, next)=>{
 	let q="";
 	let params=req.params;
@@ -346,6 +352,184 @@ router.put('/', handleErrorAsync(async(req, res, next)=>{
 }));
 
 router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
+	let data=JSON.parse(JSON.stringify(req.body).toUpperCase());;
+	
+	
+	let daftar=[];
+	let transaksi=[];
+	
+
+	let setTransaksi=async()=>{};
+	let setSatuan=async(data)=>{
+		let satuan=[];
+		let temp=await Promise.all(data.map(async x=>{
+			let qty_l=x['QTY L'];
+			let stn_l=x['STN L'];
+			let qty_m=x['QTY M'];
+			let stn_m=x['STN M'];
+			let qty_s=x['QTY S'];
+			let stn_s=x['STN S'];
+			let q = (await db.singleQ(`select id_satuan 
+					from satuan 
+						where 	qty_l=`+qty_l+` and 
+								stn_l='`+stn_l+`' and
+								qty_m=`+qty_m+` and
+								stn_m='`+stn_m+`' and
+								qty_s=`+qty_s+` and 
+								stn_s='`+stn_s+`';`
+			))[0]||"";
+			return {
+				id_satuan:q?q.id_satuan:null,
+				qty_l:qty_l,
+				stn_l:stn_l,
+				qty_m:qty_m,
+				stn_m:stn_m,
+				qty_s:qty_s,
+				stn_s:stn_s,
+			}
+		}));
+		temp=temp.map(x=>JSON.stringify(x));
+		tempSet = [...new Set(temp)];
+		for (const item of tempSet) {
+		  satuan.push(JSON.parse(item));
+		};
+		let q_satuan=new qValues();
+		satuan.map(x=>{
+			q_satuan.add(x.id_satuan+",'"+x.qty_l+"','"+x.stn_l+"','"+x.qty_m+"','"+x.stn_m+"','"+x.qty_s+"','"+x.stn_s+"'")
+		});
+		satuan=await db.multQ([
+			`CREATE TEMPORARY TABLE temp_table_satuan(
+				id_satuan INT,
+				qty_l INT,
+				stn_l VARCHAR(64),
+				qty_m INT,
+				stn_m VARCHAR(64),
+				qty_s INT,
+				stn_s VARCHAR(64)
+			);`,
+			`INSERT INTO temp_table_satuan(id_satuan,qty_l,stn_l,qty_m,stn_m,qty_s,stn_s) VALUES `+q_satuan.values+`;`,
+			`REPLACE
+				INTO satuan(id_satuan,qty_l,stn_l,qty_m,stn_m,qty_s,stn_s)
+				SELECT DISTINCT
+				id_satuan,
+				qty_l,
+				stn_l,
+				qty_m,
+				stn_m,
+				qty_s,
+				stn_s
+			FROM
+				TEMP_TABLE_satuan;`,
+			"SELECT * from satuan;"
+		]);
+		return satuan;
+	};
+	let setSupplier=async(data)=>{
+		/*
+			id_supplier
+			nama
+			KATEGORI
+			
+		*/
+		let tempSet=new Set();
+		let supplier=[];
+		let i=0;
+		//KEY/COLUMN NAME NEED TO BE UPPERCASED
+		data.forEach(x=>{
+			tempSet.add(JSON.stringify({
+				nama:x.SUPPLIER,
+				kategori:x.KATEGORI,
+			}));
+		});
+		
+		for (const item of tempSet) {
+		  supplier.push(JSON.parse(item));
+		};
+		
+		supplier=await Promise.all(supplier.map(async (x)=>{
+			console.log(x.nama);
+			let q = (await db.singleQ("select id_supplier from supplier where nama = "+"'"+x.nama+"'"))[0]||""
+			return {
+				id:q?q.id_supplier:null,
+				nama:x.nama,
+				kategori:x.kategori,
+			};
+		}));
+		
+		let q_supplier=new qValues();
+		console.log("supplier",supplier)
+		supplier.map(x=>{
+			q_supplier.add(x.id+",'"+x.nama+"','"+x.kategori+"'")
+		})
+		
+		console.log("q_supplier.values",q_supplier.values)
+		supplier=await db.multQ([
+			`CREATE TEMPORARY TABLE TEMP_TABLE_SUPPLIER(
+				id_supplier INT,
+				nama VARCHAR(64),
+				kategori VARCHAR(64)
+			);`,
+			`INSERT INTO TEMP_TABLE_SUPPLIER(ID_SUPPLIER, NAMA,kategori) VALUES `+q_supplier.values+`;`,
+			`REPLACE
+				INTO supplier(ID_SUPPLIER, NAMA,KATEGORI)
+				SELECT DISTINCT
+				ID_SUPPLIER,
+				NAMA,
+				kategori
+			FROM
+				TEMP_TABLE_SUPPLIER;`,
+			"SELECT * from supplier;"
+		])
+		return supplier;
+	};
+	let setDaftar=async(data)=>{
+		/*
+			id_daftar
+			nama
+			id_supplier
+			id_satuan
+		*/
+	
+		let temp=data.map(x=>{
+			return {
+				nama:x.NAMA,
+				supplierValue:x.SUPPLIER+x.KATEGORI,
+				satuanValue:x['QTY L']+x['STN L']+x['QTY M']+x['STN M']+x['QTY S']+x['STN S'],
+			}
+		});
+		let index={
+			supplier:	(await db.singleQ("select id_supplier,nama,kategori from supplier")).map(x=>{return {id:x.id_supplier,value:x.nama+x.kategori}}),
+			satuan:		(await db.singleQ("select id_satuan,qty_l,stn_l,qty_m,stn_m,qty_s,stn_s from satuan")).map(x=>{return {id:x.id_satuan,value:x.qty_l+x.stn_l+x.qty_m+x.stn_m+x.qty_s+x.stn_s}}),
+		};
+		
+		temp=temp.map(x=>{
+			return {
+				nama:x.nama,
+				id_supplier:index.supplier.find(y=>y.value===x.supplierValue).id,
+				id_satuan:index.satuan.find(y=>y.value===x.satuanValue).id,
+			}
+			
+		});
+			
+		
+		//return temp;
+		let a=temp.map(x=>[null,x.nama,x.id_supplier,x.id_satuan]);
+		console.log("a.map(x=>['(?,?,?,?)'])",a.map(x=>['(?,?,?,?)']))
+		return await(db.preSttQ("insert into daftar values ?",[a]))
+	};
+	
+	
+	let resVar={
+		supplier:await setSupplier(data),
+		satuan:await setSatuan(data),
+		daftar:await setDaftar(data),
+		//supplier:await setSupplier(data),
+		//satuan:await setSatuan(data),
+	};
+	res.send(resVar);
+}));
+
+router.post('/excelupload_old', handleErrorAsync(async(req, res, next)=>{
 	let data=req.body;
 	data=JSON.parse(JSON.stringify(data).toUpperCase());
 	let user=req.get('user')?req.get('user'):'Guest-1';

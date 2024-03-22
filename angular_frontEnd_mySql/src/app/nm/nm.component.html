@@ -1,1 +1,26 @@
-<p>nm works!</p>
+<div>
+	<select>
+		<option>KATEGORI</option>
+		<option 
+			*ngFor='let x of ddObj.pajak.initVar'
+			(click)='ddObj.pajak.getPajakSupplier(x)'
+		>{{x}}</option>
+	</select>
+
+</div>
+<div>
+	<app-dynamic-dropdown
+		[data]="ddObj.supplier.initVar"
+		[idCallback]="ddObj.supplier.idCallback"
+		[id]="'list1'"
+		[label]="'SUPPLIER'"
+	></app-dynamic-dropdown>
+</div>
+<div>
+	<app-dynamic-dropdown
+		[data]="ddObj.daftar.initVar"
+		[idCallback]="ddObj.daftar.idCallback"
+		[id]="'list2'"
+		[label]="'BARANG'"
+	></app-dynamic-dropdown>
+</div>

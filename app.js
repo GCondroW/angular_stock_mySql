@@ -88,6 +88,7 @@ var stockRouter = require('./routes/stock');
 var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
 var nmRouter = require('./routes/notaMasuk');
+var dbRouter = require('./routes/db');
 var mySqlDb=require("./db/mysql")
 
 var app = express();
@@ -347,6 +348,7 @@ let middlewareArr=[async(req,res,next)=>{
 	},
 ];
 app.use("/nm", nmRouter);
+app.use("/db", dbRouter);
 app.use("/users", usersRouter);
 app.use('/ag', agRouter);
 app.get('/:path?',(req,res,next)=>{

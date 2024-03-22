@@ -1,5 +1,6 @@
 import { NgModule, ErrorHandler } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 import { APP_BASE_HREF } from "@angular/common";
 import { AppRoutingModule } from './app-routing.module';
@@ -29,7 +30,12 @@ import { GlobalVar } from './globalVar'
 
 import { GlobalErrorHandlerService  } from './global-error-handler.service';
 import { NmComponent } from './nm/nm.component';
-import { NotFoundComponent } from './not-found/not-found.component'
+import { NotFoundComponent } from './not-found/not-found.component';
+import { DynamicDropdownComponent } from './misc/dynamic-dropdown/dynamic-dropdown.component';
+import { DaftarComponent } from './nm/daftar/daftar.component';
+import { DaftarBarangComponent } from './mu/daftar-barang/daftar-barang.component'
+
+import { GridJsAngularModule } from 'gridjs-angular';
 
 const corsOptions={
 	withCredentials: true,
@@ -52,6 +58,9 @@ const config: SocketIoConfig = { url: corsConfig.url, options:corsConfig.options
     StockComponent,
     NmComponent,
     NotFoundComponent,
+    DynamicDropdownComponent,
+    DaftarComponent,
+    DaftarBarangComponent,
   ],
   imports: [
   	BrowserModule,
@@ -61,6 +70,8 @@ const config: SocketIoConfig = { url: corsConfig.url, options:corsConfig.options
 	AgGridModule,
 	ReactiveFormsModule,
 	NgbModule,
+	FormsModule,
+	GridJsAngularModule,
   ],
   providers: [
 		GlobalService,
