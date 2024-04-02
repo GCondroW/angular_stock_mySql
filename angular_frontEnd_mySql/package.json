@@ -1,100 +1,11 @@
 {
-  "name": "app-angular-json-server",
-  "version": "0.18.0",
+  "name": "angular_frontend_mysql",
+  "version": "1.0.0",
+  "description": "This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.0.2.",
+  "main": "index.js",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "private": true,
-  "dependencies": {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "@angular/animations": "^17.3.1",
-    "@angular/common": "^17.3.1",
-    "@angular/compiler": "^17.3.1",
-    "@angular/core": "^17.3.1",
-    "@angular/forms": "^17.3.1",
-    "@angular/platform-browser": "^17.3.1",
-    "@angular/platform-browser-dynamic": "^17.3.1",
-    "@angular/router": "^17.3.1",
-    "@ng-bootstrap/ng-bootstrap": "^16.0.0",
-    "@popperjs/core": "^2.11.8",
-    "ag-grid-angular": "^31.2.0",
-    "ag-grid-community": "^31.2.0",
-=======
-=======
->>>>>>> parent of 47db3727 (wip:update cli + node pending core)
-=======
->>>>>>> parent of 47db3727 (wip:update cli + node pending core)
-    "@angular/animations": "^16.0.0",
-    "@angular/common": "^16.0.0",
-    "@angular/compiler": "^16.0.0",
-    "@angular/core": "^16.0.0",
-    "@angular/forms": "^16.0.0",
-    "@angular/platform-browser": "^16.0.0",
-    "@angular/platform-browser-dynamic": "^16.0.0",
-    "@angular/router": "^16.0.0",
-    "@ng-bootstrap/ng-bootstrap": "^15.0.1",
-    "@popperjs/core": "^2.11.6",
-    "ag-grid-angular": "^29.3.5",
-    "ag-grid-community": "^29.3.5",
->>>>>>> parent of 47db3727 (wip:update cli + node pending core)
-    "angular-notifier": "^14.0.0",
-    "bootstrap": "^5.3.3",
-    "ngx-socket-io": "^4.6.1",
-    "path": "^0.12.7",
-    "rxjs": "~7.8.1",
-    "tslib": "^2.6.2",
-    "url": "^0.11.3",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz",
-    "zone.js": "~0.13.0"
-  },
-  "devDependencies": {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "@angular-devkit/build-angular": "^17.3.1",
-    "@angular/cli": "~17.3.1",
-    "@angular/compiler-cli": "^17.3.1",
-    "@angular/localize": "^17.3.1",
-    "@types/jasmine": "~5.1.4",
-=======
-=======
->>>>>>> parent of 47db3727 (wip:update cli + node pending core)
-=======
->>>>>>> parent of 47db3727 (wip:update cli + node pending core)
-    "@angular-devkit/build-angular": "^16.0.2",
-    "@angular/cli": "~16.0.2",
-    "@angular/compiler-cli": "^16.0.0",
-    "@angular/localize": "^16.0.0",
-    "@types/jasmine": "~4.3.0",
->>>>>>> parent of 47db3727 (wip:update cli + node pending core)
-    "angular-cli-ghpages": "^1.0.7",
-    "jasmine-core": "~5.1.2",
-    "karma": "~6.4.3",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.1",
-    "karma-jasmine": "~5.1.0",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.4.3"
-=======
-    "karma-jasmine-html-reporter": "~2.0.0",
-    "typescript": "~5.0.2"
->>>>>>> parent of 47db3727 (wip:update cli + node pending core)
-=======
-    "karma-jasmine-html-reporter": "~2.0.0",
-    "typescript": "~5.0.2"
->>>>>>> parent of 47db3727 (wip:update cli + node pending core)
-=======
-    "karma-jasmine-html-reporter": "~2.0.0",
-    "typescript": "~5.0.2"
->>>>>>> parent of 47db3727 (wip:update cli + node pending core)
-  }
+  "author": "",
+  "license": "ISC"
 }
