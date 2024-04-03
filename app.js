@@ -89,6 +89,7 @@ var transaksiRouter = require('./routes/transaksi');
 var agRouter = require('./routes/ag');
 var nmRouter = require('./routes/notaMasuk');
 var dbRouter = require('./routes/db');
+var xtRouter = require('./routes/xt');
 var mySqlDb=require("./db/mysql")
 
 var app = express();
@@ -165,7 +166,7 @@ let tableViewCache=new class tableViewCache{
 			if(!!localTableViewCache){
 				this.data=localTableViewCache;
 			}else{
-				await this.getView();
+				//await this.getView();
 			};
 			let portNumber=process.env.PORT || '2125';
 
@@ -173,7 +174,7 @@ let tableViewCache=new class tableViewCache{
 				console.log("> START SERVER");
 				console.log("	-portNumber = ",portNumber);
 				dbKey=new idPrototype("dbKey");
-				new intervalFunct(this.getView,1000*60*5);
+				//new intervalFunct(this.getView,1000*60*5);
 				
 			});
 		};
@@ -301,6 +302,7 @@ app.use((req,res,next)=>{
 	req.app.io=io;
 	req.app.tableViewCache=tableViewCache;
 	req.app.dbKey=dbKey;
+	req.app.localDb=localDb;
 	next();
 });
 app.use(logger('dev'));
@@ -351,6 +353,8 @@ app.use("/nm", nmRouter);
 app.use("/db", dbRouter);
 app.use("/users", usersRouter);
 app.use('/ag', agRouter);
+app.use('/xt', xtRouter);
+
 app.get('/:path?',(req,res,next)=>{
 	//res.json({path:req.params.path});
 	let path=req.params.path;

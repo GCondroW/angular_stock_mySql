@@ -6,9 +6,7 @@ const handleErrorAsync = func => (req, res, next) => {
     func(req, res, next).catch((error) => next(error));
 };
 
-router.get('/delete/:db/', handleErrorAsync(async(req, res, next)=>{
-	res.send(await db.singleQ("delete from "+req.params.db))
-}));
+
 
 router.get('/:n?/', handleErrorAsync(async(req, res, next)=>{
 	let params=req.params;
@@ -27,5 +25,8 @@ router.get('/:n?/', handleErrorAsync(async(req, res, next)=>{
 	res.send(await db.singleQ(q));
 }));
 
+router.get('/delete/:db/', handleErrorAsync(async(req, res, next)=>{
+	res.send(await db.singleQ("delete from "+req.params.db))
+}));
 
 module.exports = router;

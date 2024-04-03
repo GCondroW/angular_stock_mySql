@@ -35,7 +35,7 @@ import { DynamicDropdownComponent } from './misc/dynamic-dropdown/dynamic-dropdo
 import { DaftarComponent } from './nm/daftar/daftar.component';
 import { DaftarBarangComponent } from './mu/daftar-barang/daftar-barang.component'
 
-import { GridJsAngularModule } from 'gridjs-angular';
+import { XtComponent } from './xt/xt.component';
 
 const corsOptions={
 	withCredentials: true,
@@ -61,6 +61,7 @@ const config: SocketIoConfig = { url: corsConfig.url, options:corsConfig.options
     DynamicDropdownComponent,
     DaftarComponent,
     DaftarBarangComponent,
+    XtComponent,
   ],
   imports: [
   	BrowserModule,
@@ -71,7 +72,6 @@ const config: SocketIoConfig = { url: corsConfig.url, options:corsConfig.options
 	ReactiveFormsModule,
 	NgbModule,
 	FormsModule,
-	GridJsAngularModule,
   ],
   providers: [
 		GlobalService,

@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { StockComponent } from './stock/stock.component';
 import { NmComponent } from './nm/nm.component';
+import { XtComponent } from './xt/xt.component';
 import { DaftarBarangComponent } from './mu/daftar-barang/daftar-barang.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { APP_BASE_HREF } from "@angular/common";
@@ -12,7 +13,7 @@ import { APP_BASE_HREF } from "@angular/common";
 
 let baseHref="";
 const dynamicRoutes: Routes = [
-	{path: "", redirectTo: '/ag/stock', pathMatch: 'full' },
+	{path: "", redirectTo: '/ag/xt', pathMatch: 'full' },
 
 	{
 		path :"ag" , 
@@ -32,7 +33,9 @@ const dynamicRoutes: Routes = [
 					{path:"daftarBarang",component:DaftarBarangComponent},
 				],
 			},
-		],
+			{
+				path:"xt",component:XtComponent}
+			],
 	},
 	{path : "**",component: NotFoundComponent},
 ];
