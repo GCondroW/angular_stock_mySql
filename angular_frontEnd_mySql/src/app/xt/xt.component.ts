@@ -13,12 +13,51 @@ import { GridOptions } from 'ag-grid-community';
 })
 export class XtComponent {
 	public xtService:XtService=inject(XtService);
-	private fileName:string="table_";
+	public fileName:string="table_";
 	public debugThis=()=>console.log(this);
 	public gridData:Array<any>|null=null;
-	ngOnInit(){
-		
+	public userName:string="";
+	public setUserName=()=>{
+		let person = prompt();
+		if (person != null) {
+			alert(person)
+			let temp=JSON.parse(localStorage.getItem("xt")!);
+			temp.userName=person;
+			localStorage.setItem("xt",JSON.stringify(temp));
+			this.userName=temp.userName;
+			return temp.userName;
+		} 
 	};
+	public pUser=["guest42","utn5758"];
+	public isP=()=>this.pUser.findIndex(x=>x==this.userName)+1;
+	
+	
+	ngOnInit(){
+		let userName=()=>{
+			if(!localStorage.getItem("xt")){
+				localStorage.setItem("xt",JSON.stringify({userName:'guest'}));
+				let xt=JSON.parse(localStorage.getItem("xt")!);
+				return xt.userName;
+			}else{
+				let xt=JSON.parse(localStorage.getItem("xt")!);
+				return xt.userName;
+			}
+			
+		};
+		this.userName=userName();
+		console.log(userName());
+	};
+	
+	public getTableHeight = () =>{
+		let windowHeigth=window.innerHeight;
+		let navBarHeight=document.getElementById("mainNavbar")!.clientHeight;
+		let offset=15;
+		let tableHeight=windowHeigth-(navBarHeight+offset);
+		this.tableHeight=tableHeight;
+		return tableHeight;
+	};
+	public tableHeight:number=700;
+	
 	public colDefs:ColDef[]=[];
 	public defaultColDef: ColDef = {
 		resizable:true,
@@ -40,11 +79,21 @@ export class XtComponent {
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
 			this.xtService.req.get("https://localhost:2125/xt/"+this.fileName).subscribe((x:any)=>{
-				this.gridData=x[Object.keys(x)[0]];
-				let header=Object.keys(this.gridData![0]);
-				this.colDefs=header.map(x=>{return{field:x}})
 				console.log(x);
+				if(x===null){
+					alert ("tabel kosong");
+					this.gridData=[]
+				}else{
+					this.gridData=x[Object.keys(x)[0]];
+					let header=Object.keys(this.gridData![0]);
+					this.colDefs=header.map(x=>{return{field:x}})
+					
+				};
 			});
+			addEventListener("resize", (event) => {
+				this.getTableHeight();
+			});
+			
 		},
 		onFirstDataRendered:(event:any)=>{
 			console.log("grid Event => onFirstDataRendered : ");
@@ -69,10 +118,12 @@ export class XtComponent {
 		},
 		onColumnResized: (event:any) => {
 			console.log("grid Event => onColumnResized : ");
+			
 		},
 		onModelUpdated: (event:any)=>{
 			//Displayed rows have changed. Triggered after sort, filter or tree expand / collapse events.
 			console.log("grid Event => onModelUpdated : ",event);
+			this.gridOptions.columnApi.autoSizeAllColumns()
 		},
 		onComponentStateChanged:(event:any)=>{
 			console.log("grid Event => onComponentStateChanged : ");
@@ -98,6 +149,15 @@ export class XtComponent {
 					window.location.reload();
 				})
 			});	
+		},
+		download:(data:any,fileName:string)=>{
+			this.xtService.excelHandler.toExcel(data,fileName)
+		},
+		delete:()=>{
+			this.xtService.req.delete("https://localhost:2125/xt/"+this.fileName).subscribe((x:any)=>{
+				console.log("delete",x);
+				window.location.reload();
+			})
 		}
 	};
 	

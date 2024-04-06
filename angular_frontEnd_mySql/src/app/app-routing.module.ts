@@ -14,10 +14,10 @@ import { APP_BASE_HREF } from "@angular/common";
 let baseHref="";
 const dynamicRoutes: Routes = [
 	{path: "", redirectTo: '/ag/xt', pathMatch: 'full' },
-
 	{
 		path :"ag" , 
 		children:[
+			{path: "", redirectTo: '/ag/xt', pathMatch: 'full' },
 			{path:"stock",component:StockComponent},
 			{
 				path:"nm",

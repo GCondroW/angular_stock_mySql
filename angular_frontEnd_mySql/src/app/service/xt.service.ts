@@ -26,10 +26,17 @@ export class XtService {
 			console.log("excelHandler.toJson",temp);
 			return temp;
 		},
+		toExcel:(data:any,fileName:string)=>{
+			let dataSheet=utils.json_to_sheet(data);
+			let wb = utils.book_new();
+			utils.book_append_sheet(wb,dataSheet , fileName);
+			writeFile(wb, fileName+".xlsx", { compression: true });
+		},
 	};
 	req={
 		get:(url:string)=>this.http.get(url.toString()),
 		post:(url:string,data:any)=>this.http.post(url.toString(),data),
+		delete:(url:string)=>this.http.delete(url.toString()),
 	};
 	
   
