@@ -70,15 +70,15 @@ export class XtComponent {
 		resizable:true,
 		sortable: true,
 		filter: true,
-		suppressMenu: true,
-		suppressMovable:true,
+		suppressMenu: false,
+		suppressMovable:false,
 		autoHeight: true,  
 	};
 	
 	public gridOptions:any= {
 		//rowData:null,
-		suppressCellFocus:true,
-		pagination: true,
+		suppressCellFocus:false,
+		pagination: false,
 		paginationAutoPageSize:false,	
 		rowSelection: 'single',
 		paginationPageSize:50,	
