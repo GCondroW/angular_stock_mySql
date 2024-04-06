@@ -17,6 +17,7 @@ export class XtComponent {
 	public debugThis=()=>console.log(this);
 	public gridData:Array<any>|null=null;
 	public userName:string="";
+	public apiUrl:string="";
 	public setUserName=()=>{
 		let person = prompt();
 		if (person != null) {
@@ -33,6 +34,11 @@ export class XtComponent {
 	
 	
 	ngOnInit(){
+		
+		let url=()=>{
+			if(location.host==="localhost:4200")return "https://localhost:2125/xt/"+this.fileName;
+			return "https://cwtest.biz.id/xt/"+this.fileName;
+		};
 		let userName=()=>{
 			if(!localStorage.getItem("xt")){
 				localStorage.setItem("xt",JSON.stringify({userName:'guest'}));
@@ -44,6 +50,7 @@ export class XtComponent {
 			}
 			
 		};
+		this.apiUrl=url();
 		this.userName=userName();
 		console.log(userName());
 	};
@@ -78,7 +85,7 @@ export class XtComponent {
 		accentedSort:true,
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
-			this.xtService.req.get("https://localhost:2125/xt/"+this.fileName).subscribe((x:any)=>{
+			this.xtService.req.get(this.apiUrl).subscribe((x:any)=>{
 				console.log(x);
 				if(x===null){
 					alert ("tabel kosong");
@@ -145,7 +152,7 @@ export class XtComponent {
 	public excel={
 		upload:(dbName:string,data:any)=>{
 			this.xtService.excelHandler.toJson(data).then(x=>{
-				this.xtService.req.post("https://localhost:2125/xt/"+this.fileName,x).subscribe((x:any)=>{
+				this.xtService.req.post(this.apiUrl,x).subscribe((x:any)=>{
 					window.location.reload();
 				})
 			});	
@@ -154,7 +161,7 @@ export class XtComponent {
 			this.xtService.excelHandler.toExcel(data,fileName)
 		},
 		delete:()=>{
-			this.xtService.req.delete("https://localhost:2125/xt/"+this.fileName).subscribe((x:any)=>{
+			this.xtService.req.delete(this.apiUrl).subscribe((x:any)=>{
 				console.log("delete",x);
 				window.location.reload();
 			})
