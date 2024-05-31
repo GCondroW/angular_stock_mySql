@@ -180,7 +180,7 @@ let tableViewCache=new class tableViewCache{
 			if(!!localTableViewCache){
 				this.data=localTableViewCache;
 			}else{
-				//await this.getView();
+				await this.getView();
 			};
 			let portNumber=process.env.PORT || '2125';
 

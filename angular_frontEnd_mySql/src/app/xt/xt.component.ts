@@ -56,11 +56,13 @@ export class XtComponent {
 		this.userName=userName();
 		
 		this.xtService.req.get(this.apiUrl).subscribe((x:any)=>{
-			this.sheetModel=new sheetModel(x);
+			
+			console.log("x",x)
 			if(x===null){
 				alert ("tabel kosong");
 				this.gridData=[]
 			}else{
+				this.sheetModel=new sheetModel(x);
 				this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
 				//console.log("shownSheetName",this.siteNavigation.shownSheetName);
 				//console.log("this.siteNavigation.shownSheetName",this.siteNavigation.shownSheetName);
