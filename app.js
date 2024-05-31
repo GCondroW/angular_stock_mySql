@@ -131,6 +131,28 @@ class idPrototype{
 		return this.value;
 	};
 };
+
+class inMemoryIdPrototype{
+	constructor(){
+		this.value=1;
+	};
+	up=()=>{
+		this.value=this.value++;
+		return this.value;
+	};
+	getValue=()=>{
+		return this.value;
+	};
+	resetValue=()=>{
+			this.value=1;
+			return this.value;
+	};
+	clearValue=()=>{
+		delete(this.value);
+		return this.value;
+	};
+}
+
 let cc=0;
 let dbKey=-1;
 class intervalFunct{
@@ -165,7 +187,7 @@ let tableViewCache=new class tableViewCache{
 			httpsServer.listen(portNumber,()=>{
 				console.log("> START SERVER");
 				console.log("	-portNumber = ",portNumber);
-				dbKey=new idPrototype("dbKey");
+				dbKey=new inMemoryIdPrototype();
 				//new intervalFunct(this.getView,1000*60*5);
 				
 			});

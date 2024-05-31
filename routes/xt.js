@@ -11,6 +11,7 @@ const handleErrorAsync = func => (req, res, next) => {
 router.get('/:fileName?', handleErrorAsync(async(req, res, next)=>{
 	let params=req.params;
 	let fileName=params.fileName;
+	console.log("FileName : ",fileName);
 	fs.readFile("localDb/"+fileName, (err, data) => {
 	  if (!err && data) {
 		let resVar=req.app.localDb.getItem(fileName);

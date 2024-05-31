@@ -3,6 +3,7 @@ import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { ColDef } from 'ag-grid-community';
 import { XtService } from '../service/xt.service';
+import { sheetModel } from './sheetModel';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions } from 'ag-grid-community';
 
@@ -16,6 +17,7 @@ export class XtComponent {
 	public fileName:string="table_";
 	public debugThis=()=>console.log(this);
 	public gridData:Array<any>|null=null;
+	public sheetModel:any={};
 	public userName:string="";
 	public apiUrl:string="";
 	public setUserName=()=>{
@@ -52,7 +54,22 @@ export class XtComponent {
 		};
 		this.apiUrl=url();
 		this.userName=userName();
-		console.log(userName());
+		
+		this.xtService.req.get(this.apiUrl).subscribe((x:any)=>{
+			this.sheetModel=new sheetModel(x);
+			if(x===null){
+				alert ("tabel kosong");
+				this.gridData=[]
+			}else{
+				this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
+				//console.log("shownSheetName",this.siteNavigation.shownSheetName);
+				//console.log("this.siteNavigation.shownSheetName",this.siteNavigation.shownSheetName);
+				if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
+				this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
+			};
+		});
+		
+		console.log("this",this);
 	};
 	
 	public getTableHeight = () =>{
@@ -76,15 +93,17 @@ export class XtComponent {
 	};
 	
 	public gridOptions:any= {
-		//rowData:null,
-		suppressCellFocus:false,
-		pagination: false,
+		rowData:null,
+		//suppressCellFocus:false,
+		pagination: true,
 		paginationAutoPageSize:false,	
 		rowSelection: 'single',
 		paginationPageSize:50,	
 		accentedSort:true,
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
+			
+			/*
 			this.xtService.req.get(this.apiUrl).subscribe((x:any)=>{
 				console.log(x);
 				if(x===null){
@@ -94,13 +113,13 @@ export class XtComponent {
 					this.gridData=x[Object.keys(x)[0]];
 					let header=Object.keys(this.gridData![0]);
 					this.colDefs=header.map(x=>{return{field:x}})
-					
+					console.log(new sheetModel(x))
 				};
 			});
+			*/
 			addEventListener("resize", (event) => {
 				this.getTableHeight();
 			});
-			
 		},
 		onFirstDataRendered:(event:any)=>{
 			console.log("grid Event => onFirstDataRendered : ");
@@ -129,11 +148,12 @@ export class XtComponent {
 		},
 		onModelUpdated: (event:any)=>{
 			//Displayed rows have changed. Triggered after sort, filter or tree expand / collapse events.
-			console.log("grid Event => onModelUpdated : ",event);
-			this.gridOptions.columnApi.autoSizeAllColumns()
+			console.log("grid Event => onModelUpdated : ");
+			
 		},
 		onComponentStateChanged:(event:any)=>{
 			console.log("grid Event => onComponentStateChanged : ");
+			this.gridOptions.columnApi.autoSizeAllColumns()
 		},
 		onColumnVisible:(event:any)=>{
 			console.log("grid Event => onColumnVisible : ",event);
@@ -149,10 +169,21 @@ export class XtComponent {
 		open:(content:any)=>this.offCanvasInstance=this.offcanvasService.open(content),
 	};
 	
+	public siteNavigation={
+		shownSheetName:"",
+		changeSheet:(sheetName:any)=>{
+			let shownSheetName=sheetName;
+			let header=this.sheetModel.sheetHeader[shownSheetName];
+			this.gridData=this.sheetModel.read(shownSheetName);
+			this.colDefs=header.map((x:any)=>{return{field:x}})
+		},
+	};
+	
 	public excel={
 		upload:(dbName:string,data:any)=>{
 			this.xtService.excelHandler.toJson(data).then(x=>{
 				this.xtService.req.post(this.apiUrl,x).subscribe((x:any)=>{
+					alert("S")
 					window.location.reload();
 				})
 			});	
@@ -174,6 +205,7 @@ export class XtComponent {
 		search:(event:any)=>{
 			if(!!this.filter.searchTimeout)clearTimeout(this.filter.searchTimeout);
 			this.filter.searchTimeout=setTimeout(()=>{
+				this.gridOptions.api.paginationGoToFirstPage();
 				this.gridOptions.api.setQuickFilter(event.target.value);
 			},this.filter.searchDelay);	
 		},

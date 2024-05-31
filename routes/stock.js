@@ -149,11 +149,11 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 	let q_DAFTAR=new qValues();
 	data.forEach(item=>{
 		q_DAFTAR.add(
-			"NULL,"+	
-			"\""+item.NAMA+"\","+	
-			"\""+item.QTY+"\","+
-			"\""+item.STN+"\","+
-			"\""+item.KATEGORI+"\","+
+			'NULL,'+	
+			'"'+item.NAMA+'",'+	
+			'"'+item.QTY+'",'+
+			'"'+item.STN+'",'+
+			'"'+item.KATEGORI+'",'+
 			"(SELECT id_supplier FROM supplier where nama =\""+item.SUPPLIER+"\"),"+
 			"NULL,"+
 			"\""+item.CTN+"\","+
@@ -163,6 +163,9 @@ router.post('/', handleErrorAsync(async(req, res, next)=>{
 			"\"STOCK AWAL\""
 		);
 	});
+	
+	
+	
 	let q=[];
 	q=[
 		`CREATE TEMPORARY TABLE TEMP_TABLE_SUPPLIER(
@@ -351,7 +354,7 @@ router.put('/', handleErrorAsync(async(req, res, next)=>{
 	res.send({success:true});
 }));
 
-router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
+router.post('/excelupload_new', handleErrorAsync(async(req, res, next)=>{
 	let data=JSON.parse(JSON.stringify(req.body).toUpperCase());;
 	
 	
@@ -529,7 +532,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	res.send(resVar);
 }));
 
-router.post('/excelupload_old', handleErrorAsync(async(req, res, next)=>{
+router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	let data=req.body;
 	data=JSON.parse(JSON.stringify(data).toUpperCase());
 	let user=req.get('user')?req.get('user'):'Guest-1';

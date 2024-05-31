@@ -20,6 +20,17 @@
 						(input)="filter.search($event)"
 					>
 				</div>
+				<div class="ms-auto">
+					<!--<label>Option</label>-->
+					<select id="">
+						<option 
+							*ngFor="let sheetName of sheetModel.sheetName" 
+							value="{{sheetName}}"
+							(click)="siteNavigation.changeSheet(sheetName)"
+						>{{sheetName}}</option>
+						
+					</select>
+				</div>
 			</div>			
 		</div>
 	</nav>
