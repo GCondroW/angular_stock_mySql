@@ -32,9 +32,11 @@ router.delete('/:fileName/', handleErrorAsync(async(req, res, next)=>{
 
 router.post('/:fileName/', handleErrorAsync(async(req, res, next)=>{
 	try{
+		
 		let params=req.params;
 		let fileName=params.fileName;
 		let body=req.body;
+		//console.log(body);
 		req.app.localDb.setItem(fileName,JSON.stringify(body));
 		res.send(req.app.localDb.getItem(fileName));
 	}catch(e){throw new Error(e)}

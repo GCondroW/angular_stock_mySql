@@ -73,7 +73,7 @@ var https = require('https');
 var fs = require(`fs`);
 
 var LocalStorage = require('node-localstorage').LocalStorage;
-var localDb=new LocalStorage("./localDb");
+var localDb=new LocalStorage("./localDb",Number.MAX_VALUE);
 
 var usersRouter = require('./routes/users');
 var stockRouter = require('./routes/stock');
@@ -320,7 +320,7 @@ app.use((req,res,next)=>{
 	next();
 });
 app.use(logger('dev'));
-app.use(express.json({limit:'8mb'}));
+app.use(express.json({limit:'50mb'}));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));

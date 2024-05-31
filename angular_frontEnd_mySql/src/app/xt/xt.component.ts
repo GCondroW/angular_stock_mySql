@@ -97,10 +97,10 @@ export class XtComponent {
 	public gridOptions:any= {
 		rowData:null,
 		//suppressCellFocus:false,
-		pagination: true,
-		paginationAutoPageSize:false,	
+		//pagination: true,
+		//paginationAutoPageSize:true,	
 		rowSelection: 'single',
-		paginationPageSize:50,	
+		//paginationPageSize:50,	
 		accentedSort:true,
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
