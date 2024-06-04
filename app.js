@@ -75,6 +75,38 @@ var fs = require(`fs`);
 var LocalStorage = require('node-localstorage').LocalStorage;
 var localDb=new LocalStorage("./localDb",Number.MAX_VALUE);
 
+let pStore={};
+let pStoreInit = async()=>{
+	const pStore = require('node-persist');//persistent storage
+	const pStoreOptions={
+		dir: 'localDb/1',
+		stringify: JSON.stringify,
+		parse: JSON.parse,
+		encoding: 'utf8',
+		// can also be custom logging function
+		logging: false,  
+
+		// ttl* [NEW], can be true for 24h default or a number in MILLISECONDS or a valid Javascript Date object
+		ttl: false,
+		// every 2 minutes the process will clean-up the expired cache
+		expiredInterval: 2 * 60 * 1000, 
+		// in some cases, you (or some other service) might add non-valid storage files to your
+		// storage dir, i.e. Google Drive, make this true if you'd like to ignore these files and not throw an error
+		forgiveParseErrors: false,
+		// instead of writing to file immediately, each "file" will have its own mini queue to avoid corrupted files, keep in mind that this would not properly work in multi-process setting.
+		writeQueue: true, 
+		// how often to check for pending writes, don't worry if you feel like 1s is a lot, it actually tries to process every time you setItem as well
+		writeQueueIntervalMs: 1000, 
+		// if you setItem() multiple times to the same key, only the last one would be set, BUT the others would still resolve with the results of the last one, if you turn this to false, each one will execute, but might slow down the writing process.
+		writeQueueWriteOnlyLast: true, 
+	}
+	await pStore.init(pStoreOptions);
+	return pStore;
+	
+};
+
+
+
 var usersRouter = require('./routes/users');
 var stockRouter = require('./routes/stock');
 var transaksiRouter = require('./routes/transaksi');
@@ -137,7 +169,8 @@ class inMemoryIdPrototype{
 		this.value=1;
 	};
 	up=()=>{
-		this.value=this.value++;
+		//this.value=this.value++;
+		console.log("inMemoryIdPrototype up()",this.value++);
 		return this.value;
 	};
 	getValue=()=>{
@@ -155,6 +188,7 @@ class inMemoryIdPrototype{
 
 let cc=0;
 let dbKey=-1;
+let xtKey=-1;
 class intervalFunct{
 	constructor(x,y){
 		this.count=new idPrototype("updateCount");
@@ -183,11 +217,13 @@ let tableViewCache=new class tableViewCache{
 				await this.getView();
 			};
 			let portNumber=process.env.PORT || '2125';
-
+			//console.log();
+			pStore=await pStoreInit();
 			httpsServer.listen(portNumber,()=>{
 				console.log("> START SERVER");
 				console.log("	-portNumber = ",portNumber);
 				dbKey=new inMemoryIdPrototype();
+				xtKey=new inMemoryIdPrototype();
 				//new intervalFunct(this.getView,1000*60*5);
 				
 			});
@@ -316,6 +352,8 @@ app.use((req,res,next)=>{
 	req.app.io=io;
 	req.app.tableViewCache=tableViewCache;
 	req.app.dbKey=dbKey;
+	req.app.xtKey=xtKey;
+	req.app.pStore=pStore;
 	req.app.localDb=localDb;
 	next();
 });
@@ -376,9 +414,27 @@ app.get('/:path?',(req,res,next)=>{
 	if(!path)res.redirect('/ag');
 	next()
 });
-app.get('/test',async(req,res,next)=>{
-
+app.get('/test/set',async(req,res,next)=>{
+	console.log("/test/set")
+	let a=await pStore.setItem('xtKey',xtKey);
+	//let a=await pStore.getItem('fibonaci')
+	console.log(a);
+	res.send(a);
 });
+
+app.get('/test/get',async(req,res,next)=>{
+	console.log("/test/get")
+	let a=await pStore.getItem('xtKey')
+	//console.log(pStore);
+	res.send(a);
+});
+
+app.get('/test/clear',async(req,res,next)=>{
+	console.log("/test/clear")
+	let a=await pStore.clear('XtKey')
+	res.send(a);
+});
+
 app.get('/tableviewcache',(req,res,next)=>{
 	console.log("tableViewCache",tableViewCache.data);
 	res.send(tableViewCache.data);

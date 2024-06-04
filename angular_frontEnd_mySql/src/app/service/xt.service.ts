@@ -1,5 +1,5 @@
 import { Injectable,inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { read, utils, writeFile } from "xlsx";
 
 @Injectable({
@@ -7,9 +7,17 @@ import { read, utils, writeFile } from "xlsx";
 })
 export class XtService {
 	private http : HttpClient = inject(HttpClient);
+	private headers=new HttpHeaders();
 	constructor() { 
 
 	}
+	
+	setHeader=(key:string,value:string)=>{
+		console.log("setHeader",this.headers=this.headers.set(key,value));
+		
+	};
+	getHeader=()=>this.headers;			
+
 
 	excelHandler={
 		toJson:async(e:any)=>{
@@ -34,9 +42,9 @@ export class XtService {
 		},
 	};
 	req={
-		get:(url:string)=>this.http.get(url.toString()),
-		post:(url:string,data:any)=>this.http.post(url.toString(),data),
-		delete:(url:string)=>this.http.delete(url.toString()),
+		get:(url:string)=>this.http.get(url.toString(),{headers:this.headers}),
+		post:(url:string,data:any)=>this.http.post(url.toString(),data,{headers:this.headers}),
+		delete:(url:string)=>this.http.delete(url.toString(),{headers:this.headers}),
 	};
 	
   

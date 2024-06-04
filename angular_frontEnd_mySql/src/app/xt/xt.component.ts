@@ -55,21 +55,9 @@ export class XtComponent {
 		this.apiUrl=url();
 		this.userName=userName();
 		
-		this.xtService.req.get(this.apiUrl).subscribe((x:any)=>{
-			
-			console.log("x",x)
-			if(x===null){
-				alert ("tabel kosong");
-				this.gridData=[]
-			}else{
-				this.sheetModel=new sheetModel(x);
-				this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
-				//console.log("shownSheetName",this.siteNavigation.shownSheetName);
-				//console.log("this.siteNavigation.shownSheetName",this.siteNavigation.shownSheetName);
-				if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
-				this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
-			};
-		});
+
+		
+		this.getTable();
 		
 		console.log("this",this);
 	};
@@ -180,6 +168,37 @@ export class XtComponent {
 			this.colDefs=header.map((x:any)=>{return{field:x}})
 		},
 	};
+	
+	public getTable=()=>{
+		this.xtService.req.get(this.apiUrl).subscribe((x:any)=>{
+			if(x===null){
+				alert ("tabel kosong");
+				this.gridData=[];
+				return
+			};
+			
+			if (!!x.xtKey){
+				//console.log("x.xtKey",x.xtKey.toString())
+				this.xtService.setHeader("xtKey",x.xtKey.toString());
+				this.getTable();
+				return
+			}
+			
+			this.sheetModel=new sheetModel(x);
+			this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
+			//console.log("shownSheetName",this.siteNavigation.shownSheetName);
+			//console.log("this.siteNavigation.shownSheetName",this.siteNavigation.shownSheetName);
+			if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
+			this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
+				
+		});
+	};
+		
+	public updateKey=(key:string)=>{
+		console.log(this.xtService.setHeader("xtKey",key));
+		console.log("row",193);
+		this.getTable();
+	}
 	
 	public excel={
 		upload:(dbName:string,data:any)=>{
