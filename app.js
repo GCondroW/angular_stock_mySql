@@ -59,6 +59,7 @@ oNhsDVi18KbDmmy//+ldUXlEQn8CL6+W+jBrfA==
 const originArr=[
 	"https://cwtest.biz.id",
 	"http://localhost:4200",
+	"https://localhost:2125",
 	"https://gcondrow.github.io",
 	"http://192.168.1.111:3420",
 ];

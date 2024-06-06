@@ -3,9 +3,11 @@ import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { ColDef } from 'ag-grid-community';
 import { XtService } from '../service/xt.service';
-import { sheetModel } from './sheetModel';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions } from 'ag-grid-community';
+
+import { sheetModel } from './sheetModel';
+import { localDbModel } from './localDbModel';
 
 @Component({
   selector: 'app-xt',
@@ -13,51 +15,65 @@ import { GridOptions } from 'ag-grid-community';
   styleUrls: ['./xt.component.css']
 })
 export class XtComponent {
-	public xtService:XtService=inject(XtService);
+	private xtService:XtService=inject(XtService);
 	public fileName:string="table_";
 	public debugThis=()=>console.log(this);
 	public gridData:Array<any>|null=null;
 	public sheetModel:any={};
-	public userName:string="";
-	public apiUrl:string="";
+	public userName:any={};
+	public tableCache:any={};
+	private xtKey:any;
+	private apiUrl:string="";
 	public setUserName=()=>{
 		let person = prompt();
 		if (person != null) {
 			alert(person)
-			let temp=JSON.parse(localStorage.getItem("xt")!);
-			temp.userName=person;
-			localStorage.setItem("xt",JSON.stringify(temp));
-			this.userName=temp.userName;
-			return temp.userName;
+			return this.userName.set(person);
 		} 
 	};
 	public pUser=["guest42","utn5758"];
-	public isP=()=>this.pUser.findIndex(x=>x==this.userName)+1;
+	public isP=()=>this.pUser.findIndex(x=>x==this.userName.value)+1;
 	
 	
 	ngOnInit(){
 		
 		let url=()=>{
-			if(location.host==="localhost:4200")return "https://localhost:2125/xt/"+this.fileName;
-			return "https://cwtest.biz.id/xt/"+this.fileName;
+			if(location.hostname==="localhost")return "https://localhost:2125/xt/";
+			if(location.hostname==="cwtest.biz.id")return "https://cwtest.biz.id:2125/xt/";
+			return "https://cwtest.biz.id/xt/";
 		};
+		/*
 		let userName=()=>{
-			if(!localStorage.getItem("xt")){
-				localStorage.setItem("xt",JSON.stringify({userName:'guest'}));
-				let xt=JSON.parse(localStorage.getItem("xt")!);
+			if(!localStorage.getItem(location.href)){
+				localStorage.setItem(location.href,JSON.stringify({userName:'guest'}));
+				let xt=JSON.parse(localStorage.getItem(location.href)!);
 				return xt.userName;
 			}else{
-				let xt=JSON.parse(localStorage.getItem("xt")!);
+				let xt=JSON.parse(localStorage.getItem(location.href)!);
 				return xt.userName;
 			}
-			
 		};
+		*/
 		this.apiUrl=url();
-		this.userName=userName();
+		this.userName=new localDbModel(location.href,"userName");
+		this.userName.set("Guest");
+		this.xtKey=new localDbModel(location.href,"xtKey");
+		this.tableCache=new localDbModel(location.href,"tableCache");
+		//this.lUserName=new localDbModel("userName");
 		
-
-		
-		this.getTable();
+		this.updateKey(this.xtKey.value||"-1");
+		this.xtService.req.get(this.apiUrl+"xtKey").subscribe((x:any)=>{
+			let clientXtKey=this.xtKey.value;
+			let serverXtKey=x.xtKey.toString();
+			console.log("clientXtKey",clientXtKey,"serverXtKey",serverXtKey,clientXtKey===serverXtKey)
+			if(clientXtKey===serverXtKey&&!!this.tableCache.value){
+				let tableCache=JSON.parse(this.tableCache.value);
+				this.sheetModel=new sheetModel(tableCache);
+				this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
+				if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
+				this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
+			}else this.getTable();
+		});
 		
 		console.log("this",this);
 	};
@@ -92,21 +108,6 @@ export class XtComponent {
 		accentedSort:true,
 		onGridReady:(params:any)=>{
 			console.log("grid Event => onGridReady : ");
-			
-			/*
-			this.xtService.req.get(this.apiUrl).subscribe((x:any)=>{
-				console.log(x);
-				if(x===null){
-					alert ("tabel kosong");
-					this.gridData=[]
-				}else{
-					this.gridData=x[Object.keys(x)[0]];
-					let header=Object.keys(this.gridData![0]);
-					this.colDefs=header.map(x=>{return{field:x}})
-					console.log(new sheetModel(x))
-				};
-			});
-			*/
 			addEventListener("resize", (event) => {
 				this.getTableHeight();
 			});
@@ -170,7 +171,7 @@ export class XtComponent {
 	};
 	
 	public getTable=()=>{
-		this.xtService.req.get(this.apiUrl).subscribe((x:any)=>{
+		this.xtService.req.get(this.apiUrl+this.fileName).subscribe((x:any)=>{
 			if(x===null){
 				alert ("tabel kosong");
 				this.gridData=[];
@@ -179,15 +180,14 @@ export class XtComponent {
 			
 			if (!!x.xtKey){
 				//console.log("x.xtKey",x.xtKey.toString())
-				this.xtService.setHeader("xtKey",x.xtKey.toString());
+				//this.xtService.setHeader("xtKey",x.xtKey.toString());
+				this.updateKey(x.xtKey.toString());
 				this.getTable();
 				return
 			}
-			
+			this.tableCache.set(JSON.stringify(x));
 			this.sheetModel=new sheetModel(x);
 			this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
-			//console.log("shownSheetName",this.siteNavigation.shownSheetName);
-			//console.log("this.siteNavigation.shownSheetName",this.siteNavigation.shownSheetName);
 			if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
 			this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
 				
@@ -195,17 +195,20 @@ export class XtComponent {
 	};
 		
 	public updateKey=(key:string)=>{
-		console.log(this.xtService.setHeader("xtKey",key));
-		console.log("row",193);
-		this.getTable();
+		console.log("update xtKey : ",key);
+		this.xtKey.set(key);
+		this.xtService.setHeader("xtKey",key);
+		
+		//this.getTable();
 	}
 	
 	public excel={
 		upload:(dbName:string,data:any)=>{
 			this.xtService.excelHandler.toJson(data).then(x=>{
-				this.xtService.req.post(this.apiUrl,x).subscribe((x:any)=>{
-					alert("S")
-					window.location.reload();
+				this.xtService.req.post(this.apiUrl+this.fileName,x).subscribe((x:any)=>{
+					alert(JSON.stringify(x.xtKey));
+					this.updateKey(x.xtKey.toString());
+					this.getTable();
 				})
 			});	
 		},
@@ -213,7 +216,7 @@ export class XtComponent {
 			this.xtService.excelHandler.toExcel(data,fileName)
 		},
 		delete:()=>{
-			this.xtService.req.delete(this.apiUrl).subscribe((x:any)=>{
+			this.xtService.req.delete(this.apiUrl+this.fileName).subscribe((x:any)=>{
 				console.log("delete",x);
 				window.location.reload();
 			})

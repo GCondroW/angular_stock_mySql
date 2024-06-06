@@ -10,15 +10,15 @@ const handleErrorAsync = func => (req, res, next) => {
 
 
 router.get('/xtkey', handleErrorAsync(async(req, res, next)=>{
-	let returnVar=req.app.xtKey;
-	console.log(returnVar);
-	return res.send(returnVar);
+	let returnVar=req.app.xtKey.value;
+	//console.log(returnVar);
+	return res.send({xtKey:returnVar});
 }));
 
 router.get('/xtkey/up', handleErrorAsync(async(req, res, next)=>{
 	let returnVar=req.app.xtKey.up();
 	console.log(returnVar);
-	return res.send({"a":returnVar});
+	return res.send({xtKey:returnVar});
 }));
 
 let middlewareArr=[async(req,res,next)=>{
@@ -26,18 +26,19 @@ let middlewareArr=[async(req,res,next)=>{
 		let clientXtKey=req.headers.xtkey||null;
 		let serverXtKey=req.app.xtKey.value;
 		
-		console.log("clientXtKey",clientXtKey);
-		console.log("serverXtKey",serverXtKey);
+		console.log("	clientXtKey",clientXtKey);
+		console.log("	serverXtKey",serverXtKey);
+		
 		if(clientXtKey!=serverXtKey)return res.send({xtKey:serverXtKey})
 		next();
 	},
 	(req,res,next)=>{
-		console.log("MIDDLEWARE 2 => AUTH");
+		//console.log("MIDDLEWARE 2 => AUTH");
 		next();
 	},
 ];
 
-router.use(middlewareArr,(req,res,next)=>{console.log("xtMiddleware");next();});
+router.use(middlewareArr,(req,res,next)=>{next()});
 
 /*
 router.get('/:fileName?', handleErrorAsync(async(req, res, next)=>{
