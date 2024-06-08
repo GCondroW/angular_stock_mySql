@@ -106,6 +106,9 @@ let pStoreInit = async()=>{
 	
 };
 
+let _f = require('./_f');
+let xtDbModel=new _f.localDbModel("xt");
+xtDbModel.get().then(x=>console.log(x));
 
 
 var usersRouter = require('./routes/users');
@@ -356,6 +359,7 @@ app.use((req,res,next)=>{
 	req.app.xtKey=xtKey;
 	req.app.pStore=pStore;
 	req.app.localDb=localDb;
+	req.app.xtDbModel=xtDbModel;
 	next();
 });
 app.use(logger('dev'));

@@ -56,7 +56,7 @@ export class XtComponent {
 		*/
 		this.apiUrl=url();
 		this.userName=new localDbModel(location.href,"userName");
-		this.userName.set("Guest");
+		if(!this.userName.value)this.userName.set("Guest");
 		this.xtKey=new localDbModel(location.href,"xtKey");
 		this.tableCache=new localDbModel(location.href,"tableCache");
 		//this.lUserName=new localDbModel("userName");
@@ -185,15 +185,19 @@ export class XtComponent {
 				this.getTable();
 				return
 			}
-			this.tableCache.set(JSON.stringify(x));
-			this.sheetModel=new sheetModel(x);
-			this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
-			if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
-			this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
-				
+			
+			this.updateTable(x);
 		});
 	};
 		
+	public updateTable = (data:Array<any>)=>{
+		this.tableCache.set(JSON.stringify(data));
+		this.sheetModel=new sheetModel(data);
+		//this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
+		if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
+		this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
+	}
+	;	
 	public updateKey=(key:string)=>{
 		console.log("update xtKey : ",key);
 		this.xtKey.set(key);

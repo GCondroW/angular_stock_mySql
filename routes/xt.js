@@ -21,6 +21,11 @@ router.get('/xtkey/up', handleErrorAsync(async(req, res, next)=>{
 	return res.send({xtKey:returnVar});
 }));
 
+router.get('/model', handleErrorAsync(async(req, res, next)=>{
+
+	return res.send({x:req.app.xtDbModel.value});
+}));
+
 let middlewareArr=[async(req,res,next)=>{
 		console.log("MIDDLEWARE 1 => INIT FUNCT");
 		let clientXtKey=req.headers.xtkey||null;
@@ -77,8 +82,9 @@ router.post('/:fileName/', handleErrorAsync(async(req, res, next)=>{
 		let params=req.params;
 		let fileName=params.fileName;
 		let body=req.body;
-		//console.log(body);
+		///console.log(body);
 		await req.app.pStore.setItem(fileName,JSON.stringify(body));
+		await req.app.xtDbModel.set(JSON.stringify(body));
 		res.send({xtKey:req.app.xtKey.up()})
 		//res.send(await req.app.pStore.getItem(fileName));
 	}catch(e){throw new Error(e)}
