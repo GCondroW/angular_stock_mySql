@@ -10,7 +10,7 @@ deployment:
     - /bin/cp -R ${REPOPATH}/dist ${DEPLOYPATH}
     # - /bin/cp -R ${REPOPATH}/localDb ${DEPLOYPATH}
     - /bin/cp -R ${REPOPATH}/localDb ${DEPLOYPATH}
-    - /bin/cp -R ${REPOPATH}/node_modules ${DEPLOYPATH}
+    #- /bin/cp -R ${REPOPATH}/node_modules ${DEPLOYPATH}
     - /bin/cp -R ${REPOPATH}/public ${DEPLOYPATH}
     - /bin/cp -R ${REPOPATH}/routes ${DEPLOYPATH}
     - /bin/cp -R ${REPOPATH}/views ${DEPLOYPATH}
