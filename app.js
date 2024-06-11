@@ -86,7 +86,6 @@ let pStoreInit = async()=>{
 		encoding: 'utf8',
 		// can also be custom logging function
 		logging: false,  
-
 		// ttl* [NEW], can be true for 24h default or a number in MILLISECONDS or a valid Javascript Date object
 		ttl: false,
 		// every 2 minutes the process will clean-up the expired cache
@@ -103,14 +102,13 @@ let pStoreInit = async()=>{
 	}
 	await pStore.init(pStoreOptions);
 	return pStore;
-	
 };
+
 
 let _f = require('./_f');
 let xtDbModel=new _f.localDbModel("xt");
 xtDbModel.get().then(x=>console.log(x));
-
-
+ 
 var usersRouter = require('./routes/users');
 var stockRouter = require('./routes/stock');
 var transaksiRouter = require('./routes/transaksi');
@@ -222,14 +220,14 @@ let tableViewCache=new class tableViewCache{
 			};
 			let portNumber=process.env.PORT || '2125';
 			//console.log();
-			pStore=await pStoreInit();
+			//pStore=await pStoreInit();
 			httpsServer.listen(portNumber,()=>{
 				console.log("> START SERVER");
 				console.log("	-portNumber = ",portNumber);
 				dbKey=new inMemoryIdPrototype();
 				xtKey=new inMemoryIdPrototype();
 				//new intervalFunct(this.getView,1000*60*5);
-				
+				console.log()
 			});
 		};
 		init();
@@ -429,9 +427,14 @@ app.get('/test/set',async(req,res,next)=>{
 
 app.get('/test/get',async(req,res,next)=>{
 	console.log("/test/get")
-	let a=await pStore.getItem('xtKey')
+	memcached.gets('foo', function (err, data) {
+	  console.log(data.foo);
+	  console.log(data.cas);
+	 
+	  // Please note that the data is stored under the name of the given key.
+	});
 	//console.log(pStore);
-	res.send(a);
+	//res.send(a);
 });
 
 app.get('/test/clear',async(req,res,next)=>{

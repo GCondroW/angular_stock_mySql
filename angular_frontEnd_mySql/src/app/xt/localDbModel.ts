@@ -16,14 +16,16 @@ export class localDbModel{
 		return this.value;
 	};
 	public get = ()=>{
-		
-		console.log()
 		let temp=JSON.parse(localStorage.getItem(this.href)||"{}");
 		if(!!temp)return temp[this.key]||null;
 		return null;
 	};
-	/*
-	public remmoveItem = ()=>
-		localStorage.removeItem(this.key);
-	*/
+	
+	public delete = ()=>{
+		let temp=JSON.parse(localStorage.getItem(this.href)||"{}");
+		let assignedObject=Object.assign(temp,{[this.key]:"{}"});
+		localStorage.setItem(this.href,JSON.stringify(assignedObject));
+		this.value=this.get();
+		return this.value;
+	};
 };

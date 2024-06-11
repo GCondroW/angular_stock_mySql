@@ -23,7 +23,7 @@ router.get('/xtkey/up', handleErrorAsync(async(req, res, next)=>{
 
 router.get('/model', handleErrorAsync(async(req, res, next)=>{
 
-	return res.send({x:req.app.xtDbModel.value});
+	return res.send({x:req.app.xtDbModel});
 }));
 
 let middlewareArr=[async(req,res,next)=>{
@@ -65,29 +65,28 @@ router.get('/:fileName?', handleErrorAsync(async(req, res, next)=>{
 router.get('/:fileName?', handleErrorAsync(async(req, res, next)=>{
 	let params=req.params;
 	let fileName=params.fileName;
-	let resVar=await req.app.pStore.getItem(fileName)
+	let resVar=await req.app.xtDbModel.get();
 	return res.send(resVar);
 }));
 
 router.delete('/:fileName/', handleErrorAsync(async(req, res, next)=>{
 	let params=req.params;
 	let fileName=params.fileName;
-	if(!!fileName) return res.send(await req.app.pStore.removeItem(fileName));
-	//return res.send(null);
+	if(!!fileName){
+		await req.app.xtDbModel.delete();
+		res.send({xtKey:req.app.xtKey.up()});
+	}else res.send(null);
 }));
 
 router.post('/:fileName/', handleErrorAsync(async(req, res, next)=>{
-	try{
-		
-		let params=req.params;
-		let fileName=params.fileName;
-		let body=req.body;
-		///console.log(body);
-		await req.app.pStore.setItem(fileName,JSON.stringify(body));
-		await req.app.xtDbModel.set(JSON.stringify(body));
-		res.send({xtKey:req.app.xtKey.up()})
-		//res.send(await req.app.pStore.getItem(fileName));
-	}catch(e){throw new Error(e)}
+	let params=req.params;
+	let fileName=params.fileName;
+	let body=req.body;
+	///console.log(body);
+	//await req.app.pStore.setItem(fileName,JSON.stringify(body));
+	await req.app.xtDbModel.set(JSON.stringify(body));
+	res.send({xtKey:req.app.xtKey.up()});
+	//res.send(await req.app.pStore.getItem(fileName));
 }));
 
 

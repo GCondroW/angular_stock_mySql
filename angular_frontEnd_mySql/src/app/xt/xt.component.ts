@@ -164,7 +164,7 @@ export class XtComponent {
 		shownSheetName:"",
 		changeSheet:(sheetName:any)=>{
 			let shownSheetName=sheetName;
-			let header=this.sheetModel.sheetHeader[shownSheetName];
+			let header=this.sheetModel.sheetHeader[shownSheetName]||[];
 			this.gridData=this.sheetModel.read(shownSheetName);
 			this.colDefs=header.map((x:any)=>{return{field:x}})
 		},
@@ -174,7 +174,8 @@ export class XtComponent {
 		this.xtService.req.get(this.apiUrl+this.fileName).subscribe((x:any)=>{
 			if(x===null){
 				alert ("tabel kosong");
-				this.gridData=[];
+				//this.gridData=[];
+				this.updateTable([]);
 				return
 			};
 			
@@ -192,8 +193,10 @@ export class XtComponent {
 		
 	public updateTable = (data:Array<any>)=>{
 		this.tableCache.set(JSON.stringify(data));
+		console.log(data);
 		this.sheetModel=new sheetModel(data);
-		//this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
+		console.log("data = ",data,"sheetModel = ",this.sheetModel,"this.siteNavigation = ",this.siteNavigation);
+		this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
 		if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
 		this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
 	}
@@ -210,8 +213,9 @@ export class XtComponent {
 		upload:(dbName:string,data:any)=>{
 			this.xtService.excelHandler.toJson(data).then(x=>{
 				this.xtService.req.post(this.apiUrl+this.fileName,x).subscribe((x:any)=>{
-					alert(JSON.stringify(x.xtKey));
-					this.updateKey(x.xtKey.toString());
+					//alert(JSON.stringify(x.xtKey));
+					//this.updateKey(x.xtKey.toString());
+					this.tableCache.delete();
 					this.getTable();
 				})
 			});	
@@ -222,7 +226,9 @@ export class XtComponent {
 		delete:()=>{
 			this.xtService.req.delete(this.apiUrl+this.fileName).subscribe((x:any)=>{
 				console.log("delete",x);
-				window.location.reload();
+				//this.updateKey(x.xtKey.toString());
+				this.tableCache.delete();
+				this.getTable();
 			})
 		}
 	};

@@ -1,29 +1,31 @@
 module.exports = {
 	localDbModel : class localDbModel{
-		mySql = require('./db/mysql');
-		dbName = "json_db";
 		value = null;
+		
 		constructor(key){
+			let LocalStorage = require('node-localstorage').LocalStorage;
 			this.key=key;
-			this.value=this.get()
+			this.localDb=new LocalStorage("./localDb/"+key,Number.MAX_VALUE);	
 		};
+
 		get = async() => {
-			let key=this.key;
-			let dbName=this.dbName;
-			let query=`select json_value from `+dbName+` where json_key = `+"'"+key+"'";
-			let returnVar=await this.mySql.singleQ(query);
-			return JSON.parse(returnVar[0].json_value);
+			console.log("get ",this.value)
+			let temp=this.value || await this.localDb.getItem(this.key);
+			this.value=temp;
+			return this.value;
 		};
-		set = async(value) => {
-			let key=this.key;
-			//let value=value;
-			let query=`
-				update `+this.dbName+
-				` set json_value = JSON_OBJECT(json_value,'`+value+`')`+
-				` where json_key = `+"'"+key+"'";
-			console.log(query);
-			return await this.mySql.singleQ(query);
-			//console.log(await this.mySql.singleQ(query))
+		set = async(value) => {	
+			console.log("setValue ",value);
+			let temp=await this.localDb.setItem(this.key,value);
+			this.value=temp;
+			return this.value;
+		};
+		delete = async()=>{
+			console.log("delete ",this.key);
+			let temp = this.localDb.removeItem(this.key);
+			this.value = temp;
+			console.log("value = "+this.value);
+			return this.value;
 		};
 	},
 	
