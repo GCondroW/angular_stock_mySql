@@ -5,7 +5,8 @@ module.exports = {
 		constructor(key){
 			let LocalStorage = require('node-localstorage').LocalStorage;
 			this.key=key;
-			this.localDb=new LocalStorage("./public/"+key,Number.MAX_VALUE);
+			this.localDb=new LocalStorage("./public/localDb/"+key,Number.MAX_VALUE);
+			this.set(this.get())
 			console.log("localDbModel : ",this.localDb)
 		};
 
