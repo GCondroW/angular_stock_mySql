@@ -8,7 +8,6 @@ const handleErrorAsync = func => (req, res, next) => {
     func(req, res, next).catch((error) => next(error));
 };
 
-
 router.get('/xtkey', handleErrorAsync(async(req, res, next)=>{
 	let returnVar=req.app.xtKey.value;
 	//console.log(returnVar);
@@ -17,7 +16,7 @@ router.get('/xtkey', handleErrorAsync(async(req, res, next)=>{
 
 router.get('/xtkey/up', handleErrorAsync(async(req, res, next)=>{
 	let returnVar=req.app.xtKey.up();
-	console.log(returnVar);
+	//console.log(returnVar);
 	return res.send({xtKey:returnVar});
 }));
 

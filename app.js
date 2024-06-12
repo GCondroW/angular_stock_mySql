@@ -107,7 +107,7 @@ let pStoreInit = async()=>{
 
 let _f = require('./_f');
 let xtDbModel=new _f.localDbModel("xt");
-xtDbModel.get().then(x=>console.log(x));
+//xtDbModel.get().then(x=>console.log(x));
  
 var usersRouter = require('./routes/users');
 var stockRouter = require('./routes/stock');
@@ -227,7 +227,6 @@ let tableViewCache=new class tableViewCache{
 				dbKey=new inMemoryIdPrototype();
 				xtKey=new inMemoryIdPrototype();
 				//new intervalFunct(this.getView,1000*60*5);
-				console.log()
 			});
 		};
 		init();
@@ -421,18 +420,13 @@ app.get('/test/set',async(req,res,next)=>{
 	console.log("/test/set")
 	let a=await pStore.setItem('xtKey',xtKey);
 	//let a=await pStore.getItem('fibonaci')
-	console.log(a);
+	//console.log(a);
 	res.send(a);
 });
 
 app.get('/test/get',async(req,res,next)=>{
 	console.log("/test/get")
-	memcached.gets('foo', function (err, data) {
-	  console.log(data.foo);
-	  console.log(data.cas);
-	 
-	  // Please note that the data is stored under the name of the given key.
-	});
+
 	//console.log(pStore);
 	//res.send(a);
 });
