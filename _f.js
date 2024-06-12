@@ -13,7 +13,7 @@ module.exports = {
 
 		get = async() => {
 			//console.log("get ",this.value)
-			let temp=this.value || await this.localDb.getItem(this.key);
+			let temp=await this.localDb.getItem(this.key) || this.value;
 			this.value=temp;
 			return this.value;
 		};
