@@ -20,9 +20,14 @@ router.get('/xtkey/up', handleErrorAsync(async(req, res, next)=>{
 	return res.send({xtKey:returnVar});
 }));
 
+router.get('/test', handleErrorAsync(async(req, res, next)=>{
+	let resVar=await req.app.xtDbModel.get();
+	return res.send(resVar);
+}));
+
 router.get('/model', handleErrorAsync(async(req, res, next)=>{
 
-	return res.send({x:req.app.xtDbModel});
+	return res.send({x:await req.app.xtDbModel.get()});
 }));
 
 let middlewareArr=[async(req,res,next)=>{
