@@ -74,7 +74,7 @@ var https = require('https');
 var fs = require(`fs`);
 
 var LocalStorage = require('node-localstorage').LocalStorage;
-var localDb=new LocalStorage("./localDb",Number.MAX_VALUE);
+var localDb=new LocalStorage("./public",Number.MAX_VALUE);
 
 let pStore={};
 let pStoreInit = async()=>{
