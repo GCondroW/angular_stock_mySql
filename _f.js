@@ -7,7 +7,7 @@ module.exports = {
 			this.key=key+".txt";
 			this.path=path;
 			this.localDb=new LocalStorage(path,Number.MAX_VALUE);
-			this.set(this.get())
+			this.set(JSON.stringify(this.get()))
 			console.log("localDbModel : ",this.localDb)
 		};
 
