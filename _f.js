@@ -2,10 +2,11 @@ module.exports = {
 	localDbModel : class localDbModel{
 		value = null;
 		
-		constructor(key){
+		constructor(path,key){
 			let LocalStorage = require('node-localstorage').LocalStorage;
-			this.key=key;
-			this.localDb=new LocalStorage("./public/localDb/"+key,Number.MAX_VALUE);
+			this.key=key+".txt";
+			this.path=path;
+			this.localDb=new LocalStorage(path,Number.MAX_VALUE);
 			this.set(this.get())
 			console.log("localDbModel : ",this.localDb)
 		};

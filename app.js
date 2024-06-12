@@ -106,7 +106,7 @@ let pStoreInit = async()=>{
 
 
 let _f = require('./_f');
-let xtDbModel=new _f.localDbModel("xt");
+let xtDbModel=new _f.localDbModel("./localDb","xtDb");
 //xtDbModel.get().then(x=>console.log(x));
  
 var usersRouter = require('./routes/users');
