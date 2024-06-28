@@ -1,9 +1,11 @@
 import { Component,OnInit,inject } from '@angular/core';
 import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { ColDef } from 'ag-grid-community';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions } from 'ag-grid-community';
+
 
 import { sheetModel } from './sheetModel';
 import { localDbModel } from './localDbModel';
@@ -183,6 +185,7 @@ export class XtComponent {
 		shownSheetName:"",
 		changeSheet:(sheetName:any)=>{
 			let shownSheetName=sheetName;
+			this.siteNavigation.shownSheetName=shownSheetName;
 			let header=this.sheetModel.sheetHeader[shownSheetName]||[];
 			this.gridData=this.sheetModel.read(shownSheetName);
 			this.colDefs=header.map((x:any)=>{return{field:x}})

@@ -20,7 +20,27 @@
 						(input)="filter.search($event)"
 					>
 				</div>
-				<div class="ms-auto">
+				<div ngbDropdown class="ms-auto me-1">
+					<button 
+						ngbDropdownToggle 
+						class="btn btn-secondary btn-sm dropdown-toggle" 
+						[style.height]="'100%'"
+						type="button"
+					>
+						{{siteNavigation.shownSheetName}}
+					</button>
+					<div ngbDropdownMenu class="dropdown-menu">
+						<button 
+							ngbDropdownItem 
+							*ngFor="let sheetName of sheetModel.sheetName"
+							(click)="siteNavigation.changeSheet(sheetName)"
+							type="button"
+						>
+							{{sheetName|titlecase}}
+						</button>
+					</div>
+				</div>
+				<div hidden class="ms-auto">
 					<!--<label>Option</label>-->
 					<select id="">
 						<option 
@@ -31,7 +51,8 @@
 						
 					</select>
 				</div>
-			</div>			
+			</div>		
+		
 		</div>
 	</nav>
 </div>

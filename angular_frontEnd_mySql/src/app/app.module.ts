@@ -88,6 +88,7 @@ const corsOptions={
 	FormsModule,
 	NgxIndexedDBModule.forRoot(dbConfig)
   ],
+
   providers: [
 		GlobalService,
 		{
