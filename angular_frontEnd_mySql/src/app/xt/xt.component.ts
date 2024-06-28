@@ -2,12 +2,14 @@ import { Component,OnInit,inject } from '@angular/core';
 import { NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { UploadComponent } from '../misc/upload/upload.component';
 import { ColDef } from 'ag-grid-community';
-import { XtService } from '../service/xt.service';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions } from 'ag-grid-community';
 
 import { sheetModel } from './sheetModel';
 import { localDbModel } from './localDbModel';
+
+import { XtService } from '../service/xt.service';
+import { NgxIndexedDBService } from 'ngx-indexed-db';
 
 @Component({
   selector: 'app-xt',
@@ -16,8 +18,19 @@ import { localDbModel } from './localDbModel';
 })
 export class XtComponent {
 	private xtService:XtService=inject(XtService);
+	private dbService:NgxIndexedDBService=inject(NgxIndexedDBService);
 	public fileName:string="table_";
-	public debugThis=()=>console.log(this);
+	public debugThis=()=>{
+		console.log("this.tableCache",this.tableCache);
+		console.log("this.dbService",this.dbService);
+	
+		this.dbService.getAll('tableCache').subscribe((tableCache) => {
+		  console.log("tableCache",tableCache);
+		 
+		});
+		//this.dbService.getByKey("tableCache",71).subscribe(x=>console.log(x))
+		this.dbService.getAllByIndex("tableCache",'sheetName',IDBKeyRange.only('PRICE LIST JOYKO 18-06-2024')).subscribe(x=>console.log(x))
+	};
 	public gridData:Array<any>|null=null;
 	public sheetModel:any={};
 	public userName:any={};
@@ -34,9 +47,7 @@ export class XtComponent {
 	public pUser=["guest42","utn5758"];
 	public isP=()=>this.pUser.findIndex(x=>x==this.userName.value)+1;
 	
-	
-	ngOnInit(){
-		
+	ngOnInit(){		
 		let url=()=>{
 			if(location.hostname==="localhost")return "https://localhost:2125/xt/";
 			if(location.hostname==="cwtest.biz.id")return "https://cwtest.biz.id:2125/xt/";
@@ -59,22 +70,30 @@ export class XtComponent {
 		if(!this.userName.value)this.userName.set("Guest");
 		this.xtKey=new localDbModel(location.href,"xtKey");
 		this.tableCache=new localDbModel(location.href,"tableCache");
-		//this.lUserName=new localDbModel("userName");
-		
 		this.updateKey(this.xtKey.value||"-1");
 		this.xtService.req.get(this.apiUrl+"xtKey").subscribe((x:any)=>{
 			let clientXtKey=this.xtKey.value;
 			let serverXtKey=x.xtKey.toString();
-			console.log("clientXtKey",clientXtKey,"serverXtKey",serverXtKey,clientXtKey===serverXtKey)
-			if(clientXtKey===serverXtKey&&!!this.tableCache.value){
-				let tableCache=JSON.parse(this.tableCache.value);
-				this.sheetModel=new sheetModel(tableCache);
-				this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
-				if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
-				this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
+			//console.log("clientXtKey",clientXtKey,"serverXtKey",serverXtKey,clientXtKey===serverXtKey)
+			console.log("checking xtKey...",clientXtKey===serverXtKey)
+			if(clientXtKey===serverXtKey){
+				try{
+					this.dbService.getAll('tableCache')
+						.subscribe(x=>{
+							let data={};
+							x.map((y:any)=>{
+								Object.assign(data,{[y.sheetName]:y.value})
+							})
+							console.log("checking tableCache...",!!data)
+							if(Object.keys(data),length<1)return this.getTable();
+							this.sheetModel=new sheetModel(data);
+							this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
+							if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
+							this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
+						})
+				}catch(e){alert(e);this.getTable();}
 			}else this.getTable();
 		});
-		
 		console.log("this",this);
 	};
 	
@@ -192,15 +211,27 @@ export class XtComponent {
 	};
 		
 	public updateTable = (data:Array<any>)=>{
-		this.tableCache.set(JSON.stringify(data));
-		console.log(data);
+		console.log("updateTable Data : ",data);
+		console.log("clearing tableCache...",
+			this.dbService.clear("tableCache")
+				.subscribe(x=>{
+					console.log("tableCache clear status? ",x);
+					console.log("caching tableCache...");
+					Object.keys(data).map((sheetName:any)=>{
+						this.dbService.add("tableCache",{sheetName:sheetName,value:data[sheetName]})
+							.subscribe((x)=>{
+								console.log("tableCache inserted > ",x)
+							})
+					});
+				})
+		)
+		console.log("updating sheetModel...",)
 		this.sheetModel=new sheetModel(data);
 		console.log("data = ",data,"sheetModel = ",this.sheetModel,"this.siteNavigation = ",this.siteNavigation);
 		this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0];
 		if(!this.siteNavigation.shownSheetName)this.siteNavigation.shownSheetName=this.sheetModel.sheetName[0]
-		this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);	
-	}
-	;	
+		this.siteNavigation.changeSheet(this.siteNavigation.shownSheetName);
+	};
 	public updateKey=(key:string)=>{
 		console.log("update xtKey : ",key);
 		this.xtKey.set(key);
@@ -209,6 +240,11 @@ export class XtComponent {
 		//this.getTable();
 	}
 	
+	public debugDeletAllIndexDb=()=>{
+		this.dbService.deleteDatabase().subscribe((deleted) => {
+	  console.log('Database deleted successfully: ', deleted);
+	});
+}
 	public excel={
 		upload:(dbName:string,data:any)=>{
 			this.xtService.excelHandler.toJson(data).then(x=>{
