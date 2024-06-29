@@ -49,23 +49,6 @@ let middlewareArr=[async(req,res,next)=>{
 
 router.use(middlewareArr,(req,res,next)=>{next()});
 
-/*
-router.get('/:fileName?', handleErrorAsync(async(req, res, next)=>{
-	let params=req.params;
-	let fileName=params.fileName;
-	console.log("FileName : ",fileName);
-	fs.readFile("localDb/1"+fileName, (err, data) => {
-	  if (!err && data) {
-		let resVar=req.app.pStore.getItem(fileName);
-		return res.send(resVar);
-	  }else{
-		  return res.send(null);
-	  };
-	});
-	//console.log("test",req.app.localDb.getItem(fileName))
-}));
-*/
-
 router.get('/:fileName?', handleErrorAsync(async(req, res, next)=>{
 	let params=req.params;
 	let fileName=params.fileName;

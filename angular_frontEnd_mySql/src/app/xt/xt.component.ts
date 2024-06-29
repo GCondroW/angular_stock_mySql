@@ -55,18 +55,6 @@ export class XtComponent {
 			if(location.hostname==="cwtest.biz.id")return "https://cwtest.biz.id:2125/xt/";
 			return "https://cwtest.biz.id/xt/";
 		};
-		/*
-		let userName=()=>{
-			if(!localStorage.getItem(location.href)){
-				localStorage.setItem(location.href,JSON.stringify({userName:'guest'}));
-				let xt=JSON.parse(localStorage.getItem(location.href)!);
-				return xt.userName;
-			}else{
-				let xt=JSON.parse(localStorage.getItem(location.href)!);
-				return xt.userName;
-			}
-		};
-		*/
 		this.apiUrl=url();
 		this.userName=new localDbModel(location.href,"userName");
 		if(!this.userName.value)this.userName.set("Guest");
@@ -76,7 +64,6 @@ export class XtComponent {
 		this.xtService.req.get(this.apiUrl+"xtKey").subscribe((x:any)=>{
 			let clientXtKey=this.xtKey.value;
 			let serverXtKey=x.xtKey.toString();
-			//console.log("clientXtKey",clientXtKey,"serverXtKey",serverXtKey,clientXtKey===serverXtKey)
 			console.log("checking xtKey...",clientXtKey===serverXtKey)
 			if(clientXtKey===serverXtKey){
 				try{

@@ -1,17 +1,24 @@
+		
+
 <div>		
 	<nav id="mainNavbar" class="m-0 p-0 navbar sticky-top navbar-light bg-light">
 		<div class="container-fluid py-1">
+			<!--
 			<div class="d-flex flex-row" [style.width]="'100%'">
-				<div class="">
+			-->
+			<div class="d-flex flex-row" [style.width]="'100%'">
+			
+				<div class="pe-1">
 					<button 
-						class="btn btn-outline-secondary btn-sm me-1" 
+						class="btn btn-outline-secondary btn-sm" 
 						(click)="_offCanvas.open(mainOffcanvasContent)" 
 						type="button"
 					>
 						<span class="navbar-toggler-icon"></span>
 					</button>
 				</div>
-				<div class="">
+				
+				<div class="pe-1">
 					<input 
 						class="form-control form-control-sm" 
 						type="search" 
@@ -20,36 +27,31 @@
 						(input)="filter.search($event)"
 					>
 				</div>
+				
+				<!--
 				<div ngbDropdown class="ms-auto me-1">
+				-->
+				
+				<div ngbDropdown class="ms-auto" display="dynamic" placement="bottom-end">
 					<button 
-						ngbDropdownToggle 
+						ngbDropdownToggle
+						
 						class="btn btn-secondary btn-sm dropdown-toggle" 
 						[style.height]="'100%'"
 						type="button"
 					>
-						{{siteNavigation.shownSheetName}}
 					</button>
 					<div ngbDropdownMenu class="dropdown-menu">
 						<button 
 							ngbDropdownItem 
+							[class.disabled]="sheetName===siteNavigation.shownSheetName"
 							*ngFor="let sheetName of sheetModel.sheetName"
 							(click)="siteNavigation.changeSheet(sheetName)"
 							type="button"
 						>
-							{{sheetName|titlecase}}
+							{{sheetName}}
 						</button>
 					</div>
-				</div>
-				<div hidden class="ms-auto">
-					<!--<label>Option</label>-->
-					<select id="">
-						<option 
-							*ngFor="let sheetName of sheetModel.sheetName" 
-							value="{{sheetName}}"
-							(click)="siteNavigation.changeSheet(sheetName)"
-						>{{sheetName}}</option>
-						
-					</select>
 				</div>
 			</div>		
 		
@@ -130,6 +132,27 @@
 				class="btn btn-outline-secondary btn-sm" 
 				(click)="debugThis()"
 			><-></button>
+		</div>
+	</div>
+	<hr>
+	<div ngbDropdown class="container-fluid">
+		<button 
+			ngbDropdownToggle 
+			class="float-end btn btn-secondary btn-sm dropdown-toggle" 
+			[style.height]="'100%'"
+			type="button"
+		>
+			{{siteNavigation.shownSheetName}}
+		</button>
+		<div ngbDropdownMenu class="dropdown-menu">
+			<button 
+				ngbDropdownItem 
+				*ngFor="let sheetName of sheetModel.sheetName"
+				(click)="siteNavigation.changeSheet(sheetName)"
+				type="button"
+			>
+				{{sheetName|titlecase}}
+			</button>
 		</div>
 	</div>
 	<hr>
