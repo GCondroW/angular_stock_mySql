@@ -3,7 +3,6 @@ var router = express.Router();
 var app = express();
 const fs = require('fs');
 
-
 const handleErrorAsync = func => (req, res, next) => {
     func(req, res, next).catch((error) => next(error));
 };

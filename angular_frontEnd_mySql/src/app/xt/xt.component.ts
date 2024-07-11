@@ -52,8 +52,9 @@ export class XtComponent {
 	ngOnInit(){		
 		let url=()=>{
 			if(location.hostname==="localhost")return "https://localhost:2125/xt/";
+			//if(location.hostname==="localhost")return "https://cwtest.biz.id:2125/xt/";
 			if(location.hostname==="cwtest.biz.id")return "https://cwtest.biz.id:2125/xt/";
-			return "https://cwtest.biz.id/xt/";
+			return "https://cwtest.biz.id:2125/xt/";
 		};
 		this.apiUrl=url();
 		this.userName=new localDbModel(location.href,"userName");
@@ -63,6 +64,7 @@ export class XtComponent {
 		this.updateKey(this.xtKey.value||"-1");
 		this.xtService.req.get(this.apiUrl+"xtKey").subscribe((x:any)=>{
 			let clientXtKey=this.xtKey.value;
+			console.log("LINE 67 = > ",x)
 			let serverXtKey=x.xtKey.toString();
 			console.log("checking xtKey...",clientXtKey===serverXtKey)
 			if(clientXtKey===serverXtKey){

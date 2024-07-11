@@ -700,6 +700,7 @@ router.get('/test',(req,res,next)=>{
 	let resVar={
 		dbKey:req.get('dbKey'),
 		user:req.get('user'),
+		"connectionTest":db.connectionTest(),
 	};
 	res.status(202);
 	res.send({success:true,resVar:resVar});
