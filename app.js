@@ -75,6 +75,7 @@ var fs = require(`fs`);
 
 var LocalStorage = require('node-localstorage').LocalStorage;
 var localDb=new LocalStorage("./public",Number.MAX_VALUE);
+require('dotenv').config()
 
 let pStore={};
 let pStoreInit = async()=>{
@@ -218,8 +219,9 @@ let tableViewCache=new class tableViewCache{
 			}else{
 				await this.getView();
 			};
+			
 			let portNumber=process.env.PORT || '2125';
-			//console.log();
+			console.log("process.env",process.env);
 			//pStore=await pStoreInit();
 			httpsServer.listen(portNumber,()=>{
 				console.log("> START SERVER");

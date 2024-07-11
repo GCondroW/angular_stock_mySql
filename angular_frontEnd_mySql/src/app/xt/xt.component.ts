@@ -53,8 +53,8 @@ export class XtComponent {
 		let url=()=>{
 			if(location.hostname==="localhost")return "https://localhost:2125/xt/";
 			//if(location.hostname==="localhost")return "https://cwtest.biz.id:2125/xt/";
-			if(location.hostname==="cwtest.biz.id")return "https://cwtest.biz.id:2125/xt/";
-			return "https://cwtest.biz.id:2125/xt/";
+			if(location.hostname==="cwtest.biz.id")return "https://cwtest.biz.id:443/xt/";
+			return "https://cwtest.biz.id:443/xt/";
 		};
 		this.apiUrl=url();
 		this.userName=new localDbModel(location.href,"userName");
@@ -274,3 +274,5 @@ export class XtComponent {
 	};
 
 }
+
+
