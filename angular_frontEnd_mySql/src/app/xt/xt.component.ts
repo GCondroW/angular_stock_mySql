@@ -56,6 +56,7 @@ export class XtComponent {
 			if(location.hostname==="cwtest.biz.id")return "https://cwtest.biz.id:443/xt/";
 			return "https://cwtest.biz.id:443/xt/";
 		};
+		console.log("localStorage.clear() ",localStorage.clear());
 		this.apiUrl=url();
 		this.userName=new localDbModel(location.href,"userName");
 		if(!this.userName.value)this.userName.set("Guest");
