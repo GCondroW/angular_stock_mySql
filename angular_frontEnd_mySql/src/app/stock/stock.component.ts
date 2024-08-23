@@ -536,6 +536,10 @@ export class StockComponent {
 						hide:true,
 					},
 					{
+						field:'JENIS',
+						hide:true,
+					},
+					{
 						field:'NAMA',
 						hide:true,
 					},

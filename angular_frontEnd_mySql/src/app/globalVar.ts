@@ -487,6 +487,11 @@ export const GlobalVar ={
 					type:'contains',
 					filter:"",
 				},
+				JENIS:{
+					filterType: 'text',
+					type:'contains',
+					filter:"",
+				},
 				KATEGORI:{
 					filterType: 'text',
 					type:'contains',
@@ -522,6 +527,9 @@ export const GlobalVar ={
 				{
 					field: "SUPPLIER",
 					hide: true,
+				},
+				{
+					field: "JENIS",
 				},
 				{
 					field: "KATEGORI",

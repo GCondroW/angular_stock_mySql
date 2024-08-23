@@ -536,6 +536,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	let data=req.body;
 	data=JSON.parse(JSON.stringify(data).toUpperCase());
 	let user=req.get('user')?req.get('user'):'Guest-1';
+	
 	let q_SUPPLIER=new qValues();
 	data.map(item=>item.SUPPLIER).forEach(item=>
 		item!=""?
@@ -544,6 +545,16 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		)
 		:""
 	);
+	
+	let q_JENIS=new qValues();
+	data.map(item=>item.JENIS).forEach(item=>
+		item!=""?
+		q_JENIS.add(
+			`(SELECT id_jenis FROM jenis WHERE nama ="`+item+'" ),"'+item+`"`
+		)
+		:""
+	);
+	
 	let q_DAFTAR=new qValues();
 	data.forEach(item=>{
 		q_DAFTAR.add(
@@ -553,6 +564,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			"'"+item.STN+"',"+
 			"'"+item.KATEGORI+"',"+
 			"(SELECT id_supplier FROM supplier where nama ='"+item.SUPPLIER+"'),"+
+			"(SELECT id_jenis FROM jenis where nama ='"+item.JENIS+"'),"+
 			"'NULL',"+
 			"'"+item.STOCK+"',"+
 			"'"+user+"',"+
@@ -562,13 +574,26 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		);
 
 	});
-	console.log(q_DAFTAR.value);
-	let q=[];
-	q=[
-		"DELETE FROM daftar;",
-		"ALTER TABLE daftar AUTO_INCREMENT = 1;",
-		"DELETE FROM transaksi;",
-		"ALTER TABLE transaksi AUTO_INCREMENT = 1;",
+	//console.log("q_JENIS.value",q_JENIS);
+	let qJenis=[
+		"DELETE FROM jenis;",
+		"ALTER TABLE jenis AUTO_INCREMENT = 1;",
+		`CREATE TEMPORARY TABLE TEMP_TABLE_JENIS(
+			id_jenis INT,
+			nama VARCHAR(64)
+		);`,
+		`INSERT INTO TEMP_TABLE_JENIS(ID_JENIS, NAMA)
+		VALUES `+q_JENIS.values+`;`,
+		`REPLACE
+			INTO jenis(id_jenis, NAMA)
+			SELECT DISTINCT
+			id_jenis,
+			nama
+		FROM
+			TEMP_TABLE_JENIS;`,
+	];
+
+	let qSupplier=[
 		"DELETE FROM supplier;",
 		"ALTER TABLE supplier AUTO_INCREMENT = 1;",
 		`CREATE TEMPORARY TABLE TEMP_TABLE_SUPPLIER(
@@ -584,6 +609,11 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			NAMA
 		FROM
 			TEMP_TABLE_SUPPLIER;`,
+	]
+	
+	let qDaftar=[
+		"DELETE FROM daftar;",
+		"ALTER TABLE daftar AUTO_INCREMENT = 1;",
 		`CREATE TEMPORARY TABLE TEMP_TABLE AS SELECT 
 			daftar.ID_DAFTAR,
 			NAMA,
@@ -591,6 +621,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			STN,
 			KATEGORI,
 			ID_SUPPLIER,
+			ID_JENIS,
 			ID_TRANSAKSI,
 			JUMLAH,
 			USER,
@@ -608,6 +639,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			STN,
 			KATEGORI,
 			ID_SUPPLIER,
+			ID_JENIS,
 			ID_TRANSAKSI,
 			JUMLAH,
 			USER,
@@ -621,14 +653,21 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			QTY,
 			STN,
 			KATEGORI,
-			ID_SUPPLIER
+			ID_SUPPLIER,
+			ID_JENIS
 		)SELECT 
 			NAMA,
 			QTY,
 			STN,
 			KATEGORI,
-			ID_SUPPLIER 
+			ID_SUPPLIER,
+			ID_JENIS
 		FROM TEMP_TABLE;`,
+		"select * from daftar;"
+		
+	];
+	
+	let qTransaksi=[
 		`INSERT INTO transaksi (
 			JUMLAH,
 			USER,
@@ -644,8 +683,12 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			KETERANGAN,
 			ID_DAFTAR 
 		FROM TEMP_TABLE;`,
+	]
+	
+	let qCleanUp=[
 		"SET @MAX_ID_DAFTAR =(SELECT MAX(ID_DAFTAR) FROM daftar);",
 		"SET @MAX_ID_SUPPLIER =(SELECT MAX(ID_SUPPLIER) FROM supplier);",
+		"SET @MAX_ID_JENIS =(SELECT MAX(ID_JENIS) FROM jenis);",
 		"SET @MAX_ID_TRANSAKSI =(SELECT MAX(ID_TRANSAKSI) FROM transaksi);",
 		`SET @sql = CONCAT(
 			"ALTER TABLE daftar AUTO_INCREMENT=",
@@ -664,6 +707,14 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		"PREPARE st FROM @sql;",
 		"EXECUTE st;",
 		`SET @sql = CONCAT(
+			"ALTER TABLE jenis AUTO_INCREMENT=",
+			COALESCE(@MAX_ID_JENIS+1, 1),
+			";"
+		);`,
+		"SELECT @sql;",
+		"PREPARE st FROM @sql;",
+		"EXECUTE st;",
+		`SET @sql = CONCAT(
 			"ALTER TABLE transaksi AUTO_INCREMENT=",
 			COALESCE(@MAX_ID_TRANSAKSI+1, 1),
 			";"
@@ -672,26 +723,32 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		"PREPARE st FROM @sql;",
 		"EXECUTE st;"
 	]
-	//,
+	
+	let q=[];
+	qJenis.map(x=>q.push(x));
+	qSupplier.map(x=>q.push(x));
+	qDaftar.map(x=>q.push(x));
+	qTransaksi.map(x=>q.push(x));
+	qCleanUp.map(x=>q.push(x));
+	//console.log("test multq",db.multQ(qq))
 	//	"SELECT * FROM stock_view_1;"
 	//console.log("SQL QUERY : ",q);
 	//console.log("q_DAFTAR : ",q_DAFTAR.values);
-	
-	if(!!await db.multQ(q)){
+	let result=await db.multQ(q)
+	if(!!result){
 		await req.app.tableViewCache.getView();
 		req.app.dbKey.resetValue();
+		console.log("result", result)
 		let resVar={
 			message:"DATA_UPDATED_FROM_EXCELUPLOAD",
 		};
+		
 		console.log('EMIT_AT_EXELUPLOAD',req.app.io.emit('init',resVar));
 		res.status(202);
 		res.send({success:true});
 	}else{
 		throw new Error("multi query failed");
 	};
-	
-
-	//res.json(await db.multQ(q));
 }));
 
 router.get('/test',(req,res,next)=>{

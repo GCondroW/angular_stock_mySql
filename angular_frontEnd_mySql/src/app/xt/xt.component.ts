@@ -57,11 +57,11 @@ export class XtComponent {
 			return "https://cwtest.biz.id:443/xt/";
 		};
 		this.apiUrl=url();
-		console.log("localStorage.removeItem() ",localStorage.removeItem(this.apiUrl));
+		//console.log("localStorage.removeItem() ",localStorage.removeItem(this.apiUrl));
 		this.userName=new localDbModel(location.href,"userName");
 		if(!this.userName.value)this.userName.set("Guest");
 		this.xtKey=new localDbModel(location.href,"xtKey");
-		this.tableCache=new localDbModel(location.href,"tableCache");
+		//this.tableCache=new localDbModel(location.href,"tableCache");
 		this.updateKey(this.xtKey.value||"-1");
 		this.xtService.req.get(this.apiUrl+"xtKey").subscribe((x:any)=>{
 			let clientXtKey=this.xtKey.value;
@@ -244,7 +244,7 @@ export class XtComponent {
 				this.xtService.req.post(this.apiUrl+this.fileName,x).subscribe((x:any)=>{
 					//alert(JSON.stringify(x.xtKey));
 					//this.updateKey(x.xtKey.toString());
-					this.tableCache.delete();
+					this.xtKey.delete();
 					this.getTable();
 				})
 			});	
@@ -256,7 +256,7 @@ export class XtComponent {
 			this.xtService.req.delete(this.apiUrl+this.fileName).subscribe((x:any)=>{
 				console.log("delete",x);
 				//this.updateKey(x.xtKey.toString());
-				this.tableCache.delete();
+				this.xtKey.delete();
 				this.getTable();
 			})
 		}
