@@ -558,7 +558,8 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	let q_DAFTAR=new qValues();
 	data.forEach(item=>{
 		q_DAFTAR.add(
-			"NULL,"+	
+			"NULL,"+
+			"'"+item.KODE+"',"+	
 			"'"+item.NAMA+"',"+	
 			"'"+item.QTY+"',"+
 			"'"+item.STN+"',"+
@@ -616,6 +617,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		"ALTER TABLE daftar AUTO_INCREMENT = 1;",
 		`CREATE TEMPORARY TABLE TEMP_TABLE AS SELECT 
 			daftar.ID_DAFTAR,
+			KODE,
 			NAMA,
 			QTY,
 			STN,
@@ -634,6 +636,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		"ALTER TABLE TEMP_TABLE CHANGE ID_DAFTAR ID_DAFTAR INT( 11 ) NOT NULL AUTO_INCREMENT PRIMARY KEY;",
 		`INSERT INTO TEMP_TABLE (
 			ID_DAFTAR,
+			KODE,
 			NAMA,
 			QTY,
 			STN,
@@ -649,6 +652,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 		)
 		VALUES `+q_DAFTAR.values+`;`,
 		`INSERT INTO daftar (
+			KODE,
 			NAMA,
 			QTY,
 			STN,
@@ -656,6 +660,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			ID_SUPPLIER,
 			ID_JENIS
 		)SELECT 
+			KODE,
 			NAMA,
 			QTY,
 			STN,
@@ -663,11 +668,10 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			ID_SUPPLIER,
 			ID_JENIS
 		FROM TEMP_TABLE;`,
-		"select * from daftar;"
-		
 	];
 	
 	let qTransaksi=[
+		"DELETE FROM transaksi;",
 		`INSERT INTO transaksi (
 			JUMLAH,
 			USER,
@@ -735,6 +739,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	//console.log("SQL QUERY : ",q);
 	//console.log("q_DAFTAR : ",q_DAFTAR.values);
 	let result=await db.multQ(q)
+	//let result=q;
 	if(!!result){
 		await req.app.tableViewCache.getView();
 		req.app.dbKey.resetValue();

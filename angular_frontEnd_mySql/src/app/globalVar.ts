@@ -480,7 +480,7 @@ export const GlobalVar ={
 	},
 	defaultColumnDefs:{
 		stock:{
-			excludedTableColumn:["ID_DAFTAR","NAMA","QTY","STOCK"],
+			excludedTableColumn:["ID_DAFTAR","NAMA","QTY","STOCK","KODE"],
 			defaultFilterParams:{
 				SUPPLIER:{
 					filterType: 'text',
@@ -514,6 +514,10 @@ export const GlobalVar ={
 					hide: true,		
 				},
 				{
+					field: "KODE",
+					hide: true,		
+				},
+				{
 					field: "NAMA",
 					sort: "asc",
 					pinned:'left',
@@ -530,6 +534,7 @@ export const GlobalVar ={
 				},
 				{
 					field: "JENIS",
+					hide: true,	
 				},
 				{
 					field: "KATEGORI",
@@ -543,6 +548,7 @@ export const GlobalVar ={
 				},
 				{
 					field:"AKSI",
+					hide: true,
 				}
 			],
 		},
