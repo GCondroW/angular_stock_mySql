@@ -792,17 +792,21 @@ export class StockComponent {
 					formSupplier:[initialData.SUPPLIER,[GlobalValidator.required]],
 					formQty:[initialData.QTY,[GlobalValidator.number,GlobalValidator.required,GlobalValidator.cantBeZero]],
 					formStn:[initialData.STN,[GlobalValidator.required,GlobalValidator.string]],
+					formJenis:[initialData.JENIS,[GlobalValidator.required,GlobalValidator.string]],
+					formKode:[initialData.KODE,[GlobalValidator.required]],
 					formKategori:[initialData.KATEGORI,[GlobalValidator.required]],
 				},{});
 				//console.log("parentId",parentId);
-				console.log("tableData",tableData);
-				console.log("parentData",parentData);
+				//console.log("tableData",tableData);
+				//console.log("parentData",parentData);
 				let form=this.modal.modal_4.form;
 				let formNamaValue=form.get("formNama");
 				let formSupplierValue=form.get("formSupplier");
 				let formQtyValue=form.get("formQty");
 				let formStnValue=form.get("formStn");
 				let formKategoriValue=form.get("formKategori");
+				let formJenisValue=form.get("formJenis");
+				let formKodeValue=form.get("formKode");
 				this.activeModal='modal_4';
 				
 			},
@@ -823,6 +827,8 @@ export class StockComponent {
 					form.get("formQty").setValue(initialData.QTY);
 					form.get("formStn").setValue(initialData.STN);
 					form.get("formKategori").setValue(initialData.KATEGORI);
+					form.get("formJenisi").setValue(initialData.JENIS);
+					form.get("formKode").setValue(initialData.KODE);
 					return 
 				}catch(e){
 					alert('err')
@@ -863,8 +869,13 @@ export class StockComponent {
 			},
 			modalRef:undefined,
 			getStnFilterData:()=>{
+				
 				if(this.stock.daftar.stock.filterData['Qty/ Ctn']===undefined)return [];
 				return [...new Set(this.stock.daftar.stock.filterData['Qty/ Ctn'].map((item:any)=>item.split(' ')[1]))];
+			},
+			getJenisFilterData:()=>{
+				if(this.stock.daftar.stock.filterData['Jenis']===undefined)return [];
+				return [...new Set(this.stock.daftar.stock.filterData['Jenis'].map((item:any)=>item.split(' ')[1]))];
 			},
 			getDatalist:(pointer:string)=>this.stock.daftar.stock.filterData[pointer.toUpperCase()],
 		},
@@ -895,6 +906,8 @@ export class StockComponent {
 	get formQty() { return this.modal[this.activeModal].form.get('formQty'); }
 	get formStn() { return this.modal[this.activeModal].form.get('formStn'); }
 	get formKategori() { return this.modal[this.activeModal].form.get('formKategori'); }
+	get formJenis() { return this.modal[this.activeModal].form.get('formJenis'); }
+	get formKode() { return this.modal[this.activeModal].form.get('formKode'); }
 	get formCtn() { return this.modal[this.activeModal].form.get('formCtn'); }
 	/// \MODAL ///
 	

@@ -1139,7 +1139,6 @@ conditional
 			</div>
 		</div>
 		<div class="row mb-1">
-		
 			<label for="l_13" class="col-sm-3 col-form-label col-form-label-sm">
 				Satuan
 			</label>
@@ -1205,6 +1204,71 @@ conditional
 				</div>		
 			</div>
 		</div>
+		<div class="row mb-1">
+			<label for="l_15" class="col-sm-3 col-form-label col-form-label-sm">
+				Jenis
+			</label>
+			<div class="col-4">
+				<div class="input-group">
+					<input
+						type="text"
+						id="l_15"
+						class="form-control form-control-sm"
+						autocomplete="off"
+						name="jenis"
+						list="datalistOptions-inputJenis"
+						formControlName="formJenis"
+						[class.is-invalid]="
+							!formJenis.valid && (formJenis.dirty || formJenis.touched)
+						"
+					>
+					<div ngbDropdown>
+						<button ngbDropdownToggle class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"></button>
+						<div ngbDropdownMenu class="dropdown-menu">
+							<button 
+								ngbDropdownItem
+								*ngFor="let a of modal.modal_4.getDatalist('jenis')"
+								(click)="modal.modal_4.form.get('formJenis').setValue(a)"
+								type="button"
+							>
+								<a>{{a}}</a>
+							</button>
+						</div>
+					</div>		
+					<datalist id="datalistOptions-inputJenis">
+						<option 
+							*ngFor="let a of modal.modal_4.getJenisFilterData()"
+							value={{a}}
+						>
+					</datalist>
+					<div class="invalid-feedback" *ngIf="formJenis.errors && (formJenis.dirty || formJenis.touched)">
+						{{formJenis.errors?.message}}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row mb-1">
+			<label for="l_16" class="col-sm-3 col-form-label col-form-label-sm">
+				Kode
+			</label>
+			<div class="col-4">
+				<input
+					type="text"
+					id="l_16"
+					class="form-control form-control-sm"
+					autocomplete="off"
+					name="kode"
+					formControlName="formKode"
+					[class.is-invalid]="
+						!formKode.valid && (formKode.dirty || formKode.touched)
+					"
+				>
+				<div class="invalid-feedback" *ngIf="formKode.errors && (formKode.dirty || formQty.touched)">
+					{{formKode.errors?.message}}
+				</div>
+			</div>
+		</div>
+
 		<button button id="submitButtonId" hidden type="submit">submit</button>
 	</form>
 </ng-template>

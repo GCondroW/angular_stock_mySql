@@ -637,11 +637,6 @@ export const GlobalVar ={
 					type:'contains',
 					filter:"",
 				},
-				TANGGAL:{
-					filterType: 'text',
-					type:'contains',
-					filter:"",
-				},
 				JENIS:{
 					filterType: 'text',
 					type:'notContains',
