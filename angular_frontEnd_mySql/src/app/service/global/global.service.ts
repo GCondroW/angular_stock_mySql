@@ -140,11 +140,16 @@ export class GlobalService {
 	};
 	downloadExcel=(dbName:string)=>{
 		this.getData(dbName,undefined).subscribe((x:any)=>{
+			x.data.map((y:any)=>{
+				let newDate=new Date(y.TANGGAL);
+				y.TANGGAL=newDate.toLocaleString("id")
+			})
 			GlobalVar.consoleDump([
 				["utils",utils],
 				["downloadData",x]
 			]);
 			let dataSheet=utils.json_to_sheet(x.data);
+			
 			let wb = utils.book_new();
 			utils.book_append_sheet(wb,dataSheet , dbName);
 			writeFile(wb, dbName+".xlsx", { compression: true });

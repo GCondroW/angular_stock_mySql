@@ -547,6 +547,63 @@ export const GlobalVar ={
 					type:"numericColumn",
 				},
 				{
+					field: "TANGGAL",
+					sort: "desc",
+					autoHeight: true,
+					/*
+					valueFormatter: (params:any)=>{
+						try{
+							var dateAsString = params.data.TANGGAL;
+							
+							var localeDatePart = dateAsString.split(',');
+							let part={
+								datePart:localeDatePart[0],
+								timePart:localeDatePart[1],
+							};
+							let datePart=part.datePart.split("/");
+							let timePart=part.timePart.split(".");
+							let newDate=new Date(datePart[2],datePart[1]-1,datePart[0],timePart[0],timePart[1],timePart[2]);
+							console.log(" 	-dateAsString",dateAsString)
+							console.log("	-newDate",newDate)
+							return newDate.toLocaleString("id");
+							//return `${dateParts[0]} - ${dateParts[1]} - ${dateParts[2]}`;
+						}catch(e){
+							return "";
+						}
+					},
+					*/
+					comparator:(date1:any,date2:any)=>{
+						try{
+							let toNumber=(x:any)=>{
+								var dateAsString = x;
+								var localeDatePart = dateAsString.split(',');
+								let part={
+									datePart:localeDatePart[0],
+									timePart:localeDatePart[1],
+								};
+								let datePart=part.datePart.split("/");
+								let timePart=part.timePart.split(".");
+								let newDate=new Date(datePart[2],datePart[1]-1,datePart[0],timePart[0],timePart[1],timePart[2])
+								return Date.parse(newDate.toString());
+							};
+							date1=toNumber(date1);
+							date2=toNumber(date2);
+							if (date1 === null && date2 === null) {
+								return 0;
+							}
+							if (date1 === null) {
+								return -1;
+							}
+							if (date2 === null) {
+								return 1;
+							}
+							return date1 - date2;
+						}catch(e){
+							return 0;
+						}
+					},
+				},
+				{
 					field:"AKSI",
 					hide: true,
 				}

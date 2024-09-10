@@ -557,6 +557,36 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	
 	let q_DAFTAR=new qValues();
 	data.forEach(item=>{
+		//console.log("item tanggal",item.TANGGAL)
+		console.log("item tanggal",item.TANGGAL)
+		conv=(tgl)=>{
+			console.log("tgl",tgl);
+			let returnVar="";
+			let splitTgl=tgl.split(",");
+			let splitDate=splitTgl[0].split("/");
+			let splitime=splitTgl[1].split(".");
+			let tahun=splitDate[2];
+			let bulan=splitDate[1];
+			let hari=splitDate[0];
+			let jam=splitime[0];
+			let detik=splitime[1];
+			let ms=splitime[2];
+			returnVar+="'";
+			returnVar+=tahun+"-";
+			returnVar+=bulan+"-";
+			returnVar+=hari+" ";
+			returnVar+=jam+":";
+			returnVar+=detik+":";
+			returnVar+=ms;
+			returnVar+="'";
+			return returnVar;
+		};
+		if(!item.TANGGAL){
+			item.TANGGAL="SELECT NOW()"
+		}else{
+			item.TANGGAL=conv(item.TANGGAL);
+		}
+		
 		q_DAFTAR.add(
 			"NULL,"+
 			"'"+item.KODE+"',"+	
@@ -569,7 +599,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 			"'NULL',"+
 			"'"+item.STOCK+"',"+
 			"'"+user+"',"+
-			"(SELECT NOW()),"+
+			"("+item.TANGGAL+"),"+
 			"'AWAL',"+
 			"'STOCK AWAL'"
 		);
@@ -740,6 +770,7 @@ router.post('/excelupload', handleErrorAsync(async(req, res, next)=>{
 	//console.log("q_DAFTAR : ",q_DAFTAR.values);
 	let result=await db.multQ(q)
 	//let result=q;
+	//console.log(q);
 	if(!!result){
 		await req.app.tableViewCache.getView();
 		req.app.dbKey.resetValue();
